@@ -487,3 +487,47 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .tool-blocked .tool-status { color: var(--red); }
 .tool-hardcap { font-size: 10.5px; color: var(--orange); margin-top: 6px; font-weight: 600; }
 .fa-beforeafter { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; }
+
+/* ---------- Import pipeline ---------- */
+.import { max-width: 860px; }
+.import-head { border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 16px; }
+.import-title { font-size: 28px; margin: 2px 0 6px; }
+.import-lede { margin: 0; color: var(--ink-soft); font-size: 13.5px; max-width: 60ch; }
+.import-steps {
+  margin: 0 0 18px; padding-left: 20px; color: var(--ink-soft); font-size: 13px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.import-steps li { padding-left: 4px; }
+.import-link { color: var(--teal); word-break: break-all; }
+.import-controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+.import-reset {
+  background: none; border: 1px solid var(--rule-strong); color: var(--ink-soft);
+  padding: 8px 14px; border-radius: var(--radius-sm); font-size: 12px; font-family: var(--serif);
+}
+.import-reset:hover { border-color: var(--coral); color: var(--coral); }
+.import-textarea {
+  width: 100%; min-height: 160px; resize: vertical;
+  background: var(--card); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px; color: var(--ink); line-height: 1.5;
+}
+.import-textarea:focus { outline: 2px solid var(--coral); outline-offset: -1px; }
+.import-preview {
+  margin-top: 16px; background: var(--card); border: 1px solid var(--rule);
+  border-radius: var(--radius); padding: 16px;
+}
+.import-preview-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 12px; font-size: 13px; color: var(--ink-soft);
+  padding-bottom: 10px; border-bottom: 1px solid var(--rule);
+}
+.import-apply {
+  background: var(--coral); color: #fff; border: none; padding: 9px 18px;
+  border-radius: var(--radius-sm); font-family: var(--serif); font-weight: 600; font-size: 14px;
+}
+.import-apply:disabled { background: var(--rule-strong); cursor: not-allowed; }
+.import-warning {
+  margin-top: 10px; font-size: 12px; color: #7a5a12;
+  background: rgba(179,133,28,0.08); border: 1px solid rgba(179,133,28,0.3);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+}

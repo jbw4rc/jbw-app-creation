@@ -4,6 +4,7 @@ import { CURRENT_SEASON } from '../src/data/leagueConstants';
 import { summarizeTeamSeason } from '../src/lib/apron';
 import { evaluateTrade } from '../src/lib/trade';
 import { evaluateSigning } from '../src/lib/freeAgent';
+import { parseContractsCsv } from '../src/lib/importCsv';
 import { money } from '../src/lib/format';
 
 let failures = 0;
@@ -76,6 +77,27 @@ check(
   'Under-cap UTA can sign a $20M FA with cap space',
   evaluateSigning(uta, CURRENT_SEASON, 20_000_000).recommended?.tool === 'capSpace'
 );
+
+console.log('\n=== CSV importer ===');
+// Mimic a Basketball-Reference "Get table as CSV" paste, including the
+// thousands-commas inside dollar amounts that must be handled.
+const sampleCsv = [
+  'Player,2025-26,2026-27,2027-28,Guaranteed',
+  'Jayson Tatum,"$54,126,450","$58,456,566","$62,786,682","$175,369,698"',
+  'Sam Hauser,$10,000,000,$10,800,000,,"$20,800,000"',
+  'Team Totals,"$64,126,450",,,',
+].join('\n');
+const parsed = parseContractsCsv(sampleCsv);
+check('parses two players (skips totals row)', parsed.players.length === 2);
+check(
+  'reads Tatum 2025-26 salary through thousands-commas',
+  parsed.players[0]?.contract.find((c) => c.season === 2025)?.salary === 54_126_450
+);
+check(
+  'leaves an empty cell unsigned',
+  parsed.players[1]?.contract.find((c) => c.season === 2027) === undefined
+);
+check('detects seasons 2025-2027', parsed.seasons.join(',') === '2025,2026,2027');
 
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}\n`);
 process.exit(failures === 0 ? 0 : 1);

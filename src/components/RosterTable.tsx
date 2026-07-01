@@ -55,7 +55,7 @@ export function RosterTable({ team }: { team: Team }) {
             <tr key={p.id}>
               <td className="col-player">
                 <span className="player-name">{p.name}</span>
-                <span className="player-age">{p.age}</span>
+                {p.age > 0 && <span className="player-age">{p.age}</span>}
               </td>
               <td className="col-pos">{p.position}</td>
               {SEASONS.map((s) => (

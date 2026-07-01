@@ -39,6 +39,16 @@ space, the non-taxpayer / taxpayer mid-level, the bi-annual exception, or the
 minimum — with clear reasons when a tool is unavailable (e.g. a **second-apron
 team has no MLE at all**) and warnings when a tool **hard-caps** the team.
 
+### 4. Import Data (Basketball-Reference)
+The bundled rosters are illustrative sample data. To load real numbers, open a
+team's Basketball-Reference contracts page, use **Share & Export → Get table as
+CSV**, and paste it into the Import tab. The parser handles BBRef's format
+(including thousands-commas inside dollar amounts), previews the result, and —
+on apply — replaces that team's roster everywhere in the app. Imports are saved
+in your browser (localStorage) and can be reset to the sample data per team.
+Note: BBRef's contracts export doesn't include options or positions/ages, so
+imported years are treated as guaranteed.
+
 ## Apron rules, in brief
 
 | Threshold (2024-25) | Amount | What it means |

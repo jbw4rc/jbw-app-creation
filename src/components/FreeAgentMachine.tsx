@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { TEAMS } from '../data/teams';
+import { useTeams } from '../lib/teamStore';
 import { CURRENT_SEASON, getSeasonCap } from '../data/leagueConstants';
 import { summarizeSeason } from '../lib/apron';
 import { evaluateSigning, type SigningOption } from '../lib/freeAgent';
@@ -21,10 +21,11 @@ const PRESETS = [
 ];
 
 export function FreeAgentMachine() {
+  const teams = useTeams();
   const [abbr, setAbbr] = useState('BOS');
   const [target, setTarget] = useState(focalCap.nonTaxpayerMLE);
 
-  const team = TEAMS.find((t) => t.abbreviation === abbr)!;
+  const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const evalResult = useMemo(
     () => evaluateSigning(team, CURRENT_SEASON, target),
     [team, target]
@@ -38,7 +39,7 @@ export function FreeAgentMachine() {
         <label className="fa-field">
           <span>Team</span>
           <select value={abbr} onChange={(e) => setAbbr(e.target.value)}>
-            {TEAMS.map((t) => (
+            {teams.map((t) => (
               <option key={t.abbreviation} value={t.abbreviation}>
                 {t.name}
               </option>

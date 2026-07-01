@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Player, Team } from '../types';
-import { TEAMS } from '../data/teams';
+import { useTeams } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { playerSalaryForSeason, summarizeSeason, TIER_INFO } from '../lib/apron';
 import { evaluateTrade, type TeamTradeResult } from '../lib/trade';
@@ -16,8 +16,9 @@ export function TradeMachine() {
   const [selA, setSelA] = useState<Set<string>>(new Set());
   const [selB, setSelB] = useState<Set<string>>(new Set());
 
-  const teamA = TEAMS.find((t) => t.abbreviation === abbrA)!;
-  const teamB = TEAMS.find((t) => t.abbreviation === abbrB)!;
+  const teams = useTeams();
+  const teamA = teams.find((t) => t.abbreviation === abbrA) ?? teams[0];
+  const teamB = teams.find((t) => t.abbreviation === abbrB) ?? teams[1];
 
   const evaluation = useMemo(
     () =>
@@ -112,6 +113,7 @@ function TradeColumn({
   disabledTeam,
   result,
 }: ColumnProps) {
+  const teams = useTeams();
   const preSummary = summarizeSeason(result.preSalary, CURRENT_SEASON);
   const postSummary = summarizeSeason(result.postSalary, CURRENT_SEASON);
 
@@ -128,7 +130,7 @@ function TradeColumn({
         value={team.abbreviation}
         onChange={(e) => onTeamChange(e.target.value)}
       >
-        {TEAMS.map((t) => (
+        {teams.map((t) => (
           <option
             key={t.abbreviation}
             value={t.abbreviation}

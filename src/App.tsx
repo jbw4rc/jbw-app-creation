@@ -3,13 +3,15 @@ import { TeamExplorer } from './components/TeamExplorer';
 import { TradeMachine } from './components/TradeMachine';
 import { FreeAgentMachine } from './components/FreeAgentMachine';
 import { LeagueThresholds } from './components/LeagueThresholds';
+import { ImportData } from './components/ImportData';
 
-type Tab = 'explorer' | 'trade' | 'freeAgent';
+type Tab = 'explorer' | 'trade' | 'freeAgent' | 'import';
 
 const TABS: { id: Tab; label: string; blurb: string }[] = [
   { id: 'explorer', label: 'Team Explorer', blurb: 'Rosters, 5-year salary, picks & apron status' },
   { id: 'trade', label: 'Trade Machine', blurb: 'Test a swap against the apron rules' },
   { id: 'freeAgent', label: 'Free Agent Machine', blurb: 'Which signing tools are legal' },
+  { id: 'import', label: 'Import Data', blurb: 'Load real numbers from Basketball-Reference' },
 ];
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'trade' && <TradeMachine />}
         {tab === 'freeAgent' && <FreeAgentMachine />}
+        {tab === 'import' && <ImportData />}
       </main>
 
       <footer className="app-footer">
