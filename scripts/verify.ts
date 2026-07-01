@@ -13,7 +13,7 @@ function check(name: string, cond: boolean) {
   if (!cond) failures++;
 }
 
-console.log('\n=== Team tiers (2025-26 focal season) ===');
+console.log('\n=== Team tiers (2026-27 focal season) ===');
 for (const t of TEAMS) {
   const s = summarizeTeamSeason(t, CURRENT_SEASON);
   console.log(
@@ -21,10 +21,12 @@ for (const t of TEAMS) {
   );
 }
 
-console.log('\n=== Expected tiers (2025-26) ===');
+console.log('\n=== Expected tiers (2026-27) ===');
 const expect: Record<string, string> = {
   BOS: 'secondApron',
   PHX: 'firstApron',
+  DEN: 'overTax',
+  NYK: 'overCap',
   OKC: 'underCap',
   UTA: 'underCap',
 };

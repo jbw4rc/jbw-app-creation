@@ -83,17 +83,22 @@ const suns: Team = {
       [61_015_192, 'player'],
       'ufa',
     ]),
-    player('Kevin Durant', 'PF', 36, [47_649_433, [51_179_020, 'player'], 'ufa']),
+    player('Kevin Durant', 'PF', 36, [
+      47_649_433,
+      51_179_020,
+      54_708_608,
+      [58_238_196, 'player'],
+    ]),
     player('Bradley Beal', 'SG', 31, [
       50_203_930,
       53_668_720,
       [57_133_510, 'player'],
       'ufa',
     ]),
-    player('Jusuf Nurkic', 'C', 30, [18_125_000, 19_375_000, 'ufa']),
+    player('Jusuf Nurkic', 'C', 30, [18_125_000, 19_375_000, 20_625_000, 'ufa']),
     player('Grayson Allen', 'SG', 29, [8_000_000, 9_000_000, 9_925_000, 10_850_000]),
     player('Nassir Little', 'SF', 24, [6_250_000, 6_770_000, [7_290_000, 'team'], 'ufa']),
-    player('Josh Okogie', 'SG', 26, [7_750_000, [8_297_000, 'player'], 'ufa']),
+    player('Josh Okogie', 'SG', 26, [7_750_000, 8_297_000, 10_500_000, 'ufa']),
     player('Drew Eubanks', 'C', 27, [4_700_000, [5_000_000, 'player'], 'ufa']),
     player('Bol Bol', 'C', 25, [2_200_000, 'ufa']),
     player('Keita Bates-Diop', 'SF', 28, [2_700_000, 'ufa']),
@@ -102,6 +107,7 @@ const suns: Team = {
     pick(2025, 2, 'PHX'),
     pick(2031, 1, 'PHX', 'Only tradable first-rounder; earlier firsts owed to prior deals', true),
     pick(2032, 1, 'PHX'),
+    pick(2033, 1, 'PHX'),
   ],
 };
 
@@ -125,7 +131,12 @@ const celtics: Team = {
       61_015_192,
       [64_951_656, 'player'],
     ]),
-    player('Kristaps Porzingis', 'C', 29, [29_268_293, 30_731_707, 'ufa']),
+    player('Kristaps Porzingis', 'C', 29, [
+      29_268_293,
+      30_731_707,
+      32_195_122,
+      [33_658_537, 'player'],
+    ]),
     player('Jrue Holiday', 'PG', 34, [
       30_000_000,
       32_400_000,
@@ -152,6 +163,7 @@ const celtics: Team = {
     pick(2029, 1, 'SAS', 'Via prior trade; top-1 protected', true),
     pick(2030, 1, 'BOS'),
     pick(2032, 1, 'BOS'),
+    pick(2033, 1, 'BOS'),
   ],
 };
 
@@ -189,6 +201,7 @@ const wolves: Team = {
     pick(2029, 1, 'MIN'),
     pick(2031, 1, 'MIN'),
     pick(2032, 1, 'MIN'),
+    pick(2033, 1, 'MIN'),
   ],
 };
 
@@ -213,7 +226,12 @@ const nuggets: Team = {
     ]),
     player('Michael Porter Jr.', 'SF', 26, [35_859_950, 38_333_050, 40_806_150, 'ufa']),
     player('Aaron Gordon', 'PF', 29, [22_841_455, 22_841_455, [24_000_000, 'player'], 'ufa']),
-    player('Christian Braun', 'SG', 23, [4_943_520, 'rfa']),
+    player('Christian Braun', 'SG', 23, [
+      4_943_520,
+      20_000_000,
+      22_000_000,
+      [24_000_000, 'player'],
+    ]),
     player('Peyton Watson', 'SF', 22, [3_356_760, [4_336_366, 'team'], 'rfa']),
     player('Julian Strawther', 'SG', 23, [2_776_680, 2_916_240, [4_000_000, 'team'], 'rfa']),
     player('Zeke Nnaji', 'PF', 24, [8_888_889, 9_679_012, [10_469_136, 'player'], 'ufa']),
@@ -225,6 +243,7 @@ const nuggets: Team = {
     pick(2027, 1, 'DEN'),
     pick(2031, 1, 'DEN'),
     pick(2032, 1, 'DEN'),
+    pick(2033, 1, 'DEN'),
   ],
 };
 
@@ -255,7 +274,7 @@ const knicks: Team = {
     ]),
     player('Mikal Bridges', 'SF', 28, [24_900_000, 'ufa']),
     player('Josh Hart', 'SG', 29, [19_536_363, 20_965_517, [22_394_671, 'player'], 'ufa']),
-    player('Mitchell Robinson', 'C', 26, [13_000_000, 14_318_182, 'ufa']),
+    player('Mitchell Robinson', 'C', 26, [13_000_000, 14_318_182, 15_500_000, 'ufa']),
     player('Miles McBride', 'PG', 24, [4_337_000, 4_687_000, 5_037_000, [5_387_000, 'team']]),
     player('Precious Achiuwa', 'C', 25, [6_000_000, 'ufa']),
   ],
@@ -267,6 +286,7 @@ const knicks: Team = {
     pick(2025, 2, 'WAS', 'Acquired'),
     pick(2027, 2, 'DET', 'Acquired'),
     pick(2032, 1, 'NYK'),
+    pick(2033, 1, 'NYK'),
   ],
 };
 
@@ -303,6 +323,7 @@ const thunder: Team = {
     pick(2030, 1, 'OKC'),
     pick(2031, 1, 'OKC'),
     pick(2032, 1, 'OKC'),
+    pick(2033, 1, 'OKC'),
   ],
 };
 
@@ -337,6 +358,7 @@ const jazz: Team = {
     pick(2029, 1, 'UTA'),
     pick(2029, 1, 'MIN', 'Acquired', true),
     pick(2032, 1, 'UTA'),
+    pick(2033, 1, 'UTA'),
   ],
 };
 

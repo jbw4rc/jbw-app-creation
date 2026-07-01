@@ -19,8 +19,8 @@ import type { SeasonCap } from '../types';
  */
 export const DATA_START_SEASON = 2024;
 
-/** The focal season the summary and machines reason about (2025-26). */
-export const CURRENT_SEASON = 2025;
+/** The focal season the summary and machines reason about (2026-27). */
+export const CURRENT_SEASON = 2026;
 
 /** Number of seasons in the forward planning horizon (current + next four). */
 export const HORIZON = 5;
@@ -98,6 +98,18 @@ export const SEASON_CAPS: SeasonCap[] = [
     taxpayerMLE: 8_324_000,
     biAnnualException: 7_516_000,
     minTeamSalary: 203_777_000,
+  },
+  {
+    season: 2030,
+    projected: true,
+    salaryCap: 249_061_000,
+    luxuryTax: 302_608_000,
+    firstApron: 315_571_000,
+    secondApron: 334_703_000,
+    nonTaxpayerMLE: 22_714_000,
+    taxpayerMLE: 9_156_000,
+    biAnnualException: 8_268_000,
+    minTeamSalary: 224_155_000,
   },
 ];
 
