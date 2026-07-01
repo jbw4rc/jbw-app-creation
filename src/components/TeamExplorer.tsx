@@ -1,0 +1,62 @@
+import { useState } from 'react';
+import { TEAMS } from '../data/teams';
+import { CURRENT_SEASON } from '../data/leagueConstants';
+import { summarizeTeamSeason } from '../lib/apron';
+import { ApronMeter } from './ApronMeter';
+import { SalaryTimeline } from './SalaryTimeline';
+import { RestrictionPanel } from './RestrictionPanel';
+import { DraftCapital } from './DraftCapital';
+import { RosterTable } from './RosterTable';
+
+// Read-only analysis of a single team: where its salary sits now and across the
+// horizon, what apron restrictions apply, its picks, and the full roster.
+
+export function TeamExplorer() {
+  const [abbr, setAbbr] = useState(TEAMS[0].abbreviation);
+  const team = TEAMS.find((t) => t.abbreviation === abbr)!;
+  const summary = summarizeTeamSeason(team, CURRENT_SEASON);
+
+  return (
+    <div className="explorer">
+      <div className="team-picker">
+        {TEAMS.map((t) => {
+          const s = summarizeTeamSeason(t, CURRENT_SEASON);
+          return (
+            <button
+              key={t.abbreviation}
+              className={`team-chip tier-border-${s.tier}${
+                t.abbreviation === abbr ? ' active' : ''
+              }`}
+              onClick={() => setAbbr(t.abbreviation)}
+            >
+              <span className="chip-abbr">{t.abbreviation}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="explorer-grid">
+        <section className="panel span-2">
+          <h2>{team.name}</h2>
+          <ApronMeter summary={summary} detailed />
+        </section>
+
+        <section className="panel span-2">
+          <SalaryTimeline team={team} />
+        </section>
+
+        <section className="panel span-2">
+          <RestrictionPanel tier={summary.tier} />
+        </section>
+
+        <section className="panel span-2">
+          <DraftCapital team={team} />
+        </section>
+
+        <section className="panel span-4">
+          <RosterTable team={team} />
+        </section>
+      </div>
+    </div>
+  );
+}
