@@ -12,10 +12,17 @@ import type { SeasonCap } from '../types';
 // Sources: NBA official cap releases for 2024-25 and 2025-26.
 // ---------------------------------------------------------------------------
 
-/** The first (current) season the app reasons about. */
-export const CURRENT_SEASON = 2024;
+/**
+ * The season the roster/contract sample data is authored against — the first
+ * array entry of every contract is this season. Kept separate from
+ * CURRENT_SEASON so the focal/summary year can move without shifting the data.
+ */
+export const DATA_START_SEASON = 2024;
 
-/** Number of seasons in the planning horizon (current + next four). */
+/** The focal season the summary and machines reason about (2025-26). */
+export const CURRENT_SEASON = 2025;
+
+/** Number of seasons in the forward planning horizon (current + next four). */
 export const HORIZON = 5;
 
 export const SEASON_CAPS: SeasonCap[] = [
@@ -80,10 +87,25 @@ export const SEASON_CAPS: SeasonCap[] = [
     biAnnualException: 6_833_000,
     minTeamSalary: 185_252_000,
   },
+  {
+    season: 2029,
+    projected: true,
+    salaryCap: 226_419_000,
+    luxuryTax: 275_098_000,
+    firstApron: 286_883_000,
+    secondApron: 304_275_000,
+    nonTaxpayerMLE: 20_649_000,
+    taxpayerMLE: 8_324_000,
+    biAnnualException: 7_516_000,
+    minTeamSalary: 203_777_000,
+  },
 ];
 
-/** The seasons, in order, that the app plans across. */
-export const SEASONS: number[] = SEASON_CAPS.map((c) => c.season);
+/** The five seasons, in order, that the app plans across (2025-26 → 2029-30). */
+export const SEASONS: number[] = Array.from(
+  { length: HORIZON },
+  (_, i) => CURRENT_SEASON + i
+);
 
 const capBySeason = new Map<number, SeasonCap>(
   SEASON_CAPS.map((c) => [c.season, c])

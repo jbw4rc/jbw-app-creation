@@ -204,3 +204,33 @@ export function restrictionsForTier(tier: ApronTier): Restriction[] {
 export function frozenPickYear(currentSeason: number): number {
   return currentSeason + 7;
 }
+
+function m(n: number): string {
+  return `$${(Math.abs(n) / 1_000_000).toFixed(1)}M`;
+}
+
+/**
+ * A short, human phrase describing where a team sits relative to the line that
+ * defines its tier — e.g. "$4.2M over the second apron" or "$3.1M in cap space".
+ */
+export function apronStatusLine(s: SeasonSalarySummary): string {
+  switch (s.tier) {
+    case 'secondApron':
+      return `${m(s.spaceUnderSecondApron)} over the second apron`;
+    case 'firstApron':
+      return `${m(s.spaceUnderFirstApron)} over the first apron`;
+    case 'overTax':
+      return `${m(s.spaceUnderTax)} into the luxury tax`;
+    case 'overCap':
+      return `${m(s.spaceUnderTax)} below the tax line`;
+    default:
+      return `${m(s.spaceUnderCap)} in cap space`;
+  }
+}
+
+/** The distance to the next apron up (the one a team should watch), if any. */
+export function nextApronNote(s: SeasonSalarySummary): string | null {
+  if (s.tier === 'secondApron') return null;
+  if (s.tier === 'firstApron') return `${m(s.spaceUnderSecondApron)} below the 2nd apron`;
+  return `${m(s.spaceUnderFirstApron)} below the 1st apron`;
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TeamExplorer } from './components/TeamExplorer';
 import { TradeMachine } from './components/TradeMachine';
 import { FreeAgentMachine } from './components/FreeAgentMachine';
+import { LeagueThresholds } from './components/LeagueThresholds';
 
 type Tab = 'explorer' | 'trade' | 'freeAgent';
 
@@ -37,6 +38,8 @@ export default function App() {
           ))}
         </nav>
       </header>
+
+      <LeagueThresholds />
 
       <main className="app-main">
         {tab === 'explorer' && <TeamExplorer />}

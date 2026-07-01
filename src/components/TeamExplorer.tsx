@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { TEAMS } from '../data/teams';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
-import { ApronMeter } from './ApronMeter';
+import { CapSummary } from './CapSummary';
 import { SalaryTimeline } from './SalaryTimeline';
 import { RestrictionPanel } from './RestrictionPanel';
 import { DraftCapital } from './DraftCapital';
@@ -36,12 +36,11 @@ export function TeamExplorer() {
       </div>
 
       <div className="explorer-grid">
-        <section className="panel span-2">
-          <h2>{team.name}</h2>
-          <ApronMeter summary={summary} detailed />
+        <section className="panel span-4">
+          <CapSummary team={team} />
         </section>
 
-        <section className="panel span-2">
+        <section className="panel span-4">
           <SalaryTimeline team={team} />
         </section>
 

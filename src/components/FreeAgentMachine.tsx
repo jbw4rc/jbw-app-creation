@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TEAMS } from '../data/teams';
-import { CURRENT_SEASON } from '../data/leagueConstants';
+import { CURRENT_SEASON, getSeasonCap } from '../data/leagueConstants';
 import { summarizeSeason } from '../lib/apron';
 import { evaluateSigning, type SigningOption } from '../lib/freeAgent';
 import { money } from '../lib/format';
@@ -9,17 +9,20 @@ import { ApronMeter } from './ApronMeter';
 // The Free Agent Machine: pick a team and a target salary, and see which signing
 // tools are legal — with second-apron teams correctly limited to minimums.
 
+// Presets are derived from the focal season's cap so exception figures stay
+// in sync with the thresholds shown elsewhere.
+const focalCap = getSeasonCap(CURRENT_SEASON);
 const PRESETS = [
-  { label: 'Star ($40M)', value: 40_000_000 },
-  { label: 'Starter ($20M)', value: 20_000_000 },
-  { label: 'MLE ($12.8M)', value: 12_822_000 },
-  { label: 'Taxpayer MLE ($5.2M)', value: 5_168_000 },
-  { label: 'Minimum ($2.2M)', value: 2_200_000 },
+  { label: `Star (${money(40_000_000)})`, value: 40_000_000 },
+  { label: `Starter (${money(20_000_000)})`, value: 20_000_000 },
+  { label: `MLE (${money(focalCap.nonTaxpayerMLE)})`, value: focalCap.nonTaxpayerMLE },
+  { label: `Taxpayer MLE (${money(focalCap.taxpayerMLE)})`, value: focalCap.taxpayerMLE },
+  { label: `Minimum (${money(2_200_000)})`, value: 2_200_000 },
 ];
 
 export function FreeAgentMachine() {
   const [abbr, setAbbr] = useState('BOS');
-  const [target, setTarget] = useState(12_822_000);
+  const [target, setTarget] = useState(focalCap.nonTaxpayerMLE);
 
   const team = TEAMS.find((t) => t.abbreviation === abbr)!;
   const evalResult = useMemo(

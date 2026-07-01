@@ -5,7 +5,7 @@ import type {
   Player,
   Team,
 } from '../types';
-import { CURRENT_SEASON } from './leagueConstants';
+import { DATA_START_SEASON } from './leagueConstants';
 
 // ---------------------------------------------------------------------------
 // Sample league data.
@@ -25,7 +25,7 @@ type Entry = number | [number, ContractOption] | 'ufa' | 'rfa' | null;
  *   'ufa' / 'rfa'           -> free agent that season (no cap hit)
  *   null                    -> no entry (unsigned)
  */
-function contract(entries: Entry[], start = CURRENT_SEASON): ContractYear[] {
+function contract(entries: Entry[], start = DATA_START_SEASON): ContractYear[] {
   const years: ContractYear[] = [];
   entries.forEach((e, i) => {
     const season = start + i;
@@ -101,6 +101,7 @@ const suns: Team = {
   draftCapital: [
     pick(2025, 2, 'PHX'),
     pick(2031, 1, 'PHX', 'Only tradable first-rounder; earlier firsts owed to prior deals', true),
+    pick(2032, 1, 'PHX'),
   ],
 };
 
@@ -150,6 +151,7 @@ const celtics: Team = {
     pick(2028, 1, 'BOS'),
     pick(2029, 1, 'SAS', 'Via prior trade; top-1 protected', true),
     pick(2030, 1, 'BOS'),
+    pick(2032, 1, 'BOS'),
   ],
 };
 
@@ -186,6 +188,7 @@ const wolves: Team = {
     pick(2025, 2, 'MIN'),
     pick(2029, 1, 'MIN'),
     pick(2031, 1, 'MIN'),
+    pick(2032, 1, 'MIN'),
   ],
 };
 
@@ -221,6 +224,7 @@ const nuggets: Team = {
     pick(2026, 2, 'DEN'),
     pick(2027, 1, 'DEN'),
     pick(2031, 1, 'DEN'),
+    pick(2032, 1, 'DEN'),
   ],
 };
 
@@ -262,6 +266,7 @@ const knicks: Team = {
     pick(2030, 1, 'NYK'),
     pick(2025, 2, 'WAS', 'Acquired'),
     pick(2027, 2, 'DET', 'Acquired'),
+    pick(2032, 1, 'NYK'),
   ],
 };
 
@@ -297,6 +302,7 @@ const thunder: Team = {
     pick(2029, 1, 'DEN', 'Acquired, protected', true),
     pick(2030, 1, 'OKC'),
     pick(2031, 1, 'OKC'),
+    pick(2032, 1, 'OKC'),
   ],
 };
 
@@ -330,6 +336,7 @@ const jazz: Team = {
     pick(2028, 1, 'UTA'),
     pick(2029, 1, 'UTA'),
     pick(2029, 1, 'MIN', 'Acquired', true),
+    pick(2032, 1, 'UTA'),
   ],
 };
 

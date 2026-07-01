@@ -19,8 +19,7 @@ export function DraftCapital({ team }: { team: Team }) {
       <div className="draft-head">
         <span>Draft Capital</span>
         <span className="draft-count">
-          {firsts.length} first{firsts.length !== 1 ? 's' : ''} · {seconds.length} second
-          {seconds.length !== 1 ? 's' : ''}
+          {firsts.length} first-round · {seconds.length} second-round
         </span>
       </div>
 

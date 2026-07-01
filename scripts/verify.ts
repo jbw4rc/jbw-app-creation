@@ -12,7 +12,7 @@ function check(name: string, cond: boolean) {
   if (!cond) failures++;
 }
 
-console.log('\n=== Team tiers (2024-25) ===');
+console.log('\n=== Team tiers (2025-26 focal season) ===');
 for (const t of TEAMS) {
   const s = summarizeTeamSeason(t, CURRENT_SEASON);
   console.log(
@@ -20,10 +20,10 @@ for (const t of TEAMS) {
   );
 }
 
-console.log('\n=== Expected tiers ===');
+console.log('\n=== Expected tiers (2025-26) ===');
 const expect: Record<string, string> = {
-  PHX: 'secondApron',
   BOS: 'secondApron',
+  PHX: 'firstApron',
   OKC: 'underCap',
   UTA: 'underCap',
 };
@@ -33,21 +33,21 @@ for (const [abbr, tier] of Object.entries(expect)) {
 }
 
 console.log('\n=== Trade engine ===');
-// A second-apron team (PHX) aggregating two salaries to take back a bigger one
+// A second-apron team (BOS) aggregating two salaries to take back a bigger one
 // must be blocked.
-const phx = getTeam('PHX');
+const bos = getTeam('BOS');
 const uta = getTeam('UTA');
-const phxTwo = phx.players.filter((p) =>
-  ['Grayson Allen', 'Josh Okogie'].includes(p.name)
+const bosTwo = bos.players.filter((p) =>
+  ['Sam Hauser', 'Payton Pritchard'].includes(p.name)
 );
 const utaBig = uta.players.filter((p) => p.name === 'Lauri Markkanen');
 const aggTrade = evaluateTrade(
-  { team: phx, outgoingPlayerIds: phxTwo.map((p) => p.id) },
+  { team: bos, outgoingPlayerIds: bosTwo.map((p) => p.id) },
   { team: uta, outgoingPlayerIds: utaBig.map((p) => p.id) },
   CURRENT_SEASON
 );
 check(
-  'PHX cannot aggregate over the second apron',
+  'BOS cannot aggregate over the second apron',
   !aggTrade.legal &&
     aggTrade.blockingViolations.some((v) => v.code === 'second-apron-aggregate')
 );
@@ -65,7 +65,6 @@ check('Matched cap-space swap is legal', cleanTrade.legal);
 
 console.log('\n=== Free agent engine ===');
 // Second-apron BOS cannot sign a $12.8M MLE player.
-const bos = getTeam('BOS');
 const faBos = evaluateSigning(bos, CURRENT_SEASON, 12_822_000);
 check(
   'Second-apron BOS cannot use the MLE',
