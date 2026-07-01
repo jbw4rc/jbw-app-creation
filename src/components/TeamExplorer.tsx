@@ -7,6 +7,7 @@ import { SalaryTimeline } from './SalaryTimeline';
 import { RestrictionPanel } from './RestrictionPanel';
 import { FreeAgentQuiver } from './FreeAgentQuiver';
 import { DraftCapital } from './DraftCapital';
+import { TradeExceptions } from './TradeExceptions';
 import { RosterTable } from './RosterTable';
 
 // Read-only analysis of a single team: where its salary sits now and across the
@@ -57,8 +58,12 @@ export function TeamExplorer() {
           <FreeAgentQuiver team={team} />
         </section>
 
-        <section className="panel span-4">
+        <section className="panel span-2">
           <DraftCapital team={team} />
+        </section>
+
+        <section className="panel span-2">
+          <TradeExceptions team={team} />
         </section>
 
         <section className="panel span-4">

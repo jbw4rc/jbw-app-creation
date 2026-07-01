@@ -1,13 +1,23 @@
 import type { Team } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
-import { freeAgentQuiver } from '../lib/freeAgentQuiver';
+import { freeAgentQuiver, type ArrowStatus } from '../lib/freeAgentQuiver';
+import { signingsCount, usedExceptionsFor, useSignings } from '../lib/signingsStore';
 import { money } from '../lib/format';
 
-// Which signing "arrows" a team has this offseason, given cap/apron status —
-// plus any rostered players already on an exception contract.
+// Which signing "arrows" a team has this offseason, given cap/apron status.
+// With an offseason transactions list imported, arrows already spent flip to
+// "Used" (with the player and method).
+
+const BADGE: Record<ArrowStatus, string> = {
+  available: 'Available',
+  unavailable: 'Unavailable',
+  used: 'Used',
+};
 
 export function FreeAgentQuiver({ team }: { team: Team }) {
-  const arrows = freeAgentQuiver(team, CURRENT_SEASON);
+  useSignings(); // re-render when the transactions list changes
+  const haveSignings = signingsCount() > 0;
+  const arrows = freeAgentQuiver(team, CURRENT_SEASON, usedExceptionsFor(team.abbreviation));
 
   return (
     <div className="quiver">
@@ -24,24 +34,20 @@ export function FreeAgentQuiver({ team }: { team: Team }) {
               <span className="arrow-amount">{a.amount != null ? money(a.amount) : '—'}</span>
             </div>
             <div className="arrow-row">
-              <span className={`arrow-badge badge-${a.status}`}>
-                {a.status === 'available' ? 'Available' : 'Unavailable'}
-              </span>
+              <span className={`arrow-badge badge-${a.status}`}>{BADGE[a.status]}</span>
               <span className="arrow-detail">{a.detail}</span>
             </div>
-            {a.committed.length > 0 && (
-              <div className="arrow-committed">
-                On the books: {a.committed.join(', ')}
-              </div>
+            {a.usedBy.length > 0 && (
+              <div className="arrow-used">Spent this offseason on {a.usedBy.join(', ')}</div>
             )}
           </div>
         ))}
       </div>
 
       <div className="quiver-foot">
-        “On the books” shows rostered players on that exception type (from
-        SalarySwish terms). It reflects the contract type, not which offseason the
-        exception was spent.
+        {haveSignings
+          ? '“Used” is drawn from the imported offseason signings (mechanism + date).'
+          : 'Import an offseason signings list (Import tab) to light up which exceptions have been spent.'}
       </div>
     </div>
   );

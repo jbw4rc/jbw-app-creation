@@ -1,6 +1,7 @@
-import type { Player, Team } from '../types';
+import type { Team } from '../types';
 import { classifyTier, teamSalaryForSeason } from './apron';
 import { getSeasonCap } from '../data/leagueConstants';
+import type { UsedException } from './signingsStore';
 
 // ---------------------------------------------------------------------------
 // Free Agent Quiver — the signing "arrows" a team has this offseason, based on
@@ -11,7 +12,7 @@ import { getSeasonCap } from '../data/leagueConstants';
 // offseason's version of the exception is necessarily spent.
 // ---------------------------------------------------------------------------
 
-export type ArrowStatus = 'available' | 'unavailable';
+export type ArrowStatus = 'available' | 'unavailable' | 'used';
 
 export interface QuiverArrow {
   key: string;
@@ -20,19 +21,38 @@ export interface QuiverArrow {
   amount: number | null;
   status: ArrowStatus;
   detail: string;
-  /** Rostered players on a contract signed via this exception type. */
-  committed: string[];
+  /** New signings this offseason on this exception — proof it was spent. */
+  usedBy: string[];
 }
 
 const MIN_SALARY = 2_300_000;
 
-function committedTo(players: Player[], re: RegExp): string[] {
-  return players
-    .filter((p) => p.signedUsing && re.test(p.signedUsing))
-    .map((p) => p.name);
+/**
+ * Build an exception arrow, flipping its status to "used" when the team has
+ * spent an exception of this family this offseason.
+ */
+function exceptionArrow(
+  key: string,
+  name: string,
+  amount: number | null,
+  baseStatus: ArrowStatus,
+  detail: string,
+  family: 'mle' | 'bae',
+  used: UsedException[]
+): QuiverArrow {
+  const usedBy = used
+    .filter((u) => u.family === family)
+    .map((u) => `${u.player} (${u.method})`);
+  const status: ArrowStatus =
+    usedBy.length > 0 && baseStatus === 'available' ? 'used' : baseStatus;
+  return { key, name, amount, status, detail, usedBy };
 }
 
-export function freeAgentQuiver(team: Team, season: number): QuiverArrow[] {
+export function freeAgentQuiver(
+  team: Team,
+  season: number,
+  used: UsedException[] = []
+): QuiverArrow[] {
   const cap = getSeasonCap(season);
   const salary = teamSalaryForSeason(team, season);
   const tier = classifyTier(salary, cap);
@@ -51,49 +71,29 @@ export function freeAgentQuiver(team: Team, season: number): QuiverArrow[] {
         capRoom > MIN_SALARY
           ? 'Sign free agents outright into cap room.'
           : 'No meaningful cap room.',
-      committed: [],
+      usedBy: [],
     });
-    arrows.push({
-      key: 'room',
-      name: 'Room Exception',
-      amount: roomEst,
-      status: 'available',
-      detail: 'The cap-space team’s mid-level.',
-      committed: committedTo(team.players, /r-?mle|room/i),
-    });
+    arrows.push(
+      exceptionArrow('room', 'Room Exception', roomEst, 'available', 'The cap-space team’s mid-level.', 'mle', used)
+    );
   } else if (tier === 'overCap' || tier === 'overTax') {
-    arrows.push({
-      key: 'ntmle',
-      name: 'Non-Taxpayer MLE',
-      amount: cap.nonTaxpayerMLE,
-      status: 'available',
-      detail: 'Full mid-level for non-apron teams.',
-      committed: committedTo(team.players, /^mle$/i),
-    });
-    arrows.push({
-      key: 'bae',
-      name: 'Bi-Annual Exception',
-      amount: cap.biAnnualException,
-      status: 'available',
-      detail: 'Usable every other year.',
-      committed: committedTo(team.players, /bae|bi-?annual/i),
-    });
+    arrows.push(
+      exceptionArrow('ntmle', 'Non-Taxpayer MLE', cap.nonTaxpayerMLE, 'available', 'Full mid-level for non-apron teams.', 'mle', used)
+    );
+    arrows.push(
+      exceptionArrow('bae', 'Bi-Annual Exception', cap.biAnnualException, 'available', 'Usable every other year.', 'bae', used)
+    );
   } else if (tier === 'firstApron') {
-    arrows.push({
-      key: 'tpmle',
-      name: 'Taxpayer MLE',
-      amount: cap.taxpayerMLE,
-      status: 'available',
-      detail: 'The full non-taxpayer MLE is lost at the first apron.',
-      committed: committedTo(team.players, /tp-?mle/i),
-    });
+    arrows.push(
+      exceptionArrow('tpmle', 'Taxpayer MLE', cap.taxpayerMLE, 'available', 'The full non-taxpayer MLE is lost at the first apron.', 'mle', used)
+    );
     arrows.push({
       key: 'ntmle',
       name: 'Non-Taxpayer MLE',
       amount: cap.nonTaxpayerMLE,
       status: 'unavailable',
       detail: 'Lost at the first apron.',
-      committed: [],
+      usedBy: [],
     });
     arrows.push({
       key: 'bae',
@@ -101,7 +101,7 @@ export function freeAgentQuiver(team: Team, season: number): QuiverArrow[] {
       amount: cap.biAnnualException,
       status: 'unavailable',
       detail: 'Lost at the first apron.',
-      committed: [],
+      usedBy: [],
     });
   } else {
     // secondApron
@@ -111,7 +111,7 @@ export function freeAgentQuiver(team: Team, season: number): QuiverArrow[] {
       amount: null,
       status: 'unavailable',
       detail: 'No mid-level of any kind above the second apron.',
-      committed: committedTo(team.players, /mle/i),
+      usedBy: [],
     });
     arrows.push({
       key: 'bae',
@@ -119,7 +119,7 @@ export function freeAgentQuiver(team: Team, season: number): QuiverArrow[] {
       amount: null,
       status: 'unavailable',
       detail: 'Lost above the second apron.',
-      committed: [],
+      usedBy: [],
     });
   }
 
@@ -129,7 +129,7 @@ export function freeAgentQuiver(team: Team, season: number): QuiverArrow[] {
     amount: MIN_SALARY,
     status: 'available',
     detail: 'Always available; unlimited minimum-salary deals.',
-    committed: [],
+    usedBy: [],
   });
 
   return arrows;

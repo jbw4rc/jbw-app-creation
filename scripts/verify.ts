@@ -7,6 +7,8 @@ import { evaluateSigning } from '../src/lib/freeAgent';
 import { parseContractsCsv } from '../src/lib/importCsv';
 import { computeTax } from '../src/lib/luxuryTax';
 import { freeAgentQuiver } from '../src/lib/freeAgentQuiver';
+import { setSignings, usedExceptionsFor } from '../src/lib/signingsStore';
+import { setTradeExceptions, tradeExceptionsFor } from '../src/lib/tradeExceptionsStore';
 import { money } from '../src/lib/format';
 
 let failures = 0;
@@ -108,6 +110,40 @@ check(
   'cap-space team has Cap Space available',
   bknQuiver.some((a) => a.key === 'cap' && a.status === 'available')
 );
+
+// Signings cross-check: an MLE usage from the transactions list flips the
+// team's MLE arrow to "used".
+const gswBase = freeAgentQuiver(getTeam('GSW'), CURRENT_SEASON);
+const gswUsed = freeAgentQuiver(getTeam('GSW'), CURRENT_SEASON, [
+  { family: 'mle' as const, method: 'MLE', player: 'Melton' },
+]);
+check(
+  'MLE arrow is available before the signings cross-check',
+  gswBase.find((a) => a.key === 'ntmle')?.status === 'available'
+);
+check(
+  'MLE arrow flips to "used" from a transactions entry',
+  gswUsed.find((a) => a.key === 'ntmle')?.status === 'used'
+);
+
+console.log('\n=== Transactions & TPE parsers ===');
+const txn = [
+  'PLAYER\tAGE\tPOS\tTEAM\tDATE\tTYPE\tMETHOD',
+  'Melton\t28\tPG\tLogo of the Golden State WarriorsGSW\tJul 1, 2026\tVeteran Contract\tMLE',
+  'Landale\t30\tC\tLogo of the Atlanta HawksATL\tJun 30, 2026\tVeteran Contract\tTaxpayer-MLE',
+  'Robinson\t28\tC\tLogo of the Boston CelticsBOS\tJul 1, 2026\tVeteran Contract\tBird Exception',
+].join('\n');
+setSignings(txn);
+check('signings: GSW MLE tracked', usedExceptionsFor('GSW').some((u) => u.family === 'mle'));
+check('signings: ATL taxpayer MLE tracked', usedExceptionsFor('ATL').some((u) => u.family === 'mle'));
+check('signings: Bird re-signing ignored', usedExceptionsFor('BOS').length === 0);
+
+const tpeSample = [
+  'TEAM\tPLAYER\tEXCEPTION\tUSED\tREMAINING\tSTART DATE\tEND DATE',
+  'Logo of the Denver NuggetsDEN\tMichael Porter Jr.\t$17,275,985\t$10,395,000 Tooltip\t$6,880,985\tJul 8, 2025\tJul 8, 2026',
+].join('\n');
+setTradeExceptions(tpeSample);
+check('TPE: DEN remaining parsed', tradeExceptionsFor('DEN')[0]?.remaining === 6_880_985);
 
 console.log('\n=== CSV importer ===');
 // Mimic a Basketball-Reference "Get table as CSV" paste, including the

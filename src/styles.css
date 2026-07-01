@@ -290,12 +290,34 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .arrow-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 2px; white-space: nowrap; color: #fff; }
 .badge-available { background: var(--green); }
 .badge-unavailable { background: var(--ink-faint); }
+.badge-used { background: var(--coral); }
+.arrow-used {
+  margin-top: 5px; font-size: 11px; color: #fff; font-weight: 600;
+  background: var(--coral); border-radius: 3px; padding: 4px 8px;
+}
 .arrow-detail { font-size: 11.5px; color: var(--ink-soft); }
 .arrow-committed {
   margin-top: 5px; font-size: 11px; color: var(--gold);
   background: rgba(179,133,28,0.09); border-radius: 3px; padding: 4px 8px;
 }
 .quiver-foot { margin-top: 12px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+
+/* Trade Exceptions */
+.tpe-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  font-family: var(--serif); font-weight: 600; font-size: 17px;
+  padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--rule);
+}
+.tpe-total { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--teal); }
+.tpe-empty { font-size: 12px; color: var(--ink-faint); }
+.tpe-list { display: flex; flex-direction: column; }
+.tpe-row { padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.tpe-row-main { display: flex; align-items: baseline; gap: 10px; }
+.tpe-amount { font-family: var(--serif); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--teal); }
+.tpe-player { font-size: 12.5px; color: var(--ink-soft); }
+.tpe-row-sub { display: flex; gap: 10px; margin-top: 2px; font-size: 11px; color: var(--ink-faint); }
+.tpe-partial { font-variant-numeric: tabular-nums; }
+.tpe-expired-note { margin-top: 10px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
 .cs-tax-figures { display: flex; gap: 28px; flex-wrap: wrap; margin: 10px 0 14px; }
 .cs-tax-fig { display: flex; flex-direction: column; gap: 2px; }
 .cs-tax-fig-label {
@@ -615,3 +637,7 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   background: rgba(179,133,28,0.08); border: 1px solid rgba(179,133,28,0.3);
   border-radius: var(--radius-sm); padding: 8px 12px;
 }
+.signings-section { margin-top: 32px; padding-top: 8px; border-top: 2px solid var(--ink); }
+.signings-textarea { min-height: 120px; }
+.signings-controls { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.signings-count { font-size: 12.5px; color: var(--green); font-weight: 600; }

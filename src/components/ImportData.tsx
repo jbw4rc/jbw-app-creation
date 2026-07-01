@@ -6,6 +6,18 @@ import {
   useTeams,
 } from '../lib/teamStore';
 import { parseContractsCsv } from '../lib/importCsv';
+import {
+  clearSignings,
+  setSignings,
+  signingsCount,
+  useSignings,
+} from '../lib/signingsStore';
+import {
+  clearTradeExceptions,
+  setTradeExceptions,
+  tpeCount,
+  useTradeExceptions,
+} from '../lib/tradeExceptionsStore';
 import { money, seasonLabel } from '../lib/format';
 import { playerSalaryForSeason } from '../lib/apron';
 
@@ -17,6 +29,15 @@ export function ImportData() {
   const teams = useTeams();
   const [abbr, setAbbr] = useState(teams[0].abbreviation);
   const [csv, setCsv] = useState('');
+  const [signingsText, setSigningsText] = useState('');
+  const [tpeText, setTpeText] = useState('');
+  useSignings(); // subscribe so the counts update live
+  useTradeExceptions();
+  const signingsN = signingsCount();
+  const tpeN = tpeCount();
+
+  const applySignings = () => setSignings(signingsText);
+  const applyTpes = () => setTradeExceptions(tpeText);
 
   const parsed = useMemo(
     () => (csv.trim() ? parseContractsCsv(csv) : null),
@@ -149,6 +170,74 @@ export function ImportData() {
           ))}
         </div>
       )}
+
+      <div className="signings-section">
+        <div className="import-head">
+          <span className="cs-kicker">This Offseason</span>
+          <h2 className="import-title">Offseason Signings</h2>
+          <p className="import-lede">
+            Paste the offseason signings table (with <strong>Team</strong>,{' '}
+            <strong>Method</strong>, and <strong>Date</strong> columns). The app
+            reads the exception each team spent — MLE, taxpayer MLE, room,
+            bi-annual — and lights up “Used” in the Free Agent Quiver. Bird
+            re-signings, minimums, and two-ways are ignored; only signings on or
+            after June 1 count.
+          </p>
+        </div>
+        <textarea
+          className="import-textarea signings-textarea"
+          value={signingsText}
+          onChange={(e) => setSigningsText(e.target.value)}
+          placeholder={'PLAYER\tAGE\tPOS\tTEAM\tDATE\tTYPE\tMETHOD\t...\nDe’Anthony Melton\t28\tPG\t…GSW\tJul 1, 2026\tVeteran Contract\tMLE\t…'}
+          spellCheck={false}
+        />
+        <div className="signings-controls">
+          <button className="import-apply" onClick={applySignings}>
+            Apply signings
+          </button>
+          {signingsN > 0 && (
+            <>
+              <span className="signings-count">{signingsN} exceptions tracked</span>
+              <button className="import-reset" onClick={clearSignings}>
+                Clear
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="signings-section">
+        <div className="import-head">
+          <span className="cs-kicker">Assets</span>
+          <h2 className="import-title">Trade Exceptions</h2>
+          <p className="import-lede">
+            Paste the trade-exception (TPE) table (with <strong>Team</strong>,{' '}
+            <strong>Player</strong>, <strong>Remaining</strong>, and{' '}
+            <strong>End Date</strong> columns). Live exceptions show in each team's
+            asset breakdown; expired ones are set aside automatically.
+          </p>
+        </div>
+        <textarea
+          className="import-textarea signings-textarea"
+          value={tpeText}
+          onChange={(e) => setTpeText(e.target.value)}
+          placeholder={'TEAM\tPLAYER\tEXCEPTION\tUSED\tREMAINING\tSTART DATE\tEND DATE\n…DEN\tMichael Porter Jr.\t$17,275,985\t$10,395,000\t$6,880,985\tJul 8, 2025\tJul 8, 2026'}
+          spellCheck={false}
+        />
+        <div className="signings-controls">
+          <button className="import-apply" onClick={applyTpes}>
+            Apply trade exceptions
+          </button>
+          {tpeN > 0 && (
+            <>
+              <span className="signings-count">{tpeN} exceptions loaded</span>
+              <button className="import-reset" onClick={clearTradeExceptions}>
+                Clear
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
