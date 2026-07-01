@@ -71,6 +71,50 @@ const cleanTrade = evaluateTrade(
 );
 check('Matched cap-space swap is legal', cleanTrade.legal);
 
+// A second-apron team (DEN) cannot include its frozen first-round pick
+// (seven drafts out) in a trade.
+const frozenYear = CURRENT_SEASON + 7;
+const denFrozenPick = den.draftCapital.find(
+  (p) => p.round === 1 && p.year === frozenYear && p.originalTeam === 'DEN'
+);
+if (!denFrozenPick) throw new Error('expected DEN to control its own frozen-year 1st');
+const frozenPickTrade = evaluateTrade(
+  {
+    team: den,
+    outgoingPlayerIds: [bySalary(den.players).slice(-1)[0].id],
+    outgoingPicks: [denFrozenPick],
+  },
+  { team: uta, outgoingPlayerIds: [bySalary(uta.players).slice(-1)[0].id] },
+  CURRENT_SEASON
+);
+check(
+  'DEN cannot trade its frozen first-round pick',
+  !frozenPickTrade.legal &&
+    frozenPickTrade.blockingViolations.some((v) => v.code === 'frozen-pick')
+);
+// A non-frozen pick from the same team is fine to include.
+const denOkPick = den.draftCapital.find(
+  (p) => p.round === 1 && p.year === CURRENT_SEASON && p.originalTeam === 'DEN'
+);
+if (denOkPick) {
+  const okPickTrade = evaluateTrade(
+    {
+      team: uta,
+      outgoingPlayerIds: [bySalary(uta.players).slice(-1)[0].id],
+    },
+    {
+      team: den,
+      outgoingPlayerIds: [bySalary(den.players).slice(-1)[0].id],
+      outgoingPicks: [denOkPick],
+    },
+    CURRENT_SEASON
+  );
+  check(
+    'DEN can include a near-term first-round pick',
+    !okPickTrade.blockingViolations.some((v) => v.code === 'frozen-pick')
+  );
+}
+
 console.log('\n=== Free agent engine ===');
 // Second-apron DEN cannot sign a $12.8M MLE player.
 const faDen = evaluateSigning(den, CURRENT_SEASON, 12_822_000);

@@ -1,7 +1,8 @@
-import type { Player, Team } from '../types';
+import type { DraftPick, Player, Team } from '../types';
 import {
   type ApronTier,
   classifyTier,
+  frozenPickYear,
   playerSalaryForSeason,
   teamSalaryForSeason,
 } from './apron';
@@ -35,6 +36,8 @@ export interface TeamTradeResult {
   teamName: string;
   outgoingPlayers: Player[];
   incomingPlayers: Player[];
+  outgoingPicks: DraftPick[];
+  incomingPicks: DraftPick[];
   outgoingSalary: number;
   incomingSalary: number;
   cashSent: number;
@@ -115,6 +118,7 @@ function playersByIds(team: Team, ids: string[]): Player[] {
 export interface ProposedTradeSide {
   team: Team;
   outgoingPlayerIds: string[];
+  outgoingPicks?: DraftPick[];
   cashSent?: number;
 }
 
@@ -135,6 +139,8 @@ export function evaluateTrade(
   ): TeamTradeResult => {
     const outgoingPlayers = playersByIds(self.team, self.outgoingPlayerIds);
     const incomingPlayers = playersByIds(other.team, other.outgoingPlayerIds);
+    const outgoingPicks = self.outgoingPicks ?? [];
+    const incomingPicks = other.outgoingPicks ?? [];
 
     const outgoingSalary = sumSalaries(outgoingPlayers, season);
     const incomingSalary = sumSalaries(incomingPlayers, season);
@@ -200,6 +206,18 @@ export function evaluateTrade(
           detail: 'Cash considerations may not be included above the second apron.',
         });
       }
+      // The team's own first-round pick seven drafts out is frozen.
+      const frozen = frozenPickYear(season);
+      for (const pk of outgoingPicks) {
+        if (pk.round === 1 && pk.year === frozen && pk.originalTeam === self.team.abbreviation) {
+          violations.push({
+            code: 'frozen-pick',
+            severity: 'block',
+            title: 'Cannot trade a frozen first-round pick',
+            detail: `Over the second apron, the ${pk.year} first-round pick is frozen and cannot be traded.`,
+          });
+        }
+      }
     }
 
     // --- Deals that would newly cross an apron (hard cap) ---
@@ -264,6 +282,8 @@ export function evaluateTrade(
       teamAbbr: self.team.abbreviation,
       teamName: self.team.name,
       outgoingPlayers,
+      incomingPicks,
+      outgoingPicks,
       incomingPlayers,
       outgoingSalary,
       incomingSalary,

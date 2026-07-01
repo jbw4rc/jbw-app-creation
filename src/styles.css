@@ -561,6 +561,29 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .flow-ok { color: var(--green); }
 .flow-bad { color: var(--red); }
 
+.trade-picks { margin: 12px 0 4px; }
+.trade-picks-head { display: block; font-size: 9.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.trade-picks-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+.trade-pick {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--card-2); border: 1px solid transparent; color: var(--ink);
+  padding: 5px 9px; border-radius: var(--radius-sm); font-size: 11.5px;
+  cursor: pointer; transition: background 0.12s, border-color 0.12s;
+  font-variant-numeric: tabular-nums;
+}
+.trade-pick:hover { background: #ece6d8; }
+.trade-pick.selected { border-color: var(--coral); background: rgba(209,64,46,0.08); }
+.trade-pick.frozen { border-color: var(--red); color: var(--red); }
+.trade-pick .tpick-year { font-family: var(--serif); font-weight: 700; }
+.trade-pick .tpick-round { color: var(--ink-soft); }
+.trade-pick .draft-via { color: var(--ink-faint); }
+.trade-pick .tpick-flag { font-size: 8.5px; font-weight: 800; letter-spacing: 0.05em; color: var(--red); }
+
+.pick-flow { background: var(--card-2); border-radius: var(--radius-sm); padding: 8px 12px; margin: 8px 0; }
+.pick-flow-row { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 2px 0; }
+.pick-flow-label { font-size: 9.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; align-self: center; }
+.pick-flow-value { font-family: var(--serif); font-weight: 600; text-align: right; }
+
 .trade-beforeafter { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
 .ba-block { flex: 1; }
 .ba-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); margin-bottom: 4px; }

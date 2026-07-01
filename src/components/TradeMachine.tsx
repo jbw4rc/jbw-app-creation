@@ -1,8 +1,14 @@
 import { useMemo, useState } from 'react';
-import type { Player, Team } from '../types';
+import type { DraftPick, Player, Team } from '../types';
 import { useTeams } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
-import { playerSalaryForSeason, summarizeSeason, TIER_INFO } from '../lib/apron';
+import {
+  frozenPickYear,
+  playerSalaryForSeason,
+  summarizeSeason,
+  summarizeTeamSeason,
+  TIER_INFO,
+} from '../lib/apron';
 import { evaluateTrade, type TeamTradeResult } from '../lib/trade';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
@@ -15,19 +21,32 @@ export function TradeMachine() {
   const [abbrB, setAbbrB] = useState('UTA');
   const [selA, setSelA] = useState<Set<string>>(new Set());
   const [selB, setSelB] = useState<Set<string>>(new Set());
+  const [pickA, setPickA] = useState<Set<number>>(new Set());
+  const [pickB, setPickB] = useState<Set<number>>(new Set());
 
   const teams = useTeams();
   const teamA = teams.find((t) => t.abbreviation === abbrA) ?? teams[0];
   const teamB = teams.find((t) => t.abbreviation === abbrB) ?? teams[1];
 
+  const picksOut = (team: Team, sel: Set<number>): DraftPick[] =>
+    [...sel].map((i) => team.draftCapital[i]).filter(Boolean);
+
   const evaluation = useMemo(
     () =>
       evaluateTrade(
-        { team: teamA, outgoingPlayerIds: [...selA] },
-        { team: teamB, outgoingPlayerIds: [...selB] },
+        {
+          team: teamA,
+          outgoingPlayerIds: [...selA],
+          outgoingPicks: picksOut(teamA, pickA),
+        },
+        {
+          team: teamB,
+          outgoingPlayerIds: [...selB],
+          outgoingPicks: picksOut(teamB, pickB),
+        },
         CURRENT_SEASON
       ),
-    [teamA, teamB, selA, selB]
+    [teamA, teamB, selA, selB, pickA, pickB]
   );
 
   const toggle = (side: 'A' | 'B', id: string) => {
@@ -37,17 +56,27 @@ export function TradeMachine() {
     setSel(next);
   };
 
+  const togglePick = (side: 'A' | 'B', index: number) => {
+    const [sel, setSel] = side === 'A' ? [pickA, setPickA] : [pickB, setPickB];
+    const next = new Set(sel);
+    next.has(index) ? next.delete(index) : next.add(index);
+    setSel(next);
+  };
+
   const changeTeam = (side: 'A' | 'B', abbr: string) => {
     if (side === 'A') {
       setAbbrA(abbr);
       setSelA(new Set());
+      setPickA(new Set());
     } else {
       setAbbrB(abbr);
       setSelB(new Set());
+      setPickB(new Set());
     }
   };
 
-  const hasSelection = selA.size > 0 || selB.size > 0;
+  const hasSelection =
+    selA.size > 0 || selB.size > 0 || pickA.size > 0 || pickB.size > 0;
 
   return (
     <div className="trade-machine">
@@ -76,7 +105,9 @@ export function TradeMachine() {
           side="A"
           team={teamA}
           selected={selA}
+          selectedPicks={pickA}
           onToggle={(id) => toggle('A', id)}
+          onTogglePick={(i) => togglePick('A', i)}
           onTeamChange={(abbr) => changeTeam('A', abbr)}
           disabledTeam={abbrB}
           result={evaluation.teams[0]}
@@ -85,7 +116,9 @@ export function TradeMachine() {
           side="B"
           team={teamB}
           selected={selB}
+          selectedPicks={pickB}
           onToggle={(id) => toggle('B', id)}
+          onTogglePick={(i) => togglePick('B', i)}
           onTeamChange={(abbr) => changeTeam('B', abbr)}
           disabledTeam={abbrA}
           result={evaluation.teams[1]}
@@ -99,7 +132,9 @@ interface ColumnProps {
   side: 'A' | 'B';
   team: Team;
   selected: Set<string>;
+  selectedPicks: Set<number>;
   onToggle: (id: string) => void;
+  onTogglePick: (index: number) => void;
   onTeamChange: (abbr: string) => void;
   disabledTeam: string;
   result: TeamTradeResult;
@@ -108,7 +143,9 @@ interface ColumnProps {
 function TradeColumn({
   team,
   selected,
+  selectedPicks,
   onToggle,
+  onTogglePick,
   onTeamChange,
   disabledTeam,
   result,
@@ -116,6 +153,11 @@ function TradeColumn({
   const teams = useTeams();
   const preSummary = summarizeSeason(result.preSalary, CURRENT_SEASON);
   const postSummary = summarizeSeason(result.postSalary, CURRENT_SEASON);
+
+  // Second-apron teams cannot trade the first-round pick seven drafts out.
+  const inSecondApron =
+    summarizeTeamSeason(team, CURRENT_SEASON).tier === 'secondApron';
+  const frozenYear = frozenPickYear(CURRENT_SEASON);
 
   const sorted = [...team.players].sort(
     (a, b) =>
@@ -151,6 +193,45 @@ function TradeColumn({
           />
         ))}
       </div>
+
+      <div className="trade-picks">
+        <span className="trade-picks-head">Draft Capital</span>
+        <div className="trade-picks-grid">
+          {team.draftCapital.map((pk, i) => {
+            const isFrozen =
+              inSecondApron &&
+              pk.round === 1 &&
+              pk.year === frozenYear &&
+              pk.originalTeam === team.abbreviation;
+            return (
+              <button
+                key={`${pk.year}-${pk.round}-${pk.originalTeam}-${i}`}
+                className={`trade-pick${selectedPicks.has(i) ? ' selected' : ''}${
+                  isFrozen ? ' frozen' : ''
+                }`}
+                onClick={() => onTogglePick(i)}
+                title={
+                  isFrozen
+                    ? 'Frozen in the second apron — including it blocks the trade'
+                    : pk.notes ?? ''
+                }
+              >
+                <span className="tp-check">{selectedPicks.has(i) ? '✓' : ''}</span>
+                <span className="tpick-year">{pk.year}</span>
+                <span className="tpick-round">
+                  {pk.round === 1 ? '1st' : '2nd'}
+                  {pk.originalTeam !== team.abbreviation && (
+                    <span className="draft-via"> · {pk.originalTeam}</span>
+                  )}
+                </span>
+                {isFrozen && <span className="tpick-flag">FROZEN</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <PickFlow result={result} />
 
       <div className="trade-flow">
         <div className="flow-item">
@@ -202,6 +283,38 @@ function TradeColumn({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+// Draft picks leaving and arriving in the deal. Picks do not affect the salary
+// math, but the user wants them tracked as part of the package.
+function PickFlow({ result }: { result: TeamTradeResult }) {
+  if (result.outgoingPicks.length === 0 && result.incomingPicks.length === 0) {
+    return null;
+  }
+  const label = (pk: DraftPick) =>
+    `${pk.year} ${pk.round === 1 ? '1st' : '2nd'}${
+      pk.originalTeam !== result.teamAbbr ? ` (${pk.originalTeam})` : ''
+    }`;
+  return (
+    <div className="pick-flow">
+      <div className="pick-flow-row">
+        <span className="pick-flow-label">Picks out</span>
+        <span className="pick-flow-value">
+          {result.outgoingPicks.length
+            ? result.outgoingPicks.map(label).join(', ')
+            : '—'}
+        </span>
+      </div>
+      <div className="pick-flow-row">
+        <span className="pick-flow-label">Picks in</span>
+        <span className="pick-flow-value">
+          {result.incomingPicks.length
+            ? result.incomingPicks.map(label).join(', ')
+            : '—'}
+        </span>
+      </div>
     </div>
   );
 }
