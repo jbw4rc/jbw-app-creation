@@ -55,6 +55,10 @@ export function DraftCapital({ team }: { team: Team }) {
           );
         })}
       </div>
+      <div className="draft-placeholder-note">
+        Pick ownership is a placeholder (each team's own firsts) — trades are not
+        reflected.
+      </div>
     </div>
   );
 }

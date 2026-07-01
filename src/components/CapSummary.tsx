@@ -38,7 +38,10 @@ export function CapSummary({ team }: { team: Team }) {
               {whenUpdated(status.updatedAt) && <> · updated {whenUpdated(status.updatedAt)}</>}
             </>
           ) : BUNDLED_ROSTERS.verified ? (
-            <>Roster as of {whenUpdated(BUNDLED_ROSTERS.asOf)}</>
+            <>
+              Roster as of {BUNDLED_ROSTERS.asOfLabel}
+              {BUNDLED_ROSTERS.source ? ` · ${BUNDLED_ROSTERS.source}` : ''}
+            </>
           ) : (
             <>Sample roster (illustrative) · import to load live figures</>
           )}

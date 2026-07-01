@@ -21,59 +21,58 @@ for (const t of TEAMS) {
   );
 }
 
-console.log('\n=== Expected tiers (2026-27) ===');
+console.log('\n=== Expected tiers (2026-27, real SalarySwish data) ===');
 const expect: Record<string, string> = {
-  BOS: 'secondApron',
-  PHX: 'firstApron',
-  DEN: 'firstApron',
-  NYK: 'overCap',
-  OKC: 'underCap',
-  UTA: 'underCap',
+  DEN: 'secondApron',
+  OKC: 'firstApron',
+  NYK: 'firstApron',
+  ORL: 'overTax',
+  LAL: 'overCap',
+  BKN: 'underCap',
 };
 for (const [abbr, tier] of Object.entries(expect)) {
   const s = summarizeTeamSeason(getTeam(abbr), CURRENT_SEASON);
   check(`${abbr} is ${tier}`, s.tier === tier);
 }
 
+const bySalary = (players: (typeof den)['players']) =>
+  [...players].sort(
+    (a, b) =>
+      (a.contract.find((c) => c.season === CURRENT_SEASON)?.salary ?? 0) -
+      (b.contract.find((c) => c.season === CURRENT_SEASON)?.salary ?? 0)
+  );
+
 console.log('\n=== Trade engine ===');
-// A second-apron team (BOS) aggregating two salaries to take back a bigger one
-// must be blocked.
-const bos = getTeam('BOS');
+// A second-apron team (DEN) cannot aggregate two salaries — send its two
+// cheapest for a cap-space team's priciest.
+const den = getTeam('DEN');
 const uta = getTeam('UTA');
-const bosTwo = bos.players.filter((p) =>
-  ['Sam Hauser', 'Payton Pritchard'].includes(p.name)
-);
-const utaBig = uta.players.filter((p) => p.name === 'Lauri Markkanen');
 const aggTrade = evaluateTrade(
-  { team: bos, outgoingPlayerIds: bosTwo.map((p) => p.id) },
-  { team: uta, outgoingPlayerIds: utaBig.map((p) => p.id) },
+  { team: den, outgoingPlayerIds: bySalary(den.players).slice(0, 2).map((p) => p.id) },
+  { team: uta, outgoingPlayerIds: bySalary(uta.players).slice(-1).map((p) => p.id) },
   CURRENT_SEASON
 );
 check(
-  'BOS cannot aggregate over the second apron',
+  'DEN cannot aggregate over the second apron',
   !aggTrade.legal &&
     aggTrade.blockingViolations.some((v) => v.code === 'second-apron-aggregate')
 );
 
-// A clean, well-matched single-for-single swap between two cap-space teams is legal.
-const okc = getTeam('OKC');
-const okcP = okc.players.find((p) => p.name === 'Luguentz Dort')!;
-const utaP = uta.players.find((p) => p.name === 'Collin Sexton')!;
+// A minimal swap of two cap-space teams' cheapest players is legal.
+const bkn = getTeam('BKN');
 const cleanTrade = evaluateTrade(
-  { team: okc, outgoingPlayerIds: [okcP.id] },
-  { team: uta, outgoingPlayerIds: [utaP.id] },
+  { team: bkn, outgoingPlayerIds: [bySalary(bkn.players)[0].id] },
+  { team: uta, outgoingPlayerIds: [bySalary(uta.players)[0].id] },
   CURRENT_SEASON
 );
 check('Matched cap-space swap is legal', cleanTrade.legal);
 
 console.log('\n=== Free agent engine ===');
-// Second-apron BOS cannot sign a $12.8M MLE player.
-const faBos = evaluateSigning(bos, CURRENT_SEASON, 12_822_000);
+// Second-apron DEN cannot sign a $12.8M MLE player.
+const faDen = evaluateSigning(den, CURRENT_SEASON, 12_822_000);
 check(
-  'Second-apron BOS cannot use the MLE',
-  !faBos.recommended || faBos.recommended.tool === 'minimum'
-    ? faBos.violations.some((v) => v.code === 'no-tool')
-    : false
+  'Second-apron DEN cannot use the MLE',
+  faDen.violations.some((v) => v.code === 'no-tool')
 );
 check(
   'Under-cap UTA can sign a $20M FA with cap space',

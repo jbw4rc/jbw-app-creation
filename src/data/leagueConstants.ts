@@ -32,7 +32,9 @@ export const HORIZON = 5;
  */
 export const BUNDLED_ROSTERS = {
   asOf: '2026-07-01T16:41:00-04:00',
-  verified: false,
+  asOfLabel: 'Jul 1, 2026, 4:41 PM ET',
+  verified: true,
+  source: 'SalarySwish',
 };
 
 export const SEASON_CAPS: SeasonCap[] = [
