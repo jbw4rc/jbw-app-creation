@@ -115,5 +115,58 @@ check(
 );
 check('captures position and age', swish.players[0]?.position === 'SF' && swish.players[0]?.age === 28);
 
+// The real SalarySwish copy format: rows wrap across lines (P/T badges, Bird
+// rights, UFA/RFA each on their own line). Uses the actual Knicks paste.
+const swishWrapped = [
+  'ACTIVE (11 - $210,638,759)\tSTATUS\tACQUIRED\tAGE\tPOS\tTERMS\t2026-27\t2027-28\t2028-29\t2029-30\t2030-31\t2031-32',
+  'Towns, Karl-Anthony\tActive List\tTrade\t30\tPF, C\tMax\t$57,078,728\t',
+  'P', '$61,015,192', 'Bird', 'UFA',
+  'Anunoby, OG\tActive List\tSigned\t28\tSF\t\t$42,500,000\t$45,431,034\t',
+  'P', '$48,362,068', 'Bird', 'UFA',
+  'Brunson, Jalen\tActive List\tSigned\t29\tPG\t\t$37,739,521\t$40,535,041\t',
+  'P', '$43,330,561', 'Bird', 'UFA',
+  'Bridges, Mikal\tActive List\tTrade\t29\tSG, SF\t\t$33,482,145\t$36,160,714\t$38,839,285\t',
+  'P', '$41,517,856', 'Bird', 'UFA',
+  'Hart, Josh\tActive List\tTrade\t31\tSF, SG\t\t$20,923,760\t',
+  'T', '$22,375,280', 'Bird', 'UFA',
+  'Shamet, Landry\tActive List\tSigned\t29\tSG\tUnconfirmed Information\t$5,357,143\t$5,785,714\t$6,214,286\t$6,642,857\t',
+  'Bird', 'UFA',
+  'Alvarado, Jose\tActive List\tTrade\t28\tPG\tUnconfirmed Information\t$4,320,988\t$4,666,667\t$5,012,346\t',
+  'Bird', 'UFA',
+  'McBride, Miles\tActive List\tDraft\t25\tPG\t\t$3,956,523\t',
+  'Bird', 'UFA',
+  'Dadiet, Pacôme\tActive List\tDraft\t20\tPF\tRSCLikely Incentive\t',
+  'T', '$2,983,680', 'T', '$5,373,608', 'Bird', 'RFA',
+  'Kolek, Tyler\tActive List\tDraft\t25\tPG\t\t$2,296,271\t',
+  'T', '$2,486,995', 'Bird', 'RFA',
+  'Diawara, Mohamed\tActive List\tDraft\t21\tPF, SF\tUnconfirmed Information\t',
+  'Non-Bird', 'RFA',
+].join('\n');
+const nyk = parseContractsCsv(swishWrapped);
+const total2627 = nyk.players.reduce(
+  (s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0),
+  0
+);
+check('parses 10 players (skips salary-less Diawara)', nyk.players.length === 10);
+check(
+  'reconstructs 2026-27 total = $210,638,759 (matches SalarySwish)',
+  total2627 === 210_638_759
+);
+const towns = nyk.players.find((p) => p.name === 'Karl-Anthony Towns');
+check('reformats "Last, First" to "First Last"', Boolean(towns));
+check(
+  'reads Towns 2027-28 as a player option',
+  towns?.contract.find((c) => c.season === 2027)?.option === 'player'
+);
+check(
+  'reads Hart 2027-28 as a team option',
+  nyk.players.find((p) => p.name === 'Josh Hart')?.contract.find((c) => c.season === 2027)
+    ?.option === 'team'
+);
+check(
+  'captures Towns position (PF, C) and age 30',
+  towns?.position === 'PF, C' && towns?.age === 30
+);
+
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}\n`);
 process.exit(failures === 0 ? 0 : 1);

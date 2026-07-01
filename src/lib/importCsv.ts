@@ -1,16 +1,20 @@
-import type { ContractYear, Player } from '../types';
+import type { ContractOption, ContractYear, Player } from '../types';
 
 // ---------------------------------------------------------------------------
 // Salary-table importer (source-agnostic).
 //
-// Accepts a pasted salary table from SalarySwish, Basketball-Reference, or any
-// similar source — whether copied straight from the page (tab-separated) or
-// exported as CSV (comma-separated). It auto-detects the delimiter, finds the
-// player-name column plus per-season salary columns (and Pos/Age when present),
-// and tolerates dollar formats like "$54,126,450", "54126450", and "$54.1M".
+// Handles two shapes of pasted salary data:
 //
-// Options (player/team option, non-guaranteed) are not reliably present in
-// these exports, so imported years are treated as guaranteed.
+//   1. Clean tables — one row per player, delimited by commas (CSV, e.g.
+//      Basketball-Reference's "Get table as CSV") or tabs. Salaries map to
+//      seasons by column position.
+//
+//   2. SalarySwish-style copies — a player's row wraps across several physical
+//      lines because option badges (P/T), Bird rights, and UFA/RFA each render
+//      on their own line. Here the metadata (name, age, pos) sits on the first
+//      line and the salary cells are recovered from the whole record in order,
+//      mapped to consecutive seasons from the first season column. The P/T
+//      badges are captured as player/team options.
 // ---------------------------------------------------------------------------
 
 export interface ParsedRoster {
@@ -30,6 +34,9 @@ const NON_NAME_HEADERS = new Set([
   'age',
   'team',
   'tm',
+  'status',
+  'acquired',
+  'terms',
   'total',
   'guaranteed',
   'gtd',
@@ -53,20 +60,163 @@ function splitFields(line: string, delimiter: '\t' | ','): string[] {
   return prepared.split(delimiter).map((f) => f.trim().replace(/^"|"$/g, ''));
 }
 
-/** Parse a salary cell: "$54,126,450", "54126450", "$54.1M", "1.2K", "" → null. */
+/** Parse a salary cell: "$54,126,450", "54126450", "$54.1M", "1.2K" → dollars. */
 function toDollars(cell: string): number | null {
   const t = cell.trim();
   if (!t || t === '-' || t === '—') return null;
-  const suffix = t.match(/([\d,.]+)\s*([mMkK])\b/);
+  const suffix = t.match(/^\$?([\d,.]+)\s*([mMkK])\b/);
   if (suffix) {
     const n = parseFloat(suffix[1].replace(/,/g, ''));
-    if (!Number.isFinite(n)) return null;
-    return Math.round(n * (/[mM]/.test(suffix[2]) ? 1_000_000 : 1_000));
+    return Number.isFinite(n)
+      ? Math.round(n * (/[mM]/.test(suffix[2]) ? 1_000_000 : 1_000))
+      : null;
   }
   const digits = t.replace(/[^\d]/g, '');
   if (!digits) return null;
   const n = parseInt(digits, 10);
   return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/** "Towns, Karl-Anthony" → "Karl-Anthony Towns"; leave "First Last" as-is. */
+function normalizeName(name: string): string {
+  const m = name.match(/^([^,]+),\s*(.+)$/);
+  return m ? `${m[2].trim()} ${m[1].trim()}` : name.trim();
+}
+
+function isJunkName(name: string): boolean {
+  if (/\$/.test(name)) return true; // section headers like "ACTIVE (11 - $...)"
+  if (/^team\b/i.test(name) && /totals?\b/i.test(name)) return true; // "Team Totals"
+  if (/^(active|inactive|two-?way|dead|totals?|salary|status|player|name)\b/i.test(name))
+    return true;
+  return !/[a-z]/i.test(name);
+}
+
+function badgeToOption(token: string): ContractOption | null {
+  if (/^po?$/i.test(token)) return 'player';
+  if (/^to?$/i.test(token)) return 'team';
+  return null;
+}
+
+interface Layout {
+  seasons: number[];
+  firstSeasonIdx: number;
+  nameCol: number;
+  ageCol: number;
+  posCol: number;
+}
+
+function buildPlayer(
+  name: string,
+  position: string,
+  ageRaw: string,
+  contract: ContractYear[],
+  uid: number
+): Player {
+  const age = parseInt((ageRaw || '').replace(/[^\d]/g, ''), 10);
+  return {
+    id: `imp-${uid}-${name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`,
+    name: normalizeName(name),
+    position: position?.trim() || '—',
+    age: Number.isFinite(age) ? age : 0,
+    contract,
+  };
+}
+
+// --- Clean tables: salaries map to seasons by column position ---------------
+function parseCleanRows(
+  body: string[],
+  delimiter: '\t' | ',',
+  seasonCols: { idx: number; season: number }[],
+  layout: Layout
+): Player[] {
+  const players: Player[] = [];
+  let uid = 0;
+  for (const line of body) {
+    const fields = splitFields(line, delimiter);
+    const name = (fields[layout.nameCol] || '').trim();
+    if (!name || isJunkName(name)) continue;
+
+    const contract: ContractYear[] = [];
+    for (const { idx, season } of seasonCols) {
+      const salary = toDollars(fields[idx] ?? '');
+      if (salary !== null) contract.push({ season, salary, option: 'guaranteed' });
+    }
+    if (contract.length === 0) continue;
+    players.push(
+      buildPlayer(
+        name,
+        layout.posCol >= 0 ? fields[layout.posCol] : '',
+        layout.ageCol >= 0 ? fields[layout.ageCol] : '',
+        contract,
+        (uid += 1)
+      )
+    );
+  }
+  return players;
+}
+
+// --- SalarySwish wrapped copies ---------------------------------------------
+function parseWrappedRows(
+  body: string[],
+  delimiter: '\t' | ',',
+  layout: Layout
+): Player[] {
+  // Group physical lines into records: a line with the delimiter starts a new
+  // player; delimiter-less lines are continuation tokens for the current one.
+  const records: { fields: string[]; extras: string[] }[] = [];
+  let cur: { fields: string[]; extras: string[] } | null = null;
+  for (const line of body) {
+    if (line.includes(delimiter)) {
+      if (cur) records.push(cur);
+      cur = { fields: splitFields(line, delimiter), extras: [] };
+    } else if (cur) {
+      const t = line.trim();
+      if (t) cur.extras.push(t);
+    }
+  }
+  if (cur) records.push(cur);
+
+  const { seasons, firstSeasonIdx, nameCol, ageCol, posCol } = layout;
+  const players: Player[] = [];
+  let uid = 0;
+  for (const rec of records) {
+    const name = (rec.fields[nameCol] || '').trim();
+    if (!name || isJunkName(name)) continue;
+
+    // Walk the record's salary region (first-line salary cells + continuation
+    // tokens) in order, mapping dollars to consecutive seasons and honoring the
+    // P/T option badge that immediately precedes a dollar.
+    const stream = [...rec.fields.slice(firstSeasonIdx), ...rec.extras];
+    const contract: ContractYear[] = [];
+    let pending: ContractOption = 'guaranteed';
+    let si = 0;
+    for (const raw of stream) {
+      const tok = (raw || '').trim();
+      if (!tok) continue;
+      const badge = badgeToOption(tok);
+      if (badge) {
+        pending = badge;
+        continue;
+      }
+      const salary = toDollars(tok);
+      if (salary !== null) {
+        if (si < seasons.length) contract.push({ season: seasons[si], salary, option: pending });
+        si += 1;
+      }
+      pending = 'guaranteed';
+    }
+    if (contract.length === 0) continue;
+    players.push(
+      buildPlayer(
+        name,
+        posCol >= 0 ? rec.fields[posCol] : '',
+        ageCol >= 0 ? rec.fields[ageCol] : '',
+        contract,
+        (uid += 1)
+      )
+    );
+  }
+  return players;
 }
 
 export function parseContractsCsv(text: string): ParsedRoster {
@@ -82,15 +232,12 @@ export function parseContractsCsv(text: string): ParsedRoster {
 
   const delimiter: '\t' | ',' = lines.some((l) => l.includes('\t')) ? '\t' : ',';
 
-  // Find the header row: has a name column and/or multiple season columns.
+  // Locate the header row: a name column and/or multiple season columns.
   let headerIdx = -1;
   for (let i = 0; i < lines.length; i++) {
     const fields = splitFields(lines[i], delimiter);
     const seasonCount = fields.filter((f) => SEASON_RE.test(f)).length;
-    const hasName = fields.some((f) =>
-      ['player', 'name'].includes(f.toLowerCase())
-    );
-    if (hasName || seasonCount >= 2) {
+    if (fields.some((f) => ['player', 'name'].includes(f.toLowerCase())) || seasonCount >= 2) {
       headerIdx = i;
       break;
     }
@@ -100,74 +247,53 @@ export function parseContractsCsv(text: string): ParsedRoster {
       players: [],
       seasons: [],
       warnings: [
-        'Could not find a header row with a player column and season columns (e.g. 2026-27). Paste a salary table from SalarySwish, Basketball-Reference, or a similar source.',
+        'Could not find a header row with season columns (e.g. 2026-27). Paste a salary table from SalarySwish, Basketball-Reference, or a similar source, including the header row.',
       ],
     };
   }
 
   const header = splitFields(lines[headerIdx], delimiter);
   const lower = header.map((f) => f.toLowerCase());
-
   const seasonCols = header
     .map((f, idx) => ({ idx, season: seasonStart(f) }))
     .filter((c): c is { idx: number; season: number } => c.season !== null);
   if (seasonCols.length === 0) {
-    return {
-      players: [],
-      seasons: [],
-      warnings: ['Found a header but no season columns (e.g. 2026-27).'],
-    };
+    return { players: [], seasons: [], warnings: ['Found a header but no season columns (e.g. 2026-27).'] };
   }
   const seasonIdxs = new Set(seasonCols.map((c) => c.idx));
 
   let nameCol = lower.findIndex((f) => f === 'player' || f === 'name');
   if (nameCol === -1) {
-    nameCol = header.findIndex(
-      (_, idx) => !seasonIdxs.has(idx) && !NON_NAME_HEADERS.has(lower[idx])
-    );
+    nameCol = header.findIndex((_, idx) => !seasonIdxs.has(idx) && !NON_NAME_HEADERS.has(lower[idx]));
   }
   if (nameCol === -1) nameCol = 0;
 
-  const posCol = lower.findIndex((f) => f === 'pos' || f === 'position');
-  const ageCol = lower.findIndex((f) => f === 'age');
+  const layout: Layout = {
+    seasons: seasonCols.map((c) => c.season),
+    firstSeasonIdx: seasonCols[0].idx,
+    nameCol,
+    ageCol: lower.findIndex((f) => f === 'age'),
+    posCol: lower.findIndex((f) => f === 'pos' || f === 'position'),
+  };
 
-  const players: Player[] = [];
-  let uid = 0;
-  for (let i = headerIdx + 1; i < lines.length; i++) {
-    const fields = splitFields(lines[i], delimiter);
-    const name = (fields[nameCol] || '').trim();
-    if (!name || ['player', 'name'].includes(name.toLowerCase())) continue;
-    if (/^team totals?$/i.test(name) || /^(salary|totals?)\b/i.test(name)) continue;
-
-    const contract: ContractYear[] = [];
-    for (const { idx, season } of seasonCols) {
-      const salary = toDollars(fields[idx] ?? '');
-      if (salary !== null) contract.push({ season, salary, option: 'guaranteed' });
-    }
-    if (contract.length === 0) continue;
-
-    const age = ageCol >= 0 ? parseInt((fields[ageCol] || '').replace(/[^\d]/g, ''), 10) : 0;
-    players.push({
-      id: `imp-${(uid += 1)}-${name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`,
-      name,
-      position: (posCol >= 0 ? fields[posCol] : '')?.trim() || '—',
-      age: Number.isFinite(age) ? age : 0,
-      contract,
-    });
-  }
+  const body = lines.slice(headerIdx + 1);
+  const wrapped = body.some((l) => !l.includes(delimiter));
+  const players = wrapped
+    ? parseWrappedRows(body, delimiter, layout)
+    : parseCleanRows(body, delimiter, seasonCols, layout);
 
   if (players.length === 0) {
     warnings.push('No player salary rows were parsed — double-check the pasted table.');
   } else {
-    const extras: string[] = [];
-    if (posCol < 0) extras.push('positions');
-    if (ageCol < 0) extras.push('ages');
+    const missing: string[] = [];
+    if (layout.posCol < 0) missing.push('positions');
+    if (layout.ageCol < 0) missing.push('ages');
     warnings.push(
-      `Contract options (player/team option, non-guaranteed) aren't part of these exports, so imported years are treated as guaranteed${
-        extras.length ? `; ${extras.join(' and ')} weren't found in the paste` : ''
-      }.`
+      `Imported ${players.length} players. Non-guaranteed flags aren't captured${
+        missing.length ? `, and ${missing.join(' and ')} weren't found in the paste` : ''
+      }; player/team options (P/T) are read when present.`
     );
   }
 
-  return { players, seasons: seasonCols.map((c) => c.season), warnings };
+  return { players, seasons: layout.seasons, warnings };
 }
