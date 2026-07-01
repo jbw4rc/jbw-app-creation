@@ -259,6 +259,43 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 
 /* Cost to ownership · luxury tax */
 .cs-tax { border-top: 2px solid var(--ink); padding-top: 14px; margin-bottom: 22px; }
+.cs-tax-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.repeater-toggle {
+  display: inline-flex; align-items: center; gap: 7px; background: var(--card);
+  border: 1px solid var(--rule-strong); color: var(--ink-soft); border-radius: 20px;
+  padding: 5px 12px 5px 6px; font-family: var(--serif); font-size: 12px; font-weight: 600;
+}
+.repeater-toggle:hover { color: var(--ink); }
+.repeater-toggle.on { border-color: var(--red); color: var(--red); background: rgba(192,52,42,0.06); }
+.repeater-box {
+  width: 16px; height: 16px; border: 1px solid var(--rule-strong); border-radius: 3px;
+  display: grid; place-items: center; font-size: 11px; background: var(--paper);
+}
+.repeater-toggle.on .repeater-box { background: var(--red); color: #fff; border-color: var(--red); }
+
+/* Free Agent Quiver */
+.quiver-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  font-family: var(--serif); font-weight: 600; font-size: 17px;
+  padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1px solid var(--rule);
+}
+.quiver-sub { font-family: var(--sans); font-size: 10.5px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+.quiver-list { display: flex; flex-direction: column; }
+.arrow { padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.arrow-unavailable { opacity: 0.6; }
+.arrow-main { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.arrow-name { font-family: var(--serif); font-weight: 600; font-size: 14.5px; }
+.arrow-amount { font-variant-numeric: tabular-nums; font-weight: 700; }
+.arrow-row { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+.arrow-badge { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 2px; white-space: nowrap; color: #fff; }
+.badge-available { background: var(--green); }
+.badge-unavailable { background: var(--ink-faint); }
+.arrow-detail { font-size: 11.5px; color: var(--ink-soft); }
+.arrow-committed {
+  margin-top: 5px; font-size: 11px; color: var(--gold);
+  background: rgba(179,133,28,0.09); border-radius: 3px; padding: 4px 8px;
+}
+.quiver-foot { margin-top: 12px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
 .cs-tax-figures { display: flex; gap: 28px; flex-wrap: wrap; margin: 10px 0 14px; }
 .cs-tax-fig { display: flex; flex-direction: column; gap: 2px; }
 .cs-tax-fig-label {

@@ -103,12 +103,20 @@ interface Layout {
   nameCol: number;
   ageCol: number;
   posCol: number;
+  termsCol: number;
+}
+
+/** Clean a raw "Terms" cell: keep the signing tag, drop trailing noise. */
+function cleanTerms(raw: string): string | undefined {
+  const t = (raw || '').replace(/unconfirmed information/i, '').trim();
+  return t || undefined;
 }
 
 function buildPlayer(
   name: string,
   position: string,
   ageRaw: string,
+  terms: string,
   contract: ContractYear[],
   uid: number
 ): Player {
@@ -119,6 +127,7 @@ function buildPlayer(
     position: position?.trim() || '—',
     age: Number.isFinite(age) ? age : 0,
     contract,
+    signedUsing: cleanTerms(terms),
   };
 }
 
@@ -147,6 +156,7 @@ function parseCleanRows(
         name,
         layout.posCol >= 0 ? fields[layout.posCol] : '',
         layout.ageCol >= 0 ? fields[layout.ageCol] : '',
+        layout.termsCol >= 0 ? fields[layout.termsCol] : '',
         contract,
         (uid += 1)
       )
@@ -211,6 +221,7 @@ function parseWrappedRows(
         name,
         posCol >= 0 ? rec.fields[posCol] : '',
         ageCol >= 0 ? rec.fields[ageCol] : '',
+        layout.termsCol >= 0 ? rec.fields[layout.termsCol] : '',
         contract,
         (uid += 1)
       )
@@ -274,6 +285,7 @@ export function parseContractsCsv(text: string): ParsedRoster {
     nameCol,
     ageCol: lower.findIndex((f) => f === 'age'),
     posCol: lower.findIndex((f) => f === 'pos' || f === 'position'),
+    termsCol: lower.findIndex((f) => f === 'terms'),
   };
 
   const body = lines.slice(headerIdx + 1);

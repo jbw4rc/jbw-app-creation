@@ -50,6 +50,12 @@ export interface Player {
   age: number;
   /** Contract broken out by season. Seasons with no entry are unsigned. */
   contract: ContractYear[];
+  /**
+   * How the contract was created, per the source's "Terms" column
+   * (e.g. "TP-MLE", "Room", "BAE", "Bird", "RSC", "Max"). Used to infer which
+   * signing exceptions a team has already spent.
+   */
+  signedUsing?: string;
 }
 
 /** A draft pick a team controls (or has traded away). */

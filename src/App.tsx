@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { TeamExplorer } from './components/TeamExplorer';
 import { TradeMachine } from './components/TradeMachine';
-import { FreeAgentMachine } from './components/FreeAgentMachine';
 import { LeagueThresholds } from './components/LeagueThresholds';
 import { ImportData } from './components/ImportData';
 
-type Tab = 'explorer' | 'trade' | 'freeAgent' | 'import';
+type Tab = 'explorer' | 'trade' | 'import';
 
 const TABS: { id: Tab; label: string; blurb: string }[] = [
-  { id: 'explorer', label: 'Team Explorer', blurb: 'Rosters, 5-year salary, picks & apron status' },
+  { id: 'explorer', label: 'Team Explorer', blurb: 'Rosters, salary, picks, apron status & FA quiver' },
   { id: 'trade', label: 'Trade Machine', blurb: 'Test a swap against the apron rules' },
-  { id: 'freeAgent', label: 'Free Agent Machine', blurb: 'Which signing tools are legal' },
   { id: 'import', label: 'Import Data', blurb: 'Load real numbers from SalarySwish or BBRef' },
 ];
 
@@ -46,7 +44,6 @@ export default function App() {
       <main className="app-main">
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'trade' && <TradeMachine />}
-        {tab === 'freeAgent' && <FreeAgentMachine />}
         {tab === 'import' && <ImportData />}
       </main>
 

@@ -6,6 +6,7 @@ import { evaluateTrade } from '../src/lib/trade';
 import { evaluateSigning } from '../src/lib/freeAgent';
 import { parseContractsCsv } from '../src/lib/importCsv';
 import { computeTax } from '../src/lib/luxuryTax';
+import { freeAgentQuiver } from '../src/lib/freeAgentQuiver';
 import { money } from '../src/lib/format';
 
 let failures = 0;
@@ -91,6 +92,22 @@ check(
 const denTax = computeTax(getTeam('DEN').players.reduce((s, p) => s + (p.contract.find((c) => c.season === CURRENT_SEASON)?.salary ?? 0), 0), 200_428_000);
 check('Denver (2nd apron) owes a large tax bill (> $80M)', denTax.bill > 80_000_000);
 console.log(`  Denver estimated tax bill: ${money(denTax.bill)} (marginal ${denTax.marginalRate}x)`);
+check(
+  'repeater rates cost more than standard',
+  computeTax(TAX + 20_000_000, TAX, true).bill > computeTax(TAX + 20_000_000, TAX, false).bill
+);
+
+console.log('\n=== Free Agent Quiver ===');
+const denQuiver = freeAgentQuiver(getTeam('DEN'), CURRENT_SEASON);
+check(
+  'second-apron team has no MLE arrow available',
+  denQuiver.every((a) => !(a.key.includes('mle') && a.status === 'available'))
+);
+const bknQuiver = freeAgentQuiver(getTeam('BKN'), CURRENT_SEASON);
+check(
+  'cap-space team has Cap Space available',
+  bknQuiver.some((a) => a.key === 'cap' && a.status === 'available')
+);
 
 console.log('\n=== CSV importer ===');
 // Mimic a Basketball-Reference "Get table as CSV" paste, including the

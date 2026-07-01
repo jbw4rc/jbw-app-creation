@@ -8,6 +8,7 @@ import {
   type SeasonSalarySummary,
 } from '../lib/apron';
 import { getRosterStatus } from '../lib/teamStore';
+import { toggleRepeater, useRepeater } from '../lib/repeaterStore';
 import { computeTax, marginalRateAt } from '../lib/luxuryTax';
 import { money, seasonLabel, whenUpdated } from '../lib/format';
 
@@ -23,6 +24,7 @@ export function CapSummary({ team }: { team: Team }) {
   const forecast = SEASONS.map((s) => summarizeTeamSeason(team, s));
   const note = nextApronNote(current);
   const status = getRosterStatus(team.abbreviation);
+  const repeater = useRepeater(team.abbreviation);
 
   return (
     <div className="cap-summary">
@@ -73,25 +75,29 @@ export function CapSummary({ team }: { team: Team }) {
           label="First Apron"
           value={current.cap.firstApron}
           space={current.spaceUnderFirstApron}
-          rateNote={`~${marginalRateAt(current.cap.firstApron, current.cap.luxuryTax).toFixed(2)}× tax`}
+          rateNote={`~${marginalRateAt(current.cap.firstApron, current.cap.luxuryTax, repeater).toFixed(2)}× tax`}
           emphasize
         />
         <LadderRow
           label="Second Apron"
           value={current.cap.secondApron}
           space={current.spaceUnderSecondApron}
-          rateNote={`~${marginalRateAt(current.cap.secondApron, current.cap.luxuryTax).toFixed(2)}× tax`}
+          rateNote={`~${marginalRateAt(current.cap.secondApron, current.cap.luxuryTax, repeater).toFixed(2)}× tax`}
           emphasize
         />
       </div>
 
-      <TaxCost summary={current} />
+      <TaxCost
+        summary={current}
+        repeater={repeater}
+        onToggleRepeater={() => toggleRepeater(team.abbreviation)}
+      />
 
       <div className="cs-forecast">
         <span className="cs-kicker">Five-Year Outlook</span>
         <div className="cs-forecast-grid">
           {forecast.map((s) => (
-            <ForecastCell key={s.season} s={s} />
+            <ForecastCell key={s.season} s={s} repeater={repeater} />
           ))}
         </div>
       </div>
@@ -129,12 +135,30 @@ function LadderRow({
 
 // The luxury-tax bill and the total cash cost to ownership (payroll + tax),
 // with the progressive rate bands the team is paying into.
-function TaxCost({ summary }: { summary: SeasonSalarySummary }) {
-  const tax = computeTax(summary.totalSalary, summary.cap.luxuryTax);
+function TaxCost({
+  summary,
+  repeater,
+  onToggleRepeater,
+}: {
+  summary: SeasonSalarySummary;
+  repeater: boolean;
+  onToggleRepeater: () => void;
+}) {
+  const tax = computeTax(summary.totalSalary, summary.cap.luxuryTax, repeater);
   const filled = tax.bands.filter((b) => b.used > 0);
   return (
     <div className="cs-tax">
-      <span className="cs-kicker">Cost to Ownership · Luxury Tax</span>
+      <div className="cs-tax-head">
+        <span className="cs-kicker">Cost to Ownership · Luxury Tax</span>
+        <button
+          className={`repeater-toggle${repeater ? ' on' : ''}`}
+          onClick={onToggleRepeater}
+          title="Taxpayer in three of the last four seasons pays steeper rates"
+        >
+          <span className="repeater-box">{repeater ? '✓' : ''}</span>
+          Repeater rates
+        </button>
+      </div>
       <div className="cs-tax-figures">
         <div className="cs-tax-fig">
           <span className="cs-tax-fig-label">Est. Luxury-Tax Bill</span>
@@ -172,16 +196,17 @@ function TaxCost({ summary }: { summary: SeasonSalarySummary }) {
         </div>
       )}
       <div className="cs-tax-foot">
-        Standard (non-repeater) rates, estimated. Repeater teams — taxpayers in
-        three of the last four seasons — pay steeper rates.
+        {repeater
+          ? 'Repeater rates (taxpayer in three of the last four seasons), estimated.'
+          : 'Standard (non-repeater) rates, estimated — toggle repeater above for the steeper schedule.'}
       </div>
     </div>
   );
 }
 
-function ForecastCell({ s }: { s: SeasonSalarySummary }) {
+function ForecastCell({ s, repeater }: { s: SeasonSalarySummary; repeater: boolean }) {
   const info = TIER_INFO[s.tier];
-  const tax = computeTax(s.totalSalary, s.cap.luxuryTax);
+  const tax = computeTax(s.totalSalary, s.cap.luxuryTax, repeater);
   return (
     <div className={`cs-fc-cell tier-accent-${info.color}`}>
       <span className="cs-fc-season">

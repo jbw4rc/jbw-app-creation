@@ -28,6 +28,8 @@ const BASE_SCHEDULE: Band[] = [
 ];
 const STEP = 5_000_000;
 const RATE_STEP = 0.5;
+/** Premium added to every band's rate for a repeater taxpayer (estimate). */
+const REPEATER_PREMIUM = 1.0;
 
 export interface TaxBand {
   label: string;
@@ -65,27 +67,37 @@ function scheduleFor(over: number): Band[] {
   return schedule;
 }
 
-export function computeTax(salary: number, taxLine: number): TaxResult {
+export function computeTax(
+  salary: number,
+  taxLine: number,
+  repeater = false
+): TaxResult {
   const over = Math.max(0, salary - taxLine);
+  const premium = repeater ? REPEATER_PREMIUM : 0;
   const bands: TaxBand[] = [];
   let bill = 0;
   let marginalRate = 0;
 
   for (const b of scheduleFor(over)) {
+    const rate = b.rate + premium;
     const used = Math.max(0, Math.min(over, b.to) - b.from);
-    const cost = used * b.rate;
+    const cost = used * rate;
     if (used > 0) {
       bill += cost;
-      marginalRate = b.rate;
+      marginalRate = rate;
     }
-    bands.push({ label: bandLabel(b.from, b.to), rate: b.rate, used, cost });
+    bands.push({ label: bandLabel(b.from, b.to), rate, used, cost });
   }
   return { bill, over, marginalRate, bands };
 }
 
 /** The marginal tax rate that applies at a given payroll level. */
-export function marginalRateAt(salary: number, taxLine: number): number {
-  return computeTax(salary + 1, taxLine).marginalRate;
+export function marginalRateAt(
+  salary: number,
+  taxLine: number,
+  repeater = false
+): number {
+  return computeTax(salary + 1, taxLine, repeater).marginalRate;
 }
 
 /** The reference rate schedule (for showing the modifiers when under the tax). */

@@ -5,6 +5,7 @@ import { summarizeTeamSeason } from '../lib/apron';
 import { CapSummary } from './CapSummary';
 import { SalaryTimeline } from './SalaryTimeline';
 import { RestrictionPanel } from './RestrictionPanel';
+import { FreeAgentQuiver } from './FreeAgentQuiver';
 import { DraftCapital } from './DraftCapital';
 import { RosterTable } from './RosterTable';
 
@@ -53,6 +54,10 @@ export function TeamExplorer() {
         </section>
 
         <section className="panel span-2">
+          <FreeAgentQuiver team={team} />
+        </section>
+
+        <section className="panel span-4">
           <DraftCapital team={team} />
         </section>
 

@@ -125,7 +125,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 14000000,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "TP-MLE"
     },
     {
       "id": "imp-7-kispertcorey",
@@ -166,7 +167,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 17434636,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-hieldbuddy",
@@ -207,7 +209,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8345797,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "Likely Incentive"
     },
     {
       "id": "imp-11-carterdevin",
@@ -225,7 +228,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7370896,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-12-newellasa",
@@ -248,7 +252,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6042813,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-13-gueyemouhamed",
@@ -291,7 +296,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 71446914,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-brownjaylen",
@@ -314,7 +320,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 64951656,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-whitederrick",
@@ -337,7 +344,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 34844000,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Likely Incentive"
     },
     {
       "id": "imp-4-robinsonmitchell",
@@ -424,7 +432,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5528065,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-8-bantondalano",
@@ -491,7 +500,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 4952992,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-12-quetaneemias",
@@ -545,7 +555,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 40806150,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-randlejulius",
@@ -658,7 +669,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 9639521,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-8-clowneynoah",
@@ -671,7 +683,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5414034,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-minottjosh",
@@ -689,7 +702,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 4609756,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "R-MLE"
     },
     {
       "id": "imp-10-traorenolan",
@@ -712,7 +726,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6457282,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-11-powelldrake",
@@ -735,7 +750,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6101831,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-12-sarafben",
@@ -758,7 +774,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5720775,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-13-wolfdanny",
@@ -781,7 +798,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5559639,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-14-smithmalachi",
@@ -878,7 +896,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 15104626,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-5-williamsgrant",
@@ -932,7 +951,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 13937213,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-salantidjane",
@@ -950,7 +970,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 10445632,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-manntre",
@@ -1004,7 +1025,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5487778,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-12-diabatmoussa",
@@ -1227,7 +1249,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8763215,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-buzelismatas",
@@ -1245,7 +1268,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7584283,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-millerleonard",
@@ -1278,7 +1302,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 53817156,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-mobleyevan",
@@ -1306,7 +1331,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 61240212,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-allenjarrett",
@@ -1401,7 +1427,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5641500,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-tomlinnaeqwan",
@@ -1557,7 +1584,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 19178145,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-6-martincaleb",
@@ -1624,7 +1652,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5493393,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-nembhardryan",
@@ -1657,7 +1686,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 62841702,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-murrayjamal",
@@ -1680,7 +1710,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 57528684,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-gordonaaron",
@@ -1716,7 +1747,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 23062500,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Likely Incentive"
     },
     {
       "id": "imp-5-braunchristian",
@@ -1793,7 +1825,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 4826931,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-holmesdaron",
@@ -1811,7 +1844,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5547137,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     }
   ],
   "DET": [
@@ -1841,7 +1875,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 61240212,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-robinsonduncan",
@@ -1926,7 +1961,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 11117925,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-7-hollandiiron",
@@ -1944,7 +1980,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 11491183,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-huerterkevin",
@@ -1993,7 +2030,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5198983,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-jenkinsdaniss",
@@ -2137,7 +2175,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5679458,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-7-meltondeanthony",
@@ -2155,7 +2194,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5634146,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "MLE"
     },
     {
       "id": "imp-8-santosgui",
@@ -2336,7 +2376,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 12258609,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-7-sheppardreed",
@@ -2354,7 +2395,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 14041624,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-capelaclint",
@@ -2390,7 +2432,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6658537,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "TP-MLE"
     },
     {
       "id": "imp-10-davisonjd",
@@ -2423,7 +2466,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 52298736,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-nembhardandrew",
@@ -2536,7 +2580,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8478541,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-oubrejrkelly",
@@ -2567,7 +2612,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5031668,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-pottermicah",
@@ -2654,7 +2700,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 44886930,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-ingrambrandon",
@@ -2711,7 +2758,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7131510,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-6-jacksonisaiah",
@@ -2765,7 +2813,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5448356,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-9-sanderskobe",
@@ -2836,7 +2885,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 59198976,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-reavesaustin",
@@ -2864,7 +2914,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 51205357,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-kesslerwalker",
@@ -2984,7 +3035,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 9731707,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "MLE"
     },
     {
       "id": "imp-8-aytondeandre",
@@ -3028,7 +3080,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6452859,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-jamesbronny",
@@ -3177,7 +3230,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7805900,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-edeyzach",
@@ -3195,7 +3249,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8067936,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-cowardcedric",
@@ -3218,7 +3273,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8342743,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-10-murraykris",
@@ -3231,7 +3287,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5315004,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-claytonjrwalter",
@@ -3254,7 +3311,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6752312,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-12-gibsontaj",
@@ -3372,7 +3430,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 62786682,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-adebayobam",
@@ -3395,7 +3454,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 60244910,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-wigginsandrew",
@@ -3490,7 +3550,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6500000,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "MLE"
     },
     {
       "id": "imp-8-smithdru",
@@ -3603,7 +3664,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 20365152,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Likely Incentive"
     },
     {
       "id": "imp-4-greenaj",
@@ -3644,7 +3706,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5939141,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-6-diengousmane",
@@ -3698,7 +3761,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7135992,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-9-rollinsryan",
@@ -3739,7 +3803,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6205686,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-11-harrisgary",
@@ -3821,7 +3886,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 55672848,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-balllamelo",
@@ -3844,7 +3910,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 46394040,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-gobertrudy",
@@ -3967,7 +4034,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7098163,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-9-clarkjaylen",
@@ -4008,7 +4076,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5054159,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-hylandnahshonbones",
@@ -4054,7 +4123,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 44886930,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-poolejordan",
@@ -4159,7 +4229,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 10505389,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-7-hawkinsjordan",
@@ -4172,7 +4243,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7021895,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-beysaddiq",
@@ -4208,7 +4280,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8107917,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-10-missiyves",
@@ -4226,7 +4299,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5595827,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-mcgowensbryce",
@@ -4313,7 +4387,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 61015192,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-anunobyog",
@@ -4487,7 +4562,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5373608,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-10-kolektyler",
@@ -4540,7 +4616,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 54605760,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-williamsjalen",
@@ -4573,7 +4650,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 54605760,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-gilgeousalexandershai",
@@ -4606,7 +4684,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 78996184,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-4-hartensteinisaiah",
@@ -4665,7 +4744,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 18222222,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "Likely Incentive"
     },
     {
       "id": "imp-7-williamsjaylin",
@@ -4696,7 +4776,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7420806,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-topinikola",
@@ -4714,7 +4795,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7482209,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-mccainjared",
@@ -4732,7 +4814,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6784268,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-11-mitchellajay",
@@ -4785,7 +4868,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 56136861,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-wagnerfranz",
@@ -4900,7 +4984,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 10106316,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-7-bitadzegoga",
@@ -4931,7 +5016,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6138466,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-richardsonjase",
@@ -4954,7 +5040,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5910882,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-cainjamal",
@@ -5028,7 +5115,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 69065472,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-georgepaul",
@@ -5046,7 +5134,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 56586670,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-maxeytyrese",
@@ -5069,7 +5158,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 46394040,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-4-edgecombevj",
@@ -5092,7 +5182,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 15445878,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-5-wadedean",
@@ -5120,7 +5211,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 10430233,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "MLE"
     },
     {
       "id": "imp-6-barlowdominick",
@@ -5146,7 +5238,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 3400000,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "MLE"
     },
     {
       "id": "imp-8-terrydalen",
@@ -5261,7 +5354,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 75683538,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-greenjalen",
@@ -5374,7 +5468,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6658537,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "MLE"
     },
     {
       "id": "imp-8-maluachkhaman",
@@ -5397,7 +5492,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8436879,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-goodwinjordan",
@@ -5451,7 +5547,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5025553,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-12-bouyeajamaree",
@@ -5525,7 +5622,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 44886930,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-holidayjrue",
@@ -5612,7 +5710,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 13585523,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-6-williamsiiirobert",
@@ -5653,7 +5752,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 14104000,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "NTC"
     },
     {
       "id": "imp-8-avdijadeni",
@@ -5689,7 +5789,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 9550298,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-yanghansen",
@@ -5712,7 +5813,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7462787,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-11-krejcivit",
@@ -5758,7 +5860,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 48967380,
           "option": "player"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-sabonisdomantas",
@@ -5894,7 +5997,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5979481,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-9-raynaudmaxime",
@@ -5965,7 +6069,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 63281664,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-2-vasselldevin",
@@ -6014,7 +6119,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 16868246,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-5-harristobias",
@@ -6078,7 +6184,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 17172993,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-kornetluke",
@@ -6119,7 +6226,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 12670139,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-barnesharrison",
@@ -6155,7 +6263,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7983538,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     }
   ],
   "TOR": [
@@ -6198,7 +6307,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 51033510,
           "option": "guaranteed"
         }
-      ]
+      ],
+      "signedUsing": "Max"
     },
     {
       "id": "imp-3-quickleyimmanuel",
@@ -6270,7 +6380,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 8874684,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-7-walterjakobe",
@@ -6288,7 +6399,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5870172,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-8-jacksondavistrayce",
@@ -6403,7 +6515,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 12640302,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-4-georgekeyonte",
@@ -6416,7 +6529,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6563925,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-5-koncharjohn",
@@ -6447,7 +6561,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7669890,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-7-hayesjaxson",
@@ -6465,7 +6580,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6146341,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "TP-MLE"
     },
     {
       "id": "imp-8-sensabaughbrice",
@@ -6478,7 +6594,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 4862237,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-mykhailiuksviatoslav",
@@ -6532,7 +6649,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 4988948,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     }
   ],
   "WAS": [
@@ -6598,7 +6716,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 15611798,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-4-coulibalybilal",
@@ -6611,7 +6730,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 9240012,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-5-johnsontre",
@@ -6634,7 +6754,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 11490210,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-6-hardyjaden",
@@ -6678,7 +6799,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5458310,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-9-carringtoncarlton",
@@ -6696,7 +6818,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 7257729,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-10-rileywill",
@@ -6719,7 +6842,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 6155352,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSCLikely Incentive"
     },
     {
       "id": "imp-11-georgekyshawn",
@@ -6737,7 +6861,8 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "salary": 5435892,
           "option": "team"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
       "id": "imp-12-vukcevictristan",
