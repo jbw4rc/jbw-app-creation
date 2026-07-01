@@ -8,6 +8,7 @@ import {
   type SeasonSalarySummary,
 } from '../lib/apron';
 import { getRosterStatus } from '../lib/teamStore';
+import { computeTax, marginalRateAt } from '../lib/luxuryTax';
 import { money, seasonLabel, whenUpdated } from '../lib/format';
 
 // ---------------------------------------------------------------------------
@@ -62,20 +63,29 @@ export function CapSummary({ team }: { team: Team }) {
 
       <div className="cs-ladder">
         <LadderRow label="Salary Cap" value={current.cap.salaryCap} space={current.spaceUnderCap} />
-        <LadderRow label="Luxury Tax" value={current.cap.luxuryTax} space={current.spaceUnderTax} />
+        <LadderRow
+          label="Luxury Tax"
+          value={current.cap.luxuryTax}
+          space={current.spaceUnderTax}
+          rateNote="1.50× and up"
+        />
         <LadderRow
           label="First Apron"
           value={current.cap.firstApron}
           space={current.spaceUnderFirstApron}
+          rateNote={`~${marginalRateAt(current.cap.firstApron, current.cap.luxuryTax).toFixed(2)}× tax`}
           emphasize
         />
         <LadderRow
           label="Second Apron"
           value={current.cap.secondApron}
           space={current.spaceUnderSecondApron}
+          rateNote={`~${marginalRateAt(current.cap.secondApron, current.cap.luxuryTax).toFixed(2)}× tax`}
           emphasize
         />
       </div>
+
+      <TaxCost summary={current} />
 
       <div className="cs-forecast">
         <span className="cs-kicker">Five-Year Outlook</span>
@@ -93,17 +103,22 @@ function LadderRow({
   label,
   value,
   space,
+  rateNote,
   emphasize,
 }: {
   label: string;
   value: number;
   space: number;
+  rateNote?: string;
   emphasize?: boolean;
 }) {
   const over = space < 0;
   return (
     <div className={`cs-ladder-row${emphasize ? ' cs-ladder-emph' : ''}`}>
-      <span className="cs-ladder-label">{label}</span>
+      <span className="cs-ladder-label">
+        {label}
+        {rateNote && <span className="cs-ladder-rate">{rateNote}</span>}
+      </span>
       <span className="cs-ladder-value">{money(value)}</span>
       <span className={`cs-ladder-space ${over ? 'space-over' : 'space-under'}`}>
         {over ? `${money(-space)} over` : `${money(space)} under`}
@@ -112,8 +127,61 @@ function LadderRow({
   );
 }
 
+// The luxury-tax bill and the total cash cost to ownership (payroll + tax),
+// with the progressive rate bands the team is paying into.
+function TaxCost({ summary }: { summary: SeasonSalarySummary }) {
+  const tax = computeTax(summary.totalSalary, summary.cap.luxuryTax);
+  const filled = tax.bands.filter((b) => b.used > 0);
+  return (
+    <div className="cs-tax">
+      <span className="cs-kicker">Cost to Ownership · Luxury Tax</span>
+      <div className="cs-tax-figures">
+        <div className="cs-tax-fig">
+          <span className="cs-tax-fig-label">Est. Luxury-Tax Bill</span>
+          <span className={`cs-tax-fig-value${tax.bill > 0 ? ' tax-red' : ''}`}>
+            {money(tax.bill)}
+          </span>
+        </div>
+        <div className="cs-tax-fig">
+          <span className="cs-tax-fig-label">Payroll + Tax</span>
+          <span className="cs-tax-fig-value">{money(summary.totalSalary + tax.bill)}</span>
+        </div>
+        <div className="cs-tax-fig">
+          <span className="cs-tax-fig-label">Marginal Rate</span>
+          <span className="cs-tax-fig-value">
+            {tax.over > 0 ? `${tax.marginalRate.toFixed(2)}×` : '—'}
+          </span>
+        </div>
+      </div>
+
+      {tax.over > 0 ? (
+        <div className="cs-tax-bands">
+          {filled.map((b) => (
+            <div key={b.label} className="cs-tax-band">
+              <span className="cs-tax-band-label">{b.label}</span>
+              <span className="cs-tax-band-rate">{b.rate.toFixed(2)}×</span>
+              <span className="cs-tax-band-used">{money(b.used)}</span>
+              <span className="cs-tax-band-cost">{money(b.cost)}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="cs-tax-note">
+          {money(summary.spaceUnderTax)} below the tax line — no tax bill. Rates
+          begin at 1.50× and climb each $5M (1.75× · 2.50× · 3.25× · 3.75× …).
+        </div>
+      )}
+      <div className="cs-tax-foot">
+        Standard (non-repeater) rates, estimated. Repeater teams — taxpayers in
+        three of the last four seasons — pay steeper rates.
+      </div>
+    </div>
+  );
+}
+
 function ForecastCell({ s }: { s: SeasonSalarySummary }) {
   const info = TIER_INFO[s.tier];
+  const tax = computeTax(s.totalSalary, s.cap.luxuryTax);
   return (
     <div className={`cs-fc-cell tier-accent-${info.color}`}>
       <span className="cs-fc-season">
@@ -123,6 +191,9 @@ function ForecastCell({ s }: { s: SeasonSalarySummary }) {
       <span className="cs-fc-total">{money(s.totalSalary)}</span>
       <span className={`tier-chip tier-${info.color}`}>{info.label}</span>
       <span className="cs-fc-note">{apronStatusLine(s)}</span>
+      <span className="cs-fc-tax">
+        {tax.bill > 0 ? `+ ${money(tax.bill)} tax` : 'no tax'}
+      </span>
     </div>
   );
 }

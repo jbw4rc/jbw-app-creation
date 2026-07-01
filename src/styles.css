@@ -251,6 +251,43 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .space-under { color: var(--green); }
 .space-over { color: var(--red); }
 
+.cs-ladder-rate {
+  margin-left: 10px; font-family: var(--sans); font-size: 10px; font-weight: 600;
+  text-transform: none; letter-spacing: 0; color: var(--gold);
+  background: rgba(179,133,28,0.1); padding: 1px 6px; border-radius: 2px;
+}
+
+/* Cost to ownership · luxury tax */
+.cs-tax { border-top: 2px solid var(--ink); padding-top: 14px; margin-bottom: 22px; }
+.cs-tax-figures { display: flex; gap: 28px; flex-wrap: wrap; margin: 10px 0 14px; }
+.cs-tax-fig { display: flex; flex-direction: column; gap: 2px; }
+.cs-tax-fig-label {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft);
+}
+.cs-tax-fig-value {
+  font-family: var(--serif); font-weight: 700; font-size: 28px; line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.cs-tax-fig-value.tax-red { color: var(--red); }
+.cs-tax-bands {
+  display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.cs-tax-band {
+  display: grid; grid-template-columns: 1.4fr 0.6fr 1fr 1fr; gap: 10px; align-items: baseline;
+  padding: 7px 12px; font-size: 12.5px; font-variant-numeric: tabular-nums;
+  border-bottom: 1px solid var(--rule);
+}
+.cs-tax-band:last-child { border-bottom: none; }
+.cs-tax-band:nth-child(odd) { background: rgba(0,0,0,0.015); }
+.cs-tax-band-label { color: var(--ink-soft); font-family: var(--serif); }
+.cs-tax-band-rate { color: var(--gold); font-weight: 700; }
+.cs-tax-band-used { color: var(--ink-faint); text-align: right; }
+.cs-tax-band-cost { color: var(--red); font-weight: 600; text-align: right; }
+.cs-tax-note { font-size: 12px; color: var(--ink-soft); background: var(--card-2); padding: 10px 12px; border-radius: var(--radius-sm); }
+.cs-tax-foot { margin-top: 8px; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+.cs-fc-tax { font-size: 10px; color: var(--red); font-weight: 600; font-variant-numeric: tabular-nums; }
+
 /* Five-year forecast */
 .cs-forecast { border-top: 2px solid var(--ink); padding-top: 14px; }
 .cs-forecast .cs-kicker { color: var(--ink); }

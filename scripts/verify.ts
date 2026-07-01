@@ -5,6 +5,7 @@ import { summarizeTeamSeason } from '../src/lib/apron';
 import { evaluateTrade } from '../src/lib/trade';
 import { evaluateSigning } from '../src/lib/freeAgent';
 import { parseContractsCsv } from '../src/lib/importCsv';
+import { computeTax } from '../src/lib/luxuryTax';
 import { money } from '../src/lib/format';
 
 let failures = 0;
@@ -78,6 +79,18 @@ check(
   'Under-cap UTA can sign a $20M FA with cap space',
   evaluateSigning(uta, CURRENT_SEASON, 20_000_000).recommended?.tool === 'capSpace'
 );
+
+console.log('\n=== Luxury tax ===');
+const TAX = 200_000_000;
+check('under the tax line → $0 bill', computeTax(TAX - 5_000_000, TAX).bill === 0);
+// $10M over: 5M@1.5 ($7.5M) + 5M@1.75 ($8.75M) = $16.25M.
+check(
+  '$10M over the tax → $16.25M bill',
+  computeTax(TAX + 10_000_000, TAX).bill === 16_250_000
+);
+const denTax = computeTax(getTeam('DEN').players.reduce((s, p) => s + (p.contract.find((c) => c.season === CURRENT_SEASON)?.salary ?? 0), 0), 200_428_000);
+check('Denver (2nd apron) owes a large tax bill (> $80M)', denTax.bill > 80_000_000);
+console.log(`  Denver estimated tax bill: ${money(denTax.bill)} (marginal ${denTax.marginalRate}x)`);
 
 console.log('\n=== CSV importer ===');
 // Mimic a Basketball-Reference "Get table as CSV" paste, including the
