@@ -49,6 +49,43 @@ export function teamSalaryForSeason(team: Team, season: number): number {
   );
 }
 
+/** Number of players carrying salary in a season. */
+export function rosteredCount(team: Team, season: number): number {
+  return team.players.filter((p) => playerSalaryForSeason(p, season) > 0).length;
+}
+
+/** NBA minimum active roster and an estimated per-slot minimum salary. */
+export const MIN_ROSTER = 14;
+export const MIN_FILL_SALARY = 2_300_000;
+
+export interface RosterFill {
+  count: number;
+  open: number;
+  fillCost: number;
+  projectedTotal: number;
+  projectedTier: ApronTier;
+}
+
+/**
+ * Projects the cost of filling an incomplete roster to the 14-man minimum at
+ * the minimum salary — showing whether a team that sits below an apron will be
+ * pushed over it once it rounds out the roster.
+ */
+export function rosterFillProjection(team: Team, season: number): RosterFill {
+  const cap = getSeasonCap(season);
+  const count = rosteredCount(team, season);
+  const open = Math.max(0, MIN_ROSTER - count);
+  const fillCost = open * MIN_FILL_SALARY;
+  const projectedTotal = teamSalaryForSeason(team, season) + fillCost;
+  return {
+    count,
+    open,
+    fillCost,
+    projectedTotal,
+    projectedTier: classifyTier(projectedTotal, cap),
+  };
+}
+
 export function classifyTier(totalSalary: number, cap: SeasonCap): ApronTier {
   if (totalSalary >= cap.secondApron) return 'secondApron';
   if (totalSalary >= cap.firstApron) return 'firstApron';

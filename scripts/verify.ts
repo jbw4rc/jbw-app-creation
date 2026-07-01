@@ -1,7 +1,7 @@
 // Sanity checks for the apron + trade engines. Run with: npx tsx scripts/verify.ts
 import { TEAMS, getTeam } from '../src/data/teams';
 import { CURRENT_SEASON } from '../src/data/leagueConstants';
-import { summarizeTeamSeason } from '../src/lib/apron';
+import { summarizeTeamSeason, rosterFillProjection } from '../src/lib/apron';
 import { evaluateTrade } from '../src/lib/trade';
 import { evaluateSigning } from '../src/lib/freeAgent';
 import { parseContractsCsv } from '../src/lib/importCsv';
@@ -144,6 +144,12 @@ const tpeSample = [
 ].join('\n');
 setTradeExceptions(tpeSample);
 check('TPE: DEN remaining parsed', tradeExceptionsFor('DEN')[0]?.remaining === 6_880_985);
+
+console.log('\n=== Roster fill projection ===');
+const denFill = rosterFillProjection(getTeam('DEN'), CURRENT_SEASON);
+const denNow = summarizeTeamSeason(getTeam('DEN'), CURRENT_SEASON).totalSalary;
+check('incomplete roster adds minimum-fill cost', denFill.open > 0 && denFill.projectedTotal > denNow);
+console.log(`  DEN: ${denFill.count} signed, ${denFill.open} to fill -> projected ${money(denFill.projectedTotal)}`);
 
 console.log('\n=== CSV importer ===');
 // Mimic a Basketball-Reference "Get table as CSV" paste, including the

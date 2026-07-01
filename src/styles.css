@@ -229,6 +229,20 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 }
 .cs-status-note { font-size: 12px; color: var(--ink-soft); }
 
+/* Incomplete-roster projection */
+.cs-fill {
+  display: flex; flex-direction: column; gap: 2px; margin: 0 0 18px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: var(--card-2); border-left: 4px solid var(--slate, var(--blue));
+}
+.cs-fill-warn { background: rgba(179,133,28,0.09); border-left-color: var(--gold); }
+.cs-fill-head {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--ink-soft); font-weight: 600;
+}
+.cs-fill-body { font-size: 13px; color: var(--ink); }
+.cs-fill-warn .cs-fill-body strong { color: var(--gold); }
+
 /* Threshold ladder */
 .cs-ladder { border-top: 1px solid var(--rule); margin-bottom: 22px; }
 .cs-ladder-row {

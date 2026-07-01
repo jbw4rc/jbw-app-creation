@@ -2,7 +2,9 @@ import type { Team } from '../types';
 import { BUNDLED_ROSTERS, CURRENT_SEASON, SEASONS } from '../data/leagueConstants';
 import {
   apronStatusLine,
+  MIN_ROSTER,
   nextApronNote,
+  rosterFillProjection,
   summarizeTeamSeason,
   TIER_INFO,
   type SeasonSalarySummary,
@@ -63,6 +65,8 @@ export function CapSummary({ team }: { team: Team }) {
         </div>
       </div>
 
+      <RosterFill summary={current} team={team} />
+
       <div className="cs-ladder">
         <LadderRow label="Salary Cap" value={current.cap.salaryCap} space={current.spaceUnderCap} />
         <LadderRow
@@ -101,6 +105,36 @@ export function CapSummary({ team }: { team: Team }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function RosterFill({ summary, team }: { summary: SeasonSalarySummary; team: Team }) {
+  const fill = rosterFillProjection(team, summary.season);
+  if (fill.open <= 0) return null;
+
+  const cap = summary.cap;
+  const cur = summary.totalSalary;
+  const crossesSecond = cur < cap.secondApron && fill.projectedTotal >= cap.secondApron;
+  const crossesFirst = cur < cap.firstApron && fill.projectedTotal >= cap.firstApron;
+  const crossesTax = cur < cap.luxuryTax && fill.projectedTotal >= cap.luxuryTax;
+  const crossNote = crossesSecond
+    ? ' — inevitably over the second apron'
+    : crossesFirst
+      ? ' — inevitably over the first apron'
+      : crossesTax
+        ? ' — inevitably into the luxury tax'
+        : '';
+
+  return (
+    <div className={`cs-fill${crossNote ? ' cs-fill-warn' : ''}`}>
+      <span className="cs-fill-head">
+        Incomplete roster · {fill.count} of {MIN_ROSTER} signed
+      </span>
+      <span className="cs-fill-body">
+        Filling {fill.open} spot{fill.open > 1 ? 's' : ''} at the minimum adds ≈{' '}
+        {money(fill.fillCost)} → <strong>{money(fill.projectedTotal)}</strong> (
+        {TIER_INFO[fill.projectedTier].label}){crossNote}</span>
     </div>
   );
 }
