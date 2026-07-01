@@ -23,6 +23,7 @@ export function ImportData() {
     [csv]
   );
   const bbrefUrl = `https://www.basketball-reference.com/contracts/${abbr}.html`;
+  const swishUrl = 'https://salaryswish.com/';
   const canApply = parsed !== null && parsed.players.length > 0;
   const previewSeasons = parsed?.seasons.slice(0, 6) ?? [];
 
@@ -36,26 +37,33 @@ export function ImportData() {
     <div className="import">
       <div className="import-head">
         <span className="cs-kicker">Data Pipeline</span>
-        <h2 className="import-title">Import from Basketball-Reference</h2>
+        <h2 className="import-title">Import a salary table</h2>
         <p className="import-lede">
-          Paste a team's contracts table and it replaces the sample data
-          everywhere — summary, trade machine, and free-agent machine — and is
-          saved in your browser.
+          Paste a team's salaries from <strong>SalarySwish</strong>,{' '}
+          <strong>Basketball-Reference</strong>, or any similar table. The parser
+          auto-detects the format (copied cells or CSV), pulls in positions and
+          ages when present, and replaces the sample data everywhere — summary,
+          trade machine, and free-agent machine — saved in your browser.
         </p>
       </div>
 
       <ol className="import-steps">
         <li>
-          Pick a team and open its Basketball-Reference contracts page:{' '}
+          Open the team's page on{' '}
+          <a href={swishUrl} target="_blank" rel="noreferrer" className="import-link">
+            SalarySwish
+          </a>{' '}
+          or{' '}
           <a href={bbrefUrl} target="_blank" rel="noreferrer" className="import-link">
-            {bbrefUrl}
+            Basketball-Reference
           </a>
+          {' '}(BBRef: use <strong>Share &amp; Export → Get table as CSV</strong>).
         </li>
         <li>
-          On that page, use <strong>Share &amp; Export → Get table as CSV</strong> on
-          the salary table, then copy the CSV it shows.
+          Select the salary table and copy it (or copy the CSV). Include the
+          header row with the season columns.
         </li>
-        <li>Paste it below and press <strong>Parse</strong>, then <strong>Apply</strong>.</li>
+        <li>Paste it below — it parses live — then press <strong>Apply</strong>.</li>
       </ol>
 
       <div className="import-controls">
@@ -82,7 +90,7 @@ export function ImportData() {
         value={csv}
         onChange={(e) => setCsv(e.target.value)}
         placeholder={
-          'Paste Basketball-Reference contracts CSV here, e.g.\n\nPlayer,2025-26,2026-27,2027-28\nJayson Tatum,$54,126,450,$58,456,566,$62,786,682\n...'
+          'Paste a salary table here — copied cells (tab-separated) or CSV. e.g.\n\nPlayer,Pos,Age,2026-27,2027-28,2028-29\nJayson Tatum,SF,28,$58,456,566,$62,786,682,$67,116,798\n...'
         }
         spellCheck={false}
       />

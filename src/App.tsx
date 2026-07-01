@@ -11,7 +11,7 @@ const TABS: { id: Tab; label: string; blurb: string }[] = [
   { id: 'explorer', label: 'Team Explorer', blurb: 'Rosters, 5-year salary, picks & apron status' },
   { id: 'trade', label: 'Trade Machine', blurb: 'Test a swap against the apron rules' },
   { id: 'freeAgent', label: 'Free Agent Machine', blurb: 'Which signing tools are legal' },
-  { id: 'import', label: 'Import Data', blurb: 'Load real numbers from Basketball-Reference' },
+  { id: 'import', label: 'Import Data', blurb: 'Load real numbers from SalarySwish or BBRef' },
 ];
 
 export default function App() {

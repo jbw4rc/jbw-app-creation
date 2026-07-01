@@ -101,5 +101,19 @@ check(
 );
 check('detects seasons 2025-2027', parsed.seasons.join(',') === '2025,2026,2027');
 
+// A SalarySwish-style paste: tab-separated, with Pos/Age columns and $X.XM values.
+const swishTsv = [
+  'Player\tPos\tAge\t2026-27\t2027-28',
+  'Jayson Tatum\tSF\t28\t$58.5M\t$62.8M',
+  'Sam Hauser\tSF\t29\t$11.6M\t—',
+].join('\n');
+const swish = parseContractsCsv(swishTsv);
+check('parses tab-separated SalarySwish-style paste', swish.players.length === 2);
+check(
+  'reads $58.5M as 58,500,000',
+  swish.players[0]?.contract.find((c) => c.season === 2026)?.salary === 58_500_000
+);
+check('captures position and age', swish.players[0]?.position === 'SF' && swish.players[0]?.age === 28);
+
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : failures + ' CHECK(S) FAILED'}\n`);
 process.exit(failures === 0 ? 0 : 1);
