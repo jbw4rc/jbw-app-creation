@@ -12,12 +12,25 @@ import { TEAMS as BASE_TEAMS } from '../data/teams';
 // ---------------------------------------------------------------------------
 
 const STORAGE_KEY = 'apronRoom.teamOverrides.v1';
-type Overrides = Record<string, Player[]>;
+interface Override {
+  players: Player[];
+  updatedAt: string; // ISO timestamp of the import
+}
+type Overrides = Record<string, Override>;
 
 function loadOverrides(): Overrides {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Overrides) : {};
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, Player[] | Override>;
+    const out: Overrides = {};
+    for (const [abbr, value] of Object.entries(parsed)) {
+      // Migrate the earlier shape (a bare Player[]).
+      out[abbr] = Array.isArray(value)
+        ? { players: value, updatedAt: '' }
+        : value;
+    }
+    return out;
   } catch {
     return {};
   }
@@ -30,7 +43,7 @@ const listeners = new Set<() => void>();
 function compute(): Team[] {
   return BASE_TEAMS.map((t) =>
     overrides[t.abbreviation]
-      ? { ...t, players: overrides[t.abbreviation] }
+      ? { ...t, players: overrides[t.abbreviation].players }
       : t
   );
 }
@@ -56,8 +69,19 @@ export function getTeam(abbr: string): Team {
 }
 
 export function setTeamPlayers(abbr: string, players: Player[]): void {
-  overrides = { ...overrides, [abbr]: players };
+  overrides = { ...overrides, [abbr]: { players, updatedAt: new Date().toISOString() } };
   commit();
+}
+
+export interface RosterStatus {
+  imported: boolean;
+  updatedAt: string | null;
+}
+
+/** Whether a team is on imported data, and when it was imported. */
+export function getRosterStatus(abbr: string): RosterStatus {
+  const o = overrides[abbr];
+  return { imported: Boolean(o), updatedAt: o?.updatedAt || null };
 }
 
 export function clearTeamOverride(abbr: string): void {

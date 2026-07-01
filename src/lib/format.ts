@@ -25,3 +25,17 @@ export function spaceLabel(space: number): string {
   if (space >= 0) return `${money(space)} under`;
   return `${money(Math.abs(space))} over`;
 }
+
+/** "Jul 1, 2026, 4:41 PM" from an ISO timestamp; empty string if invalid. */
+export function whenUpdated(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}

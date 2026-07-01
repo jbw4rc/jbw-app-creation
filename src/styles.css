@@ -198,6 +198,15 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   display: block; margin-top: 5px; font-size: 11px; text-transform: uppercase;
   letter-spacing: 0.1em; color: var(--ink-faint);
 }
+.cs-roster-stamp {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+  font-size: 11px; color: var(--ink-faint); font-style: italic;
+}
+.cs-roster-stamp.stamp-live { color: var(--green); font-style: normal; font-weight: 500; }
+.stamp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+.chip-imported { margin-left: 6px; color: var(--green); font-weight: 800; font-size: 11px; }
+.team-chip.active .chip-imported { color: #7fe0b0; }
 
 .cs-hero {
   display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;

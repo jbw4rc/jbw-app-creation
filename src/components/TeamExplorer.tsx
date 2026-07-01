@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTeams } from '../lib/teamStore';
+import { getRosterStatus, useTeams } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
 import { CapSummary } from './CapSummary';
@@ -31,6 +31,9 @@ export function TeamExplorer() {
               onClick={() => setAbbr(t.abbreviation)}
             >
               <span className="chip-abbr">{t.abbreviation}</span>
+              {getRosterStatus(t.abbreviation).imported && (
+                <span className="chip-imported" title="Imported data">✓</span>
+              )}
             </button>
           );
         })}

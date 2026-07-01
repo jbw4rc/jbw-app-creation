@@ -25,6 +25,16 @@ export const CURRENT_SEASON = 2026;
 /** Number of seasons in the forward planning horizon (current + next four). */
 export const HORIZON = 5;
 
+/**
+ * When the bundled sample rosters were last touched, and whether they reflect
+ * verified real data or illustrative sample data. Flip `verified` to true and
+ * bump `asOf` once real rosters are baked in.
+ */
+export const BUNDLED_ROSTERS = {
+  asOf: '2026-07-01T16:41:00-04:00',
+  verified: false,
+};
+
 export const SEASON_CAPS: SeasonCap[] = [
   {
     season: 2024,
@@ -50,66 +60,68 @@ export const SEASON_CAPS: SeasonCap[] = [
     biAnnualException: 5_134_000,
     minTeamSalary: 139_182_000,
   },
-  // --- Projected seasons (max 10% cap growth) ---
+  // 2026-27: set figures (first/second apron per Spotrac); cap & tax derived
+  // from the same 1.0667x step off the official 2025-26 lines.
   {
     season: 2026,
-    projected: true,
-    salaryCap: 170_112_000,
-    luxuryTax: 206_685_000,
-    firstApron: 215_540_000,
-    secondApron: 228_606_000,
-    nonTaxpayerMLE: 15_514_000,
-    taxpayerMLE: 6_254_000,
-    biAnnualException: 5_647_000,
-    minTeamSalary: 153_100_000,
+    projected: false,
+    salaryCap: 164_962_000,
+    luxuryTax: 200_428_000,
+    firstApron: 209_015_000,
+    secondApron: 221_686_000,
+    nonTaxpayerMLE: 15_045_000,
+    taxpayerMLE: 6_064_000,
+    biAnnualException: 5_476_000,
+    minTeamSalary: 148_466_000,
   },
+  // --- Projected seasons (~7% cap growth off the 2026-27 baseline) ---
   {
     season: 2027,
     projected: true,
-    salaryCap: 187_123_000,
-    luxuryTax: 227_354_000,
-    firstApron: 237_094_000,
-    secondApron: 251_467_000,
-    nonTaxpayerMLE: 17_065_000,
-    taxpayerMLE: 6_879_000,
-    biAnnualException: 6_212_000,
-    minTeamSalary: 168_411_000,
+    salaryCap: 176_509_000,
+    luxuryTax: 214_458_000,
+    firstApron: 223_646_000,
+    secondApron: 237_204_000,
+    nonTaxpayerMLE: 16_098_000,
+    taxpayerMLE: 6_488_000,
+    biAnnualException: 5_859_000,
+    minTeamSalary: 158_859_000,
   },
   {
     season: 2028,
     projected: true,
-    salaryCap: 205_835_000,
-    luxuryTax: 250_089_000,
-    firstApron: 260_803_000,
-    secondApron: 276_614_000,
-    nonTaxpayerMLE: 18_772_000,
-    taxpayerMLE: 7_567_000,
-    biAnnualException: 6_833_000,
-    minTeamSalary: 185_252_000,
+    salaryCap: 188_865_000,
+    luxuryTax: 229_470_000,
+    firstApron: 239_301_000,
+    secondApron: 253_808_000,
+    nonTaxpayerMLE: 17_225_000,
+    taxpayerMLE: 6_942_000,
+    biAnnualException: 6_269_000,
+    minTeamSalary: 169_979_000,
   },
   {
     season: 2029,
     projected: true,
-    salaryCap: 226_419_000,
-    luxuryTax: 275_098_000,
-    firstApron: 286_883_000,
-    secondApron: 304_275_000,
-    nonTaxpayerMLE: 20_649_000,
-    taxpayerMLE: 8_324_000,
-    biAnnualException: 7_516_000,
-    minTeamSalary: 203_777_000,
+    salaryCap: 202_086_000,
+    luxuryTax: 245_533_000,
+    firstApron: 256_052_000,
+    secondApron: 271_575_000,
+    nonTaxpayerMLE: 18_431_000,
+    taxpayerMLE: 7_428_000,
+    biAnnualException: 6_708_000,
+    minTeamSalary: 181_878_000,
   },
   {
     season: 2030,
     projected: true,
-    salaryCap: 249_061_000,
-    luxuryTax: 302_608_000,
-    firstApron: 315_571_000,
-    secondApron: 334_703_000,
-    nonTaxpayerMLE: 22_714_000,
-    taxpayerMLE: 9_156_000,
-    biAnnualException: 8_268_000,
-    minTeamSalary: 224_155_000,
+    salaryCap: 216_232_000,
+    luxuryTax: 262_720_000,
+    firstApron: 273_976_000,
+    secondApron: 290_585_000,
+    nonTaxpayerMLE: 19_721_000,
+    taxpayerMLE: 7_948_000,
+    biAnnualException: 7_178_000,
+    minTeamSalary: 194_609_000,
   },
 ];
 

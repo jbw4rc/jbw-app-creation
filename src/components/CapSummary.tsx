@@ -1,5 +1,5 @@
 import type { Team } from '../types';
-import { CURRENT_SEASON, SEASONS } from '../data/leagueConstants';
+import { BUNDLED_ROSTERS, CURRENT_SEASON, SEASONS } from '../data/leagueConstants';
 import {
   apronStatusLine,
   nextApronNote,
@@ -7,7 +7,8 @@ import {
   TIER_INFO,
   type SeasonSalarySummary,
 } from '../lib/apron';
-import { money, seasonLabel } from '../lib/format';
+import { getRosterStatus } from '../lib/teamStore';
+import { money, seasonLabel, whenUpdated } from '../lib/format';
 
 // ---------------------------------------------------------------------------
 // The headline cap report for a team: a big 2025-26 total with its apron
@@ -20,6 +21,7 @@ export function CapSummary({ team }: { team: Team }) {
   const info = TIER_INFO[current.tier];
   const forecast = SEASONS.map((s) => summarizeTeamSeason(team, s));
   const note = nextApronNote(current);
+  const status = getRosterStatus(team.abbreviation);
 
   return (
     <div className="cap-summary">
@@ -28,6 +30,18 @@ export function CapSummary({ team }: { team: Team }) {
         <h2 className="cs-team">{team.name}</h2>
         <span className="cs-sub">
           {seasonLabel(CURRENT_SEASON)} · {current.cap.projected ? 'projected' : 'official'} cap
+        </span>
+        <span className={`cs-roster-stamp${status.imported ? ' stamp-live' : ''}`}>
+          {status.imported ? (
+            <>
+              <span className="stamp-dot" aria-hidden /> Roster imported
+              {whenUpdated(status.updatedAt) && <> · updated {whenUpdated(status.updatedAt)}</>}
+            </>
+          ) : BUNDLED_ROSTERS.verified ? (
+            <>Roster as of {whenUpdated(BUNDLED_ROSTERS.asOf)}</>
+          ) : (
+            <>Sample roster (illustrative) · import to load live figures</>
+          )}
         </span>
       </div>
 

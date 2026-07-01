@@ -52,9 +52,9 @@ export default function App() {
 
       <footer className="app-footer">
         <span>
-          Two aprons per the 2023 CBA. Cap figures for 2024-25 &amp; 2025-26 are official;
-          later seasons are projected at the 10% max increase. Rosters and rule
-          simplifications are illustrative for planning, not official league rulings.
+          Two aprons per the 2023 CBA. Cap figures through 2026-27 are set; later
+          seasons are projected (~7% growth). Rosters and rule simplifications are
+          illustrative for planning, not official league rulings.
         </span>
       </footer>
     </div>

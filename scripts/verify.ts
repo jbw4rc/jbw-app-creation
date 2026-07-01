@@ -25,7 +25,7 @@ console.log('\n=== Expected tiers (2026-27) ===');
 const expect: Record<string, string> = {
   BOS: 'secondApron',
   PHX: 'firstApron',
-  DEN: 'overTax',
+  DEN: 'firstApron',
   NYK: 'overCap',
   OKC: 'underCap',
   UTA: 'underCap',
