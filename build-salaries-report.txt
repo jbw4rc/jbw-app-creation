@@ -2,55 +2,41 @@ Pulling rosters from SalarySwish…
 homepage bytes: 357,067
 Discovered 30 teams: DEN:nuggets CHI:bulls OKC:thunder PHX:suns ORL:magic MIN:timberwolves NYK:knicks IND:pacers UTA:jazz SAC:kings MIA:heat BKN:nets BOS:celtics PHI:sixers LAC:clippers LAL:lakers TOR:raptors DET:pistons HOU:rockets NOP:pelicans POR:trailblazers SAS:spurs CLE:cavaliers ATL:hawks MIL:bucks GSW:warriors WAS:wizards DAL:mavericks CHA:hornets MEM:grizzlies
 
-DEN sections (7 tables): Active (12 - $233,534,668)[11] ; Training Camp and Exhibit 10 (3 - $4,085,907)[4] ; Minors/G-League (3 - $0)[0] ; 2nd Rd Picks (5 - $0)[0] ; RFAs (10 - $19,889,081)[11] ; UFAs (8 - $0)[9] ; FA Cap Hold (9 - $21,780,484)[10]
-DEN players (name : 2026 : #years):
-   Nikola Jokic             $   59,033,114  years=3 seasons=[2026,2027,2028]
-   Jamal Murray             $   50,105,628  years=4 seasons=[2026,2027,2028,2029]
-   Aaron Gordon             $   31,978,037  years=4 seasons=[2026,2027,2028,2029]
-   Cameron Johnson          $   23,062,500  years=2 seasons=[2026,2027]
-   Christian Braun          $   41,240,250  years=6 seasons=[2026,2027,2028,2029,2030,2031]
-   Jonas Valanciunas        $   10,000,000  years=2 seasons=[2026,2027]
-   Zeke Nnaji               $    7,466,667  years=3 seasons=[2026,2027,2028]
-   Julian Strawther         $    4,826,931  years=2 seasons=[2026,2027]
-   DaRon Holmes             $    3,372,120  years=3 seasons=[2026,2027,2028]
-   Marvin Bagley III        $    2,449,421  years=2 seasons=[2026,2027]
-   TOTAL                    $  233,534,668  years=5 seasons=[2026,2027,2028,2029,2030]
+Team   players  sum2026-27        checksum        match
+  ATL   13   $   178,171,351   $   178,171,351   OK
+  BKN   14   $   149,744,845   $   149,744,845   OK
+  BOS   14   $   197,748,288   $   197,748,288   OK
+  CHA   14   $   145,241,767   $   145,241,767   OK
+  CHI   11   $   140,209,689   $   140,209,689   OK
+  CLE   11   $   180,826,542   $     1,357,763   *** MISMATCH
+  DAL   10   $   155,419,446   $   155,419,446   OK
+  DEN   10   $   233,534,668   $   233,534,668   OK
+  DET   13   $   155,856,069   $   155,856,069   OK
+  GSW    9   $   175,805,827   $   175,805,827   OK
+  HOU   10   $   168,851,543   $       680,985   *** MISMATCH
+  IND   13   $   157,058,330   $   157,058,330   OK
+  LAC   10   $   129,323,741   $       678,882   *** MISMATCH
+  LAL   12   $   190,795,232   $   190,795,232   OK
+  MEM   17   $   141,319,533   $   141,319,533   OK
+  MIA   11   $   199,671,629   $   199,671,629   OK
+  MIL   14   $   132,152,516   $       680,985   *** MISMATCH
+  MIN   12   $   214,086,862   $   214,086,862   OK
+  NOP   14   $   190,671,399   $   190,671,399   OK
+  NYK   10   $   210,638,759   $   210,638,759   OK
+  OKC   11   $   214,212,346   $   214,212,346   OK
+  ORL   12   $   206,254,154   $       678,882   *** MISMATCH
+  PHI   12   $   196,964,451   $   196,964,451   OK
+  PHX   14   $   190,775,839   $   190,775,839   OK
+  POR   12   $   186,154,921   $   186,154,921   OK
+  SAC   11   $   203,389,139   $     1,357,763   *** MISMATCH
+  SAS   11   $   187,794,901   $   187,794,901   OK
+  TOR   10   $   191,130,868   $   191,130,868   OK
+  UTA   11   $   143,710,615   $   143,710,615   OK
+  WAS   13   $   170,830,671   $   170,830,671   OK
 
-Team            players  sum2026-27       statedActive
-  ATL   14   $   356,342,702   $178,171,351
-  BKN   15   $   299,489,690   $149,744,845
-  BOS   15   $   395,496,576   $197,748,288
-  CHA   15   $   290,483,534   $145,241,767
-  CHI   12   $   280,419,378   $140,209,689
-  CLE   13   $   361,653,084   $1,357,763
-  DAL   11   $   310,838,892   $155,419,446
-  DEN   11   $   467,069,336   $233,534,668
-  DET   14   $   311,712,138   $155,856,069
-  GSW   10   $   351,611,654   $175,805,827
-  HOU   11   $   337,703,086   $0
-  IND   14   $   314,116,660   $157,058,330
-  LAC   11   $   258,647,482   $0
-  LAL   13   $   381,590,464   $190,795,232
-  MEM   18   $   282,639,066   $141,319,533
-  MIA   12   $   399,343,258   $199,671,629
-  MIL   15   $   264,305,032   $0
-  MIN   13   $   428,173,724   $214,086,862
-  NOP   15   $   381,342,798   $190,671,399
-  NYK   11   $   421,277,518   $210,638,759
-  OKC   12   $   428,424,692   $214,212,346
-  ORL   13   $   412,508,308   $0
-  PHI   13   $   393,928,902   $196,964,451
-  PHX   15   $   381,551,678   $190,775,839
-  POR   13   $   372,309,842   $186,154,921
-  SAC   13   $   406,778,278   $1,357,763
-  SAS   12   $   375,589,802   $187,794,901
-  TOR   11   $   382,261,736   $191,130,868
-  UTA   12   $   287,421,230   $143,710,615
-  WAS   14   $   341,661,342   $170,830,671
+Total players: 359 · TPEs: 58 · checksum mismatches: 6/30
 
-Total players: 391 · TPEs: 58
-
-!! BUILD FAILED: Error: only 391 players — layout likely changed
-    at run (file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:226:31)
+!! BUILD FAILED: Error: 6 teams failed the Active-total checksum — parse likely off
+    at run (file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:230:27)
     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
-    at async file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:156:3
+    at async file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:166:3
