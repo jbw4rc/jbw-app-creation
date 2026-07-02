@@ -3,12 +3,18 @@ tables: 1
 
 == table[0] id=- rows=34
    headers: Team | Luxury Tax | Repeater | Taxed Amount | Bracket 1 | Bracket 2 | Bracket 3 | Bracket 4 | Bracket 5 | Bracket 6 | Bracket 7 | Bracket 8 | Bracket 9 | Bracket 10
-   --- row 0 strip --- Bracket Range: 0-6.064M 6.064-12.128M 12.128-18.192M 18.192-24.256M 24.256-30.320M 30.320-36.384M 36.384-42.448M 42.448-48.512M 48.512-54.576M 54.576-60.640M
-   --- row 0 raw   --- <tr><td>Bracket Range:</td><td></td><td></td><td></td><td>0-6.064M</td><td>6.064-12.128M</td><td>12.128-18.192M</td><td>18.192-24.256M</td><td>24.256-30.320M</td><td>30.320-36.384M</td><td>36.384-42.448M</td><td>42.448-48.512M</td><td>48.512-54.576M</td><td>54.576-60.640M</td></tr>
-   --- row 1 strip --- Standard Rate: 1.00x 1.25x 3.50x 4.75x 5.25x 5.75x 6.25x 6.75x 7.25x 7.75x
-   --- row 1 raw   --- <tr><td>Standard Rate:</td><td></td><td></td><td></td><td>1.00x</td><td>1.25x</td><td>3.50x</td><td>4.75x</td><td>5.25x</td><td>5.75x</td><td>6.25x</td><td>6.75x</td><td>7.25x</td><td>7.75x</td></tr>
-   --- row 2 strip --- Repeater Rate: 3.00x 3.25x 5.50x 6.75x 7.25x 7.75x 8.25x 8.75x 9.25x 9.75x
-   --- row 2 raw   --- <tr><td>Repeater Rate:</td><td></td><td></td><td></td><td>3.00x</td><td>3.25x</td><td>5.50x</td><td>6.75x</td><td>7.25x</td><td>7.75x</td><td>8.25x</td><td>8.75x</td><td>9.25x</td><td>9.75x</td></tr>
+   --- row 1 strip --- Bracket Range: 0-6.064M 6.064-12.128M 12.128-18.192M 18.192-24.256M 24.256-30.320M 30.320-36.384M 36.384-42.448M 42.448-48.512M 48.512-54.576M 54.576-60.640M
+   --- row 1 raw   --- <tr><td>Bracket Range:</td><td></td><td></td><td></td><td>0-6.064M</td><td>6.064-12.128M</td><td>12.128-18.192M</td><td>18.192-24.256M</td><td>24.256-30.320M</td><td>30.320-36.384M</td><td>36.384-42.448M</td><td>42.448-48.512M</td><td>48.512-54.576M</td><td>54.576-60.640M</td></tr>
+   --- row 2 strip --- Standard Rate: 1.00x 1.25x 3.50x 4.75x 5.25x 5.75x 6.25x 6.75x 7.25x 7.75x
+   --- row 2 raw   --- <tr><td>Standard Rate:</td><td></td><td></td><td></td><td>1.00x</td><td>1.25x</td><td>3.50x</td><td>4.75x</td><td>5.25x</td><td>5.75x</td><td>6.25x</td><td>6.75x</td><td>7.25x</td><td>7.75x</td></tr>
+   --- row 3 strip --- Repeater Rate: 3.00x 3.25x 5.50x 6.75x 7.25x 7.75x 8.25x 8.75x 9.25x 9.75x
+   --- row 3 raw   --- <tr><td>Repeater Rate:</td><td></td><td></td><td></td><td>3.00x</td><td>3.25x</td><td>5.50x</td><td>6.75x</td><td>7.25x</td><td>7.75x</td><td>8.25x</td><td>8.75x</td><td>9.25x</td><td>9.75x</td></tr>
+   --- row 4 strip --- ATL $0 $0 - - - - - - - - - -
+   --- row 4 raw   --- <tr><td><a href="/teams/hawks"><img class="im_mid" style="height:15px;width:15px;margin-right:5px;margin-top:-2px;" alt="Logo of the Atlanta Hawks" src="https://cdn.salaryswish.com/images/logos/hawks.svg">ATL</a></td><td>$0</td><td></td><td>$0</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+   --- row 5 strip --- BOS $132,678 ✓ $44,226 $132,678 - - - - - - - - -
+   --- row 5 raw   --- <tr><td><a href="/teams/celtics"><img class="im_mid" style="height:15px;width:15px;margin-right:5px;margin-top:-2px;" alt="Logo of the Boston Celtics" src="https://cdn.salaryswish.com/images/logos/celtics.svg">BOS</a></td><td>$132,678</td><td>✓</td><td>$44,226</td><td>$132,678</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+   --- row 6 strip --- BKN $0 $0 - - - - - - - - - -
+   --- row 6 raw   --- <tr><td><a href="/teams/nets"><img class="im_mid" style="height:15px;width:15px;margin-right:5px;margin-top:-2px;" alt="Logo of the Brooklyn Nets" src="https://cdn.salaryswish.com/images/logos/nets.svg">BKN</a></td><td>$0</td><td></td><td>$0</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
    checkbox/repeater tokens in table: Repeater
 
 -- rate/logic prose --
