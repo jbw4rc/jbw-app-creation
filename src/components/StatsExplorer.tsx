@@ -11,9 +11,16 @@ import { useTeams } from '../lib/teamStore';
 type Mode = 'leaderboard' | 'team';
 type Group = 'all' | 'darko' | 'box' | 'advanced' | 'value';
 
-// Join key: lowercase, no accents/punctuation (matches the DARKO seed).
+// Join key: lowercase, no accents/punctuation, suffixes dropped (matches the DARKO seed).
 const norm = (s: string) =>
-  s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z ]/g, '')
+    .replace(/\b(jr|sr|ii|iii|iv)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 // Stats rows augmented with DARKO DPM (once, at module load).
 const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {

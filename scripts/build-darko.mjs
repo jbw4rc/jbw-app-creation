@@ -11,7 +11,14 @@ const HEADERS = {
 
 // Normalize a player name for joining across sources (strip accents/punctuation).
 const norm = (s) =>
-  s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+  s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z ]/g, '')
+    .replace(/\b(jr|sr|ii|iii|iv)\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 const num = (s) => { const n = parseFloat(s); return Number.isFinite(n) ? n : null; };
 const f2 = (n) => (n == null ? null : Math.round(n * 100) / 100);
