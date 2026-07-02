@@ -5,3 +5,8 @@ dist/
 .vite/
 npm-debug.log*
 *.tsbuildinfo
+
+# SalarySwish pipeline diagnostics/artifacts
+build-salaries-report.txt
+swish-*.html
+swish-probe-output.txt
