@@ -50,6 +50,10 @@ export interface PlayerStats {
   dpm?: number | null;
   odpm?: number | null;
   ddpm?: number | null;
+  /** DARKO estimated market value, in $M. */
+  value?: number | null;
+  /** DARKO market value minus actual salary, in $M. */
+  surplus?: number | null;
 }
 
 export interface StatsBundle {
@@ -71,6 +75,8 @@ export interface StatColumn {
   /** Decimal places; 0 for integers. Percentages are stored 0–1 and shown ×100. */
   decimals: number;
   percent?: boolean;
+  /** Render as a dollar figure in millions (value stored in $M). */
+  money?: boolean;
   /** Grouping for column sets. */
   group: 'box' | 'advanced' | 'value' | 'darko';
   /** Higher is better (default true) — drives leaderboard default sort direction. */
@@ -81,6 +87,8 @@ export const STAT_COLUMNS: StatColumn[] = [
   { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus (total)', decimals: 1, group: 'darko' },
   { key: 'odpm', label: 'O-DPM', title: 'DARKO offensive plus-minus', decimals: 1, group: 'darko' },
   { key: 'ddpm', label: 'D-DPM', title: 'DARKO defensive plus-minus', decimals: 1, group: 'darko' },
+  { key: 'value', label: 'Value', title: 'DARKO estimated market value ($M)', decimals: 1, money: true, group: 'darko' },
+  { key: 'surplus', label: 'Surplus', title: 'DARKO market value minus actual salary ($M)', decimals: 1, money: true, group: 'darko' },
 
   { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, group: 'box' },
   { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, group: 'box' },

@@ -22,6 +22,8 @@ const norm = (s) =>
 
 const num = (s) => { const n = parseFloat(s); return Number.isFinite(n) ? n : null; };
 const f2 = (n) => (n == null ? null : Math.round(n * 100) / 100);
+// Dollars → millions, 1 decimal (e.g. 94052625 → 94.1).
+const fM = (n) => (n == null ? null : Math.round(n / 1e5) / 10);
 
 console.log('Pulling DARKO DPM from darko.app…');
 const html = await (await fetch('https://darko.app/', { headers: HEADERS })).text();
@@ -42,11 +44,13 @@ for (const p of parts) {
   const odpm = num((p.match(/(?:^|[,{])o_dpm:(-?[\d.]+)/) || [])[1]);
   const ddpm = num((p.match(/(?:^|[,{])d_dpm:(-?[\d.]+)/) || [])[1]);
   const rank = num((p.match(/_rank:(\d+)/) || [])[1]);
+  const value = num((p.match(/sal_market_fixed:(-?[\d.]+)/) || [])[1]);
+  const surplus = num((p.match(/surplus_value:(-?[\d.]+)/) || [])[1]);
   const games = num((p.match(/career_game_num:(\d+)/) || [])[1]) ?? 0;
   if (!id || !name || dpm == null) continue;
   // Keep one row per player (the most-experienced / current snapshot line).
   const prev = byId.get(id);
-  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, rank, games });
+  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, value, surplus, rank, games });
 }
 
 const players = [...byId.values()].sort((a, b) => b.dpm - a.dpm);
@@ -58,7 +62,7 @@ console.log('  top 5 by DPM: ' + players.slice(0, 5).map((p) => `${p.name} ${p.d
 const out = {};
 for (const p of players) {
   const key = norm(p.name);
-  if (!(key in out)) out[key] = { name: p.name, dpm: f2(p.dpm), odpm: f2(p.odpm), ddpm: f2(p.ddpm), rank: p.rank };
+  if (!(key in out)) out[key] = { name: p.name, dpm: f2(p.dpm), odpm: f2(p.odpm), ddpm: f2(p.ddpm), value: fM(p.value), surplus: fM(p.surplus), rank: p.rank };
 }
 
 writeFileSync(
