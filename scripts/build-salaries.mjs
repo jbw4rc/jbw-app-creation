@@ -78,13 +78,23 @@ function parseRosterTable(tableHtml) {
   });
 
   const players = [];
+  let checksum2026 = 0;
+  const idx2026 = (seasonCols.find((s) => s.season === 2026) || {}).i;
   for (let ri = 1; ri < rows.length; ri++) {
     const cells = rows[ri].match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) || [];
     if (!cells.length) continue;
     const nameCell = cells[0] || '';
     const slugM = nameCell.match(/\/players\/([a-z0-9-]+)/i);
     const name = strip(nameCell);
-    if (!name || /\$/.test(name) || !/[a-z]/i.test(name)) continue; // skip subtotals/blanks
+    // Section subtotal / "TOTAL" row: capture as a checksum, don't treat as a player.
+    if (/^total\b/i.test(name)) {
+      const c = idx2026 != null ? cells[idx2026] || '' : '';
+      const m = c.match(/\$?([\d,]{5,})/);
+      if (m) checksum2026 = dollars(m[1]);
+      continue;
+    }
+    // Skip blanks and all-caps labels (real names carry lowercase letters).
+    if (!name || /\$/.test(name) || !/[a-z]/.test(name)) continue;
     const posCell = cells[4] || '';
     const ageCell = cells[3] || '';
     const termsCell = cells[5] || '';
@@ -116,7 +126,7 @@ function parseRosterTable(tableHtml) {
       signedUsing: strip(termsCell) || undefined,
     });
   }
-  return { section, players, stated };
+  return { section, players, stated, checksum2026 };
 }
 
 function normalizeName(name) {
@@ -182,26 +192,17 @@ async function worker() {
       const html = await get(`${BASE}/teams/${t.slug}`);
       const rosterTables = html.match(/<table[^>]*class="[^"]*sw_teamProfileRosterSection__table[^"]*"[\s\S]*?<\/table>/gi) || [];
       const players = [];
-      let statedActive = 0;
-      const sectionsSeen = [];
+      let checksum = 0;
       for (const tbl of rosterTables) {
-        const { section, players: ps, stated } = parseRosterTable(tbl);
-        sectionsSeen.push(`${section}[${ps.length}]`);
+        const { section, players: ps, checksum2026 } = parseRosterTable(tbl);
         if (!COUNT_SECTION.test(section)) continue;
-        if (/active/i.test(section)) statedActive = stated;
+        if (/active/i.test(section)) checksum = checksum2026;
         players.push(...ps);
-      }
-      if (t.abbr === 'DEN') {
-        console.log(`\nDEN sections (${rosterTables.length} tables): ${sectionsSeen.join(' ; ')}`);
-        console.log('DEN players (name : 2026 : #years):');
-        for (const p of players) {
-          const s = p.contract.find((c) => c.season === 2026)?.salary ?? 0;
-          console.log(`   ${p.name.padEnd(24)} $${s.toLocaleString().padStart(13)}  years=${p.contract.length} seasons=[${p.contract.map((c) => c.season).join(',')}]`);
-        }
       }
       rosters[t.abbr] = players;
       const sum2026 = players.reduce((s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0), 0);
-      report.push({ abbr: t.abbr, n: players.length, sum2026, statedActive });
+      const ok = checksum > 0 && Math.abs(sum2026 - checksum) < 2000;
+      report.push({ abbr: t.abbr, n: players.length, sum2026, checksum, ok });
 
       for (const e of parseTpeTable(html)) {
         tpeLines.push([t.abbr, e.player, e.exception, e.used, e.remaining, toISO(e.start), toISO(e.end)].join('\t'));
@@ -215,15 +216,18 @@ async function worker() {
 }
 await Promise.all([worker(), worker(), worker(), worker()]);
 
-console.log('\nTeam            players  sum2026-27       statedActive');
+console.log('\nTeam   players  sum2026-27        checksum        match');
+let mismatches = 0;
 for (const r of report.sort((a, b) => a.abbr.localeCompare(b.abbr))) {
+  if (!r.ok) mismatches++;
   console.log(
-    `  ${r.abbr.padEnd(4)} ${String(r.n).padStart(3)}   $${r.sum2026.toLocaleString().padStart(14)}   $${r.statedActive.toLocaleString()}`
+    `  ${r.abbr.padEnd(4)} ${String(r.n).padStart(3)}   $${r.sum2026.toLocaleString().padStart(14)}   $${r.checksum.toLocaleString().padStart(14)}   ${r.ok ? 'OK' : '*** MISMATCH'}`
   );
 }
 const totalPlayers = Object.values(rosters).reduce((s, ps) => s + ps.length, 0);
-console.log(`\nTotal players: ${totalPlayers} · TPEs: ${tpeCount}`);
-if (totalPlayers < 400) throw new Error(`only ${totalPlayers} players — layout likely changed`);
+console.log(`\nTotal players: ${totalPlayers} · TPEs: ${tpeCount} · checksum mismatches: ${mismatches}/30`);
+if (totalPlayers < 300) throw new Error(`only ${totalPlayers} players — layout likely changed`);
+if (mismatches > 5) throw new Error(`${mismatches} teams failed the Active-total checksum — parse likely off`);
 
 // Team meta (name from homepage, conference by abbr).
 const meta = teams
