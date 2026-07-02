@@ -56,8 +56,8 @@ export function DraftCapital({ team }: { team: Team }) {
         })}
       </div>
       <div className="draft-placeholder-note">
-        Pick ownership is a placeholder (each team's own firsts) — trades are not
-        reflected.
+        Pick ownership from SalarySwish (2027–2033) — incoming picks tagged by
+        original team; <strong>COND.</strong> = protected or unresolved swap.
       </div>
     </div>
   );
