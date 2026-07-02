@@ -45,6 +45,11 @@ export interface PlayerStats {
   dbpm: number;
   bpm: number;
   vorp: number;
+
+  // DARKO Daily Plus-Minus (joined by name from darko.app; may be absent).
+  dpm?: number | null;
+  odpm?: number | null;
+  ddpm?: number | null;
 }
 
 export interface StatsBundle {
@@ -67,12 +72,16 @@ export interface StatColumn {
   decimals: number;
   percent?: boolean;
   /** Grouping for column sets. */
-  group: 'box' | 'advanced' | 'value';
+  group: 'box' | 'advanced' | 'value' | 'darko';
   /** Higher is better (default true) — drives leaderboard default sort direction. */
   higherBetter?: boolean;
 }
 
 export const STAT_COLUMNS: StatColumn[] = [
+  { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus (total)', decimals: 1, group: 'darko' },
+  { key: 'odpm', label: 'O-DPM', title: 'DARKO offensive plus-minus', decimals: 1, group: 'darko' },
+  { key: 'ddpm', label: 'D-DPM', title: 'DARKO defensive plus-minus', decimals: 1, group: 'darko' },
+
   { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, group: 'box' },
   { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, group: 'box' },
   { key: 'ast', label: 'AST', title: 'Assists per game', decimals: 1, group: 'box' },

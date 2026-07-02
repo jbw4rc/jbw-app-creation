@@ -1,13 +1,25 @@
 import { useMemo, useState } from 'react';
 import { SEEDED_STATS } from '../data/seededStats';
+import { SEEDED_DARKO } from '../data/seededDarko';
 import { STAT_COLUMNS, type PlayerStats, type StatColumn } from '../data/statsTypes';
 import { useTeams } from '../lib/teamStore';
 
 // A FanGraphs-style advanced-stats viewer: a sortable league leaderboard and a
-// per-team split, driven by the Basketball-Reference seed (auto-pulled in CI).
+// per-team split. Box/advanced/value stats come from the Basketball-Reference
+// seed; DARKO Daily Plus-Minus is joined by name from darko.app. Both auto-pull.
 
 type Mode = 'leaderboard' | 'team';
-type Group = 'all' | 'box' | 'advanced' | 'value';
+type Group = 'all' | 'darko' | 'box' | 'advanced' | 'value';
+
+// Join key: lowercase, no accents/punctuation (matches the DARKO seed).
+const norm = (s: string) =>
+  s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
+
+// Stats rows augmented with DARKO DPM (once, at module load).
+const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {
+  const d = SEEDED_DARKO[norm(p.name)];
+  return d ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm } : p;
+});
 
 const IDENTITY_COLS: { key: keyof PlayerStats; label: string; title: string }[] = [
   { key: 'age', label: 'Age', title: 'Age' },
@@ -26,11 +38,11 @@ export function StatsExplorer() {
   const bundle = SEEDED_STATS;
   const teams = useTeams();
   const [mode, setMode] = useState<Mode>('leaderboard');
-  const [group, setGroup] = useState<Group>('advanced');
+  const [group, setGroup] = useState<Group>('darko');
   const [teamAbbr, setTeamAbbr] = useState('DEN');
   const [query, setQuery] = useState('');
   const [minGames, setMinGames] = useState(20);
-  const [sortKey, setSortKey] = useState<keyof PlayerStats>('vorp');
+  const [sortKey, setSortKey] = useState<keyof PlayerStats>('dpm');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const cols = useMemo(
@@ -39,7 +51,7 @@ export function StatsExplorer() {
   );
 
   const rows = useMemo(() => {
-    let list = bundle.players;
+    let list = ROWS;
     if (mode === 'team') {
       list = list.filter((p) => p.teams.includes(teamAbbr) || p.team === teamAbbr);
     } else {
@@ -51,8 +63,12 @@ export function StatsExplorer() {
     }
     const dir = sortDir === 'asc' ? 1 : -1;
     return [...list].sort((a, b) => {
-      const av = a[sortKey] as number | string;
-      const bv = b[sortKey] as number | string;
+      const av = a[sortKey] as number | string | null | undefined;
+      const bv = b[sortKey] as number | string | null | undefined;
+      // Missing values (e.g. no DARKO match) always sort last.
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
       if (typeof av === 'string' || typeof bv === 'string') {
         return String(av).localeCompare(String(bv)) * dir;
       }
@@ -125,6 +141,7 @@ export function StatsExplorer() {
         <label className="stats-field">
           <span>Columns</span>
           <select value={group} onChange={(e) => setGroup(e.target.value as Group)}>
+            <option value="darko">DARKO DPM</option>
             <option value="advanced">Advanced</option>
             <option value="value">Value (BPM/WS/VORP)</option>
             <option value="box">Box score</option>
@@ -219,9 +236,10 @@ export function StatsExplorer() {
         {rows.length === 0 && <div className="stats-empty">No players match.</div>}
       </div>
       <p className="stats-foot">
-        Percentages shown ×100. Traded players show their full-season combined
-        line (<span className="stats-multi">*</span> = multiple teams); they
-        appear under each team they played for.
+        DPM / O-DPM / D-DPM are DARKO Daily Plus-Minus (darko.app); box &amp;
+        advanced stats are Basketball-Reference. Percentages shown ×100. Traded
+        players show their full-season combined line (
+        <span className="stats-multi">*</span> = multiple teams).
       </p>
     </div>
   );

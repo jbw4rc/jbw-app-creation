@@ -1,0 +1,37 @@
+# Pull DARKO DPM from darko.app and commit the seed. Runs on GitHub's runners.
+name: Build DARKO
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 12 * * *' # daily, 12:30 UTC
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/build-darko.mjs'
+      - '.github/workflows/build-darko.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pull DARKO DPM
+        run: node scripts/build-darko.mjs
+      - name: Commit seed if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/seededDarko.ts
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update DARKO DPM from darko.app"
+            git pull --rebase && git push
+          fi
