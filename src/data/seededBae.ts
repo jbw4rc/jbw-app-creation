@@ -28,10 +28,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "CHI": {
-    "initial": 0,
+    "initial": 5477000,
     "used": 0,
-    "space": 0,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "CLE": {
     "initial": 5477000,
@@ -136,10 +136,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHI": {
-    "initial": 5477000,
+    "initial": 4688580,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 4688580,
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "PHX": {
     "initial": 0,
