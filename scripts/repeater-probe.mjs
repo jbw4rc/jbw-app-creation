@@ -21,9 +21,11 @@ tables.forEach((t, i) => {
   const header = (rows[0]?.match(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi) || []).map(strip);
   log(`\n== table[${i}] id=${id} rows=${rows.length}`);
   log(`   headers: ${header.join(' | ')}`);
-  rows.slice(1, 4).forEach((r, ri) => {
-    log(`   --- row ${ri} strip --- ${strip(r)}`);
-    log(`   --- row ${ri} raw   --- ${r.replace(/>\s+</g, '><').slice(0, 700)}`);
+  // Rate/range rows (0-2) then the first few TEAM rows (3+) to see repeater markup.
+  [1, 2, 3, 4, 5, 6].forEach((ri) => {
+    if (!rows[ri]) return;
+    log(`   --- row ${ri} strip --- ${strip(rows[ri])}`);
+    log(`   --- row ${ri} raw   --- ${rows[ri].replace(/>\s+</g, '><').slice(0, 900)}`);
   });
   // Any checkbox / checked markers?
   const checks = t.match(/type="checkbox"[^>]*>|checked|repeater/gi) || [];
