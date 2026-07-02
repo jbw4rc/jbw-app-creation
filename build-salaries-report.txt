@@ -1,0 +1,42 @@
+Pulling rosters from SalarySwish…
+homepage bytes: 357,067
+Discovered 30 teams: DEN:nuggets CHI:bulls OKC:thunder PHX:suns ORL:magic MIN:timberwolves NYK:knicks IND:pacers UTA:jazz SAC:kings MIA:heat BKN:nets BOS:celtics PHI:sixers LAC:clippers LAL:lakers TOR:raptors DET:pistons HOU:rockets NOP:pelicans POR:trailblazers SAS:spurs CLE:cavaliers ATL:hawks MIL:bucks GSW:warriors WAS:wizards DAL:mavericks CHA:hornets MEM:grizzlies
+
+Team            players  sum2026-27       statedActive
+  ATL   14   $   356,342,702   $178,171,351
+  BKN   15   $   299,489,690   $149,744,845
+  BOS   15   $   395,496,576   $197,748,288
+  CHA   15   $   290,483,534   $145,241,767
+  CHI   12   $   280,419,378   $140,209,689
+  CLE   13   $   361,653,084   $1,357,763
+  DAL   11   $   310,838,892   $155,419,446
+  DEN   11   $   467,069,336   $233,534,668
+  DET   14   $   311,712,138   $155,856,069
+  GSW   10   $   351,611,654   $175,805,827
+  HOU   11   $   337,703,086   $0
+  IND   14   $   314,116,660   $157,058,330
+  LAC   11   $   258,647,482   $0
+  LAL   13   $   381,590,464   $190,795,232
+  MEM   18   $   282,639,066   $141,319,533
+  MIA   12   $   399,343,258   $199,671,629
+  MIL   15   $   264,305,032   $0
+  MIN   13   $   428,173,724   $214,086,862
+  NOP   15   $   381,342,798   $190,671,399
+  NYK   11   $   421,277,518   $210,638,759
+  OKC   12   $   428,424,692   $214,212,346
+  ORL   13   $   412,508,308   $0
+  PHI   13   $   393,928,902   $196,964,451
+  PHX   15   $   381,551,678   $190,775,839
+  POR   13   $   372,309,842   $186,154,921
+  SAC   13   $   406,778,278   $1,357,763
+  SAS   12   $   375,589,802   $187,794,901
+  TOR   11   $   382,261,736   $191,130,868
+  UTA   12   $   287,421,230   $143,710,615
+  WAS   14   $   341,661,342   $170,830,671
+
+Total players: 391 · TPEs: 58
+
+!! BUILD FAILED: Error: only 391 players — layout likely changed
+    at run (file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:216:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:156:3
