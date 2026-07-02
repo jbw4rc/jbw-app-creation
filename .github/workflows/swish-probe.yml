@@ -25,5 +25,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f swish-probe-output.txt swish-team-sample.html
+          git add -f swish-probe-output.txt swish-roster-table.html swish-draft-table.html swish-tpe-table.html
           if git diff --staged --quiet; then echo "no output"; else git commit -m "SalarySwish probe output" && git push; fi

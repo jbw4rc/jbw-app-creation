@@ -95,7 +95,21 @@ if (candidate) {
   console.log(`  status ${tp.status} · ${tp.body.length.toLocaleString()} bytes`);
   console.log(`  title: ${(tp.body.match(/<title>([^<]*)<\/title>/) || [])[1] || '?'}`);
   summarizeTables(tp.body, 'team-page tables');
-  writeFileSync('swish-team-sample.html', tp.body.slice(0, 8000));
+  const grab = (idOrClass) => {
+    const re = new RegExp(`<table[^>]*(?:id|class)="[^"]*${idOrClass}[^"]*"[\\s\\S]*?<\\/table>`, 'i');
+    return (tp.body.match(re) || [''])[0];
+  };
+  const roster = grab('sw_teamProfileRosterSection__table');
+  const draft = grab('sw_teamProfile__draftTable');
+  const tpe = grab('sw_table__tradeExptn_tm');
+  writeFileSync('swish-roster-table.html', roster.slice(0, 9000));
+  writeFileSync('swish-draft-table.html', draft.slice(0, 6000));
+  writeFileSync('swish-tpe-table.html', tpe.slice(0, 4000));
+  // Print the first two data rows of the roster table, raw, so cell markup is visible.
+  const rrows = roster.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  console.log('\n  roster table first 3 rows (raw):');
+  rrows.slice(0, 3).forEach((r, i) => console.log(`  --- row ${i} ---\n  ${r.slice(0, 1400)}`));
+  console.log('\n  draft table (raw, 1200): ' + draft.slice(0, 1200));
 }
 
 console.log('\nProbe complete.');
