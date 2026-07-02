@@ -1,0 +1,20 @@
+# Throwaway discovery probe for SalarySwish structure. Removed once mapped.
+name: SalarySwish probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/swish-probe.mjs'
+      - '.github/workflows/swish-probe.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/swish-probe.mjs
