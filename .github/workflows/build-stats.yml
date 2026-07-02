@@ -1,0 +1,42 @@
+# Pull player advanced stats from Basketball-Reference and commit the seed.
+# Runs on GitHub's runners (which can reach BBRef, unlike the dev sandbox).
+name: Build stats
+
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: 'Season end year (e.g. 2026 for 2025-26)'
+        default: '2026'
+  schedule:
+    - cron: '0 11 * * 1' # weekly, Monday 11:00 UTC
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/build-stats.mjs'
+      - '.github/workflows/build-stats.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pull stats from Basketball-Reference
+        run: node scripts/build-stats.mjs ${{ github.event.inputs.season || '2026' }}
+      - name: Commit seed if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/seededStats.ts
+          if git diff --staged --quiet; then
+            echo "No stat changes."
+          else
+            git commit -m "Update seeded stats from Basketball-Reference"
+            git push
+          fi
