@@ -9,9 +9,24 @@ import {
   summarizeTeamSeason,
   TIER_INFO,
 } from '../lib/apron';
-import { evaluateTrade, type TeamTradeResult } from '../lib/trade';
+import { evaluateTrade, type SelectedTpe, type TeamTradeResult } from '../lib/trade';
+import {
+  tradeExceptionsFor,
+  useTradeExceptions,
+  type TradeException,
+} from '../lib/tradeExceptionsStore';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
+
+// The current league year begins ~July 1 of the focal season. A TPE created
+// before then is a "prior-year" exception, frozen for second-apron teams.
+const LEAGUE_YEAR_START = new Date(`${CURRENT_SEASON}-07-01T00:00:00`);
+
+function toSelectedTpe(te: TradeException): SelectedTpe {
+  const start = te.start ? new Date(te.start) : null;
+  const priorYear = Boolean(start && !Number.isNaN(start.getTime()) && start < LEAGUE_YEAR_START);
+  return { player: te.player, remaining: te.remaining, expired: te.expired, priorYear };
+}
 
 // The Trade Machine: pick two teams, select outgoing players from each, and see
 // the legality verdict plus a before/after apron read for both sides.
@@ -23,13 +38,22 @@ export function TradeMachine() {
   const [selB, setSelB] = useState<Set<string>>(new Set());
   const [pickA, setPickA] = useState<Set<number>>(new Set());
   const [pickB, setPickB] = useState<Set<number>>(new Set());
+  const [tpeA, setTpeA] = useState<number | null>(null);
+  const [tpeB, setTpeB] = useState<number | null>(null);
 
   const teams = useTeams();
+  useTradeExceptions(); // re-render when the imported TPE set changes
   const teamA = teams.find((t) => t.abbreviation === abbrA) ?? teams[0];
   const teamB = teams.find((t) => t.abbreviation === abbrB) ?? teams[1];
 
   const picksOut = (team: Team, sel: Set<number>): DraftPick[] =>
     [...sel].map((i) => team.draftCapital[i]).filter(Boolean);
+
+  const tpeOf = (team: Team, idx: number | null): SelectedTpe | undefined => {
+    if (idx == null) return undefined;
+    const te = tradeExceptionsFor(team.abbreviation)[idx];
+    return te ? toSelectedTpe(te) : undefined;
+  };
 
   const evaluation = useMemo(
     () =>
@@ -38,15 +62,17 @@ export function TradeMachine() {
           team: teamA,
           outgoingPlayerIds: [...selA],
           outgoingPicks: picksOut(teamA, pickA),
+          tpe: tpeOf(teamA, tpeA),
         },
         {
           team: teamB,
           outgoingPlayerIds: [...selB],
           outgoingPicks: picksOut(teamB, pickB),
+          tpe: tpeOf(teamB, tpeB),
         },
         CURRENT_SEASON
       ),
-    [teamA, teamB, selA, selB, pickA, pickB]
+    [teamA, teamB, selA, selB, pickA, pickB, tpeA, tpeB]
   );
 
   const toggle = (side: 'A' | 'B', id: string) => {
@@ -63,20 +89,32 @@ export function TradeMachine() {
     setSel(next);
   };
 
+  const toggleTpe = (side: 'A' | 'B', index: number) => {
+    const [sel, setSel] = side === 'A' ? [tpeA, setTpeA] : [tpeB, setTpeB];
+    setSel(sel === index ? null : index);
+  };
+
   const changeTeam = (side: 'A' | 'B', abbr: string) => {
     if (side === 'A') {
       setAbbrA(abbr);
       setSelA(new Set());
       setPickA(new Set());
+      setTpeA(null);
     } else {
       setAbbrB(abbr);
       setSelB(new Set());
       setPickB(new Set());
+      setTpeB(null);
     }
   };
 
   const hasSelection =
-    selA.size > 0 || selB.size > 0 || pickA.size > 0 || pickB.size > 0;
+    selA.size > 0 ||
+    selB.size > 0 ||
+    pickA.size > 0 ||
+    pickB.size > 0 ||
+    tpeA != null ||
+    tpeB != null;
 
   return (
     <div className="trade-machine">
@@ -106,8 +144,10 @@ export function TradeMachine() {
           team={teamA}
           selected={selA}
           selectedPicks={pickA}
+          selectedTpe={tpeA}
           onToggle={(id) => toggle('A', id)}
           onTogglePick={(i) => togglePick('A', i)}
+          onToggleTpe={(i) => toggleTpe('A', i)}
           onTeamChange={(abbr) => changeTeam('A', abbr)}
           disabledTeam={abbrB}
           result={evaluation.teams[0]}
@@ -117,8 +157,10 @@ export function TradeMachine() {
           team={teamB}
           selected={selB}
           selectedPicks={pickB}
+          selectedTpe={tpeB}
           onToggle={(id) => toggle('B', id)}
           onTogglePick={(i) => togglePick('B', i)}
+          onToggleTpe={(i) => toggleTpe('B', i)}
           onTeamChange={(abbr) => changeTeam('B', abbr)}
           disabledTeam={abbrA}
           result={evaluation.teams[1]}
@@ -133,8 +175,10 @@ interface ColumnProps {
   team: Team;
   selected: Set<string>;
   selectedPicks: Set<number>;
+  selectedTpe: number | null;
   onToggle: (id: string) => void;
   onTogglePick: (index: number) => void;
+  onToggleTpe: (index: number) => void;
   onTeamChange: (abbr: string) => void;
   disabledTeam: string;
   result: TeamTradeResult;
@@ -144,8 +188,10 @@ function TradeColumn({
   team,
   selected,
   selectedPicks,
+  selectedTpe,
   onToggle,
   onTogglePick,
+  onToggleTpe,
   onTeamChange,
   disabledTeam,
   result,
@@ -158,6 +204,7 @@ function TradeColumn({
   const inSecondApron =
     summarizeTeamSeason(team, CURRENT_SEASON).tier === 'secondApron';
   const frozenYear = frozenPickYear(CURRENT_SEASON);
+  const tpes = tradeExceptionsFor(team.abbreviation);
 
   const sorted = [...team.players].sort(
     (a, b) =>
@@ -231,6 +278,40 @@ function TradeColumn({
         </div>
       </div>
 
+      {tpes.length > 0 && (
+        <div className="trade-tpes">
+          <span className="trade-tpes-head">Trade Exceptions · absorb salary into</span>
+          <div className="trade-tpes-list">
+            {tpes.map((te, i) => {
+              const frozen = inSecondApron && toSelectedTpe(te).priorYear && !te.expired;
+              return (
+                <button
+                  key={`${te.player}-${i}`}
+                  className={`trade-tpe${selectedTpe === i ? ' selected' : ''}${
+                    te.expired ? ' expired' : ''
+                  }${frozen ? ' frozen' : ''}`}
+                  onClick={te.expired ? undefined : () => onToggleTpe(i)}
+                  disabled={te.expired}
+                  title={
+                    te.expired
+                      ? 'Expired — no longer usable'
+                      : frozen
+                        ? 'Prior-year TPE — frozen over the second apron'
+                        : `Absorb up to ${money(te.remaining)}`
+                  }
+                >
+                  <span className="tp-check">{selectedTpe === i ? '✓' : ''}</span>
+                  <span className="ttpe-amt">{money(te.remaining)}</span>
+                  <span className="ttpe-player">{te.player}</span>
+                  {te.expired && <span className="ttpe-flag">EXPIRED</span>}
+                  {frozen && <span className="ttpe-flag">FROZEN</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <PickFlow result={result} />
 
       <div className="trade-flow">
@@ -251,6 +332,9 @@ function TradeColumn({
           >
             {money(result.maxAllowedIncoming)}
           </span>
+          {result.tpeCapacity > 0 && (
+            <span className="flow-sub">incl. {money(result.tpeCapacity)} TPE</span>
+          )}
         </div>
       </div>
 

@@ -300,25 +300,20 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "signedUsing": "Max"
     },
     {
-      "id": "imp-2-brownjaylen",
-      "name": "Jaylen Brown",
-      "position": "SG, SF",
-      "age": 29,
+      "id": "imp-2-georgepaul",
+      "name": "Paul George",
+      "position": "SF, SG",
+      "age": 36,
       "contract": [
         {
           "season": 2026,
-          "salary": 57078728,
+          "salary": 54126380,
           "option": "guaranteed"
         },
         {
           "season": 2027,
-          "salary": 61015192,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 64951656,
-          "option": "guaranteed"
+          "salary": 56586670,
+          "option": "player"
         }
       ],
       "signedUsing": "Max"
@@ -5119,20 +5114,25 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "signedUsing": "Max"
     },
     {
-      "id": "imp-2-georgepaul",
-      "name": "Paul George",
-      "position": "SF, SG",
-      "age": 36,
+      "id": "imp-2-brownjaylen",
+      "name": "Jaylen Brown",
+      "position": "SG, SF",
+      "age": 29,
       "contract": [
         {
           "season": 2026,
-          "salary": 54126380,
+          "salary": 57078728,
           "option": "guaranteed"
         },
         {
           "season": 2027,
-          "salary": 56586670,
-          "option": "player"
+          "salary": 61015192,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 64951656,
+          "option": "guaranteed"
         }
       ],
       "signedUsing": "Max"

@@ -584,6 +584,26 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .pick-flow-label { font-size: 9.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; align-self: center; }
 .pick-flow-value { font-family: var(--serif); font-weight: 600; text-align: right; }
 
+.trade-tpes { margin: 12px 0 4px; }
+.trade-tpes-head { display: block; font-size: 9.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.trade-tpes-list { display: flex; flex-direction: column; gap: 4px; }
+.trade-tpe {
+  display: grid; grid-template-columns: 16px auto 1fr auto; gap: 8px; align-items: center;
+  background: var(--card-2); border: 1px solid transparent; color: var(--ink);
+  padding: 6px 10px; border-radius: var(--radius-sm); font-size: 12px; text-align: left;
+  cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.trade-tpe:hover:not(.expired) { background: #ece6d8; }
+.trade-tpe.selected { border-color: var(--teal); background: rgba(31,122,110,0.08); }
+.trade-tpe.frozen { border-color: var(--red); }
+.trade-tpe.expired { opacity: 0.45; cursor: not-allowed; text-decoration: line-through; }
+.trade-tpe .ttpe-amt { font-family: var(--serif); font-weight: 700; font-variant-numeric: tabular-nums; }
+.trade-tpe .ttpe-player { color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trade-tpe .ttpe-flag { font-size: 8.5px; font-weight: 800; letter-spacing: 0.05em; color: var(--red); }
+.trade-tpe .tp-check { color: var(--teal); font-weight: 800; }
+
+.flow-sub { display: block; font-size: 9px; color: var(--teal); margin-top: 2px; }
+
 .trade-beforeafter { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
 .ba-block { flex: 1; }
 .ba-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-faint); margin-bottom: 4px; }

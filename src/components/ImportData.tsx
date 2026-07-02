@@ -176,12 +176,13 @@ export function ImportData() {
           <span className="cs-kicker">This Offseason</span>
           <h2 className="import-title">Offseason Signings</h2>
           <p className="import-lede">
-            Paste the offseason signings table (with <strong>Team</strong>,{' '}
-            <strong>Method</strong>, and <strong>Date</strong> columns). The app
-            reads the exception each team spent — MLE, taxpayer MLE, room,
-            bi-annual — and lights up “Used” in the Free Agent Quiver. Bird
-            re-signings, minimums, and two-ways are ignored; only signings on or
-            after June 1 count.
+            The current SalarySwish offseason log ships bundled by default and
+            already feeds the Free Agent Quiver. Paste a newer table here (with{' '}
+            <strong>Team</strong>, <strong>Method</strong>, and{' '}
+            <strong>Date</strong> columns) to override it. The app reads the
+            exception each team spent — MLE, taxpayer MLE, room, bi-annual — and
+            lights up “Used” in the Quiver. Bird re-signings, minimums, and
+            two-ways are ignored; only signings on or after June 1 count.
           </p>
         </div>
         <textarea
@@ -199,7 +200,7 @@ export function ImportData() {
             <>
               <span className="signings-count">{signingsN} exceptions tracked</span>
               <button className="import-reset" onClick={clearSignings}>
-                Clear
+                Reset to default
               </button>
             </>
           )}
@@ -211,10 +212,12 @@ export function ImportData() {
           <span className="cs-kicker">Assets</span>
           <h2 className="import-title">Trade Exceptions</h2>
           <p className="import-lede">
-            Paste the trade-exception (TPE) table (with <strong>Team</strong>,{' '}
+            The current SalarySwish TPE table ships bundled by default — live
+            exceptions show in each team's asset breakdown and can be absorbed
+            into in the Trade Machine; expired ones are set aside automatically.
+            Paste a newer table (with <strong>Team</strong>,{' '}
             <strong>Player</strong>, <strong>Remaining</strong>, and{' '}
-            <strong>End Date</strong> columns). Live exceptions show in each team's
-            asset breakdown; expired ones are set aside automatically.
+            <strong>End Date</strong> columns) to override it.
           </p>
         </div>
         <textarea
@@ -232,7 +235,7 @@ export function ImportData() {
             <>
               <span className="signings-count">{tpeN} exceptions loaded</span>
               <button className="import-reset" onClick={clearTradeExceptions}>
-                Clear
+                Reset to default
               </button>
             </>
           )}

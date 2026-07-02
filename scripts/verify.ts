@@ -115,6 +115,49 @@ if (denOkPick) {
   );
 }
 
+console.log('\n=== Trade exceptions in the machine ===');
+const lal = getTeam('LAL');
+const utaCheapest = bySalary(uta.players).find(
+  (p) => (p.contract.find((c) => c.season === CURRENT_SEASON)?.salary ?? 0) > 0
+)!;
+const lalSide = { team: lal, outgoingPlayerIds: [] as string[] };
+const lalOther = { team: uta, outgoingPlayerIds: [utaCheapest.id] };
+const noTpe = evaluateTrade(lalSide, lalOther, CURRENT_SEASON).teams[0];
+const withTpe = evaluateTrade(
+  { ...lalSide, tpe: { player: 'Test TPE', remaining: 10_000_000, expired: false, priorYear: false } },
+  lalOther,
+  CURRENT_SEASON
+).teams[0];
+check(
+  'a valid TPE adds absorb capacity to max legal incoming',
+  withTpe.tpeCapacity === 10_000_000 &&
+    withTpe.maxAllowedIncoming - noTpe.maxAllowedIncoming === 10_000_000
+);
+
+const expiredTpe = evaluateTrade(
+  { ...lalSide, tpe: { player: 'Old TPE', remaining: 10_000_000, expired: true, priorYear: false } },
+  lalOther,
+  CURRENT_SEASON
+);
+check(
+  'an expired TPE is blocked',
+  expiredTpe.blockingViolations.some((v) => v.code === 'tpe-expired')
+);
+
+const denPriorTpe = evaluateTrade(
+  {
+    team: den,
+    outgoingPlayerIds: [bySalary(den.players).slice(-1)[0].id],
+    tpe: { player: 'Prior TPE', remaining: 5_000_000, expired: false, priorYear: true },
+  },
+  { team: uta, outgoingPlayerIds: [bySalary(uta.players).slice(-1)[0].id] },
+  CURRENT_SEASON
+);
+check(
+  'second-apron team cannot use a prior-year TPE',
+  denPriorTpe.blockingViolations.some((v) => v.code === 'tpe-second-apron')
+);
+
 console.log('\n=== Free agent engine ===');
 // Second-apron DEN cannot sign a $12.8M MLE player.
 const faDen = evaluateSigning(den, CURRENT_SEASON, 12_822_000);
@@ -169,6 +212,18 @@ check(
   'MLE arrow flips to "used" from a transactions entry',
   gswUsed.find((a) => a.key === 'ntmle')?.status === 'used'
 );
+
+console.log('\n=== Seeded league defaults (bundled) ===');
+check(
+  'seeded signings load by default (GSW spent its MLE)',
+  usedExceptionsFor('GSW').some((u) => u.family === 'mle')
+);
+check(
+  'seeded signings load by default (LAL spent its MLE)',
+  usedExceptionsFor('LAL').some((u) => u.family === 'mle')
+);
+check('seeded TPEs load by default (ATL has exceptions)', tradeExceptionsFor('ATL').length > 0);
+check('seeded TPEs load by default (BOS has exceptions)', tradeExceptionsFor('BOS').length > 0);
 
 console.log('\n=== Transactions & TPE parsers ===');
 const txn = [

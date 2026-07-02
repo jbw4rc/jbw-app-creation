@@ -72,6 +72,87 @@ function statedTotal(rows: string[][]): number {
   return m ? parseInt(m[1].replace(/,/g, ''), 10) : 0;
 }
 
+// Resolve a SalarySwish team cell (e.g. "Logo of the Utah JazzUTA" or
+// "Logo of the Atlanta HawksAtlanta Hawks") down to its 3-letter abbreviation.
+function resolveAbbr(cell: string): string | null {
+  const raw = String(cell ?? '').trim();
+  if (!raw) return null;
+  // Signings tab suffixes the abbreviation (…JazzUTA); prefer that when valid.
+  const trail = raw.match(/([A-Z]{2,4})$/);
+  if (trail) {
+    const abbr = trail[1].slice(-3);
+    if (TEAMS.some((t) => t.abbr === abbr)) return abbr;
+  }
+  // Trade Exceptions tab embeds the full name twice; match by name/sheet.
+  for (const t of TEAMS) {
+    if (raw.includes(t.name) || raw.includes(t.sheet)) return t.abbr;
+  }
+  return null;
+}
+
+// Excel serial date → ISO YYYY-MM-DD (SalarySwish stores dates as serials).
+function serialToISO(v: unknown): string {
+  const n = typeof v === 'number' ? v : parseFloat(String(v));
+  if (!Number.isFinite(n) || n < 20000 || n > 80000) return String(v ?? '').trim();
+  return new Date(Math.round((n - 25569) * 86400 * 1000)).toISOString().slice(0, 10);
+}
+
+function cell(row: unknown[], i: number): string {
+  return String(row?.[i] ?? '').trim();
+}
+
+/** Flatten the "Signings" tab into the tab-separated log the store parses. */
+function buildSigningsText(rows: unknown[][]): { text: string; count: number } {
+  const header = (rows[0] ?? []).map((c) => String(c).toLowerCase());
+  const iPlayer = header.indexOf('player');
+  const iTeam = header.indexOf('team');
+  const iMethod = header.indexOf('method');
+  const iDate = header.indexOf('date');
+  const out: string[] = ['PLAYER\tTEAM\tMETHOD\tDATE'];
+  let count = 0;
+  for (const row of rows.slice(1)) {
+    const abbr = resolveAbbr(cell(row, iTeam));
+    if (!abbr) continue;
+    const player = cell(row, iPlayer).replace(/unconfirmed information/i, '').trim();
+    if (!player) continue;
+    out.push([player, abbr, cell(row, iMethod), serialToISO(row[iDate])].join('\t'));
+    count += 1;
+  }
+  return { text: out.join('\n'), count };
+}
+
+/** Flatten the "Trade Exceptions" tab into the tab-separated table the store parses. */
+function buildTpeText(rows: unknown[][]): { text: string; count: number } {
+  const header = (rows[0] ?? []).map((c) => String(c).toLowerCase());
+  const iTeam = header.indexOf('team');
+  const iPlayer = header.indexOf('player');
+  const iException = header.indexOf('exception');
+  const iUsed = header.indexOf('used');
+  const iRemaining = header.indexOf('remaining');
+  const iStart = header.findIndex((h) => h.includes('start'));
+  const iEnd = header.findIndex((h) => h.includes('end'));
+  const num = (v: unknown) => String(v ?? '').replace(/[^\d]/g, '') || '0';
+  const out: string[] = ['Team\tPlayer\tException\tUsed\tRemaining\tStart Date\tEnd Date'];
+  let count = 0;
+  for (const row of rows.slice(1)) {
+    const abbr = resolveAbbr(cell(row, iTeam));
+    if (!abbr) continue;
+    out.push(
+      [
+        abbr,
+        cell(row, iPlayer),
+        num(row[iException]),
+        num(row[iUsed]),
+        num(row[iRemaining]),
+        serialToISO(row[iStart]),
+        serialToISO(row[iEnd]),
+      ].join('\t')
+    );
+    count += 1;
+  }
+  return { text: out.join('\n'), count };
+}
+
 const wb = XLSX.readFile(XLSX_PATH);
 const out: Record<string, unknown> = {};
 const meta: TeamDef[] = [];
@@ -122,4 +203,33 @@ const metaBody =
   )};\n`;
 writeFileSync('src/data/teamMeta.ts', metaBody);
 
-console.log('\nWrote src/data/seededRosters.ts and src/data/teamMeta.ts');
+// --- Offseason signings + trade exceptions (league-wide default) -------------
+function tabRows(sheetName: string): unknown[][] {
+  const ws = wb.Sheets[sheetName];
+  if (!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, defval: '' }) as unknown[][];
+}
+
+const esc = (s: string) => '`' + s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${') + '`';
+
+const signings = buildSigningsText(tabRows('Signings'));
+writeFileSync(
+  'src/data/seededSignings.ts',
+  `// AUTO-GENERATED offseason signings log from the SalarySwish export.\n` +
+    `// Regenerate: npx tsx scripts/build-seed.ts <xlsx>\n` +
+    `export const SEEDED_SIGNINGS = ${esc(signings.text)};\n`
+);
+
+const tpes = buildTpeText(tabRows('Trade Exceptions'));
+writeFileSync(
+  'src/data/seededTradeExceptions.ts',
+  `// AUTO-GENERATED trade-exception (TPE) table from the SalarySwish export.\n` +
+    `// Regenerate: npx tsx scripts/build-seed.ts <xlsx>\n` +
+    `export const SEEDED_TRADE_EXCEPTIONS = ${esc(tpes.text)};\n`
+);
+
+console.log(
+  `\nWrote src/data/seededRosters.ts, src/data/teamMeta.ts, ` +
+    `src/data/seededSignings.ts (${signings.count} signings), ` +
+    `src/data/seededTradeExceptions.ts (${tpes.count} TPEs)`
+);

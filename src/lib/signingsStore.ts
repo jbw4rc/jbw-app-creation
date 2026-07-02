@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { TEAM_META } from '../data/teamMeta';
 import { CURRENT_SEASON } from '../data/leagueConstants';
+import { SEEDED_SIGNINGS } from '../data/seededSignings';
 
 // ---------------------------------------------------------------------------
 // Offseason transactions log. Parses a pasted signings table (SalarySwish-style,
@@ -23,15 +24,20 @@ export interface UsedException {
 
 type UsedMap = Record<string, UsedException[]>;
 
-function load(): UsedMap {
+// A stored value (even empty) means the user has imported; null means "never
+// imported" → fall back to the baked league-wide default.
+function load(): UsedMap | null {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw == null ? null : JSON.parse(raw);
   } catch {
-    return {};
+    return null;
   }
 }
 
-let usedMap: UsedMap = load();
+const seedMap = () => parseSignings(SEEDED_SIGNINGS);
+
+let usedMap: UsedMap = load() ?? seedMap();
 const listeners = new Set<() => void>();
 
 function commit() {
@@ -61,8 +67,8 @@ function cleanName(cell: string): string {
   return cell.replace(/unconfirmed information/i, '').trim();
 }
 
-/** Parse a pasted transactions table into the used-exception map. */
-export function setSignings(rawText: string): { tracked: number; teams: number } {
+/** Pure parse of a transactions table into the used-exception map. */
+function parseSignings(rawText: string): UsedMap {
   const lines = rawText
     .split(/\r?\n/)
     .map((l) => l.replace(/\s+$/, ''))
@@ -80,11 +86,7 @@ export function setSignings(rawText: string): { tracked: number; teams: number }
       break;
     }
   }
-  if (headerIdx === -1) {
-    usedMap = {};
-    commit();
-    return { tracked: 0, teams: 0 };
-  }
+  if (headerIdx === -1) return {};
 
   const header = split(lines[headerIdx]).map((x) => x.toLowerCase());
   const col = (name: string) => header.indexOf(name);
@@ -111,16 +113,26 @@ export function setSignings(rawText: string): { tracked: number; teams: number }
       player: cleanName(f[iPlayer] || ''),
     });
   }
-
-  usedMap = map;
-  commit();
-  const tracked = Object.values(map).reduce((n, arr) => n + arr.length, 0);
-  return { tracked, teams: Object.keys(map).length };
+  return map;
 }
 
-export function clearSignings(): void {
-  usedMap = {};
+/** Parse a pasted transactions table and persist it as the active log. */
+export function setSignings(rawText: string): { tracked: number; teams: number } {
+  usedMap = parseSignings(rawText);
   commit();
+  const tracked = signingsCount();
+  return { tracked, teams: Object.keys(usedMap).length };
+}
+
+/** Reset to the baked league-wide default (clears any user import). */
+export function clearSignings(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  usedMap = seedMap();
+  listeners.forEach((l) => l());
 }
 
 export function usedExceptionsFor(abbr: string): UsedException[] {

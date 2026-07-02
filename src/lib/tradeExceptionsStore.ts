@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { TEAM_META } from '../data/teamMeta';
 import { BUNDLED_ROSTERS } from '../data/leagueConstants';
+import { SEEDED_TRADE_EXCEPTIONS } from '../data/seededTradeExceptions';
 
 // ---------------------------------------------------------------------------
 // Traded-player exceptions (TPEs) — a tradeable asset. Parses a pasted table
@@ -24,15 +25,20 @@ export interface TradeException {
 
 type TpeMap = Record<string, TradeException[]>;
 
-function load(): TpeMap {
+// A stored value (even empty) means the user has imported; null means "never
+// imported" → fall back to the baked league-wide default.
+function load(): TpeMap | null {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw == null ? null : JSON.parse(raw);
   } catch {
-    return {};
+    return null;
   }
 }
 
-let tpeMap: TpeMap = load();
+const seedMap = () => parseTradeExceptions(SEEDED_TRADE_EXCEPTIONS);
+
+let tpeMap: TpeMap = load() ?? seedMap();
 const listeners = new Set<() => void>();
 
 function commit() {
@@ -56,8 +62,8 @@ function dollars(cell: string): number {
   return digits ? parseInt(digits, 10) : 0;
 }
 
-/** Parse a pasted TPE table into the per-team map. */
-export function setTradeExceptions(rawText: string): { count: number; teams: number } {
+/** Pure parse of a TPE table into the per-team map. */
+function parseTradeExceptions(rawText: string): TpeMap {
   const lines = rawText
     .split(/\r?\n/)
     .map((l) => l.replace(/\s+$/, ''))
@@ -74,11 +80,7 @@ export function setTradeExceptions(rawText: string): { count: number; teams: num
       break;
     }
   }
-  if (headerIdx === -1) {
-    tpeMap = {};
-    commit();
-    return { count: 0, teams: 0 };
-  }
+  if (headerIdx === -1) return {};
 
   const header = split(lines[headerIdx]).map((x) => x.toLowerCase());
   const idx = (name: string) => header.indexOf(name);
@@ -115,18 +117,28 @@ export function setTradeExceptions(rawText: string): { count: number; teams: num
   for (const abbr of Object.keys(map)) {
     map[abbr].sort((a, b) => b.remaining - a.remaining);
   }
+  return map;
+}
 
-  tpeMap = map;
+/** Parse a pasted TPE table and persist it as the active set. */
+export function setTradeExceptions(rawText: string): { count: number; teams: number } {
+  tpeMap = parseTradeExceptions(rawText);
   commit();
   return {
-    count: Object.values(map).reduce((n, arr) => n + arr.length, 0),
-    teams: Object.keys(map).length,
+    count: tpeCount(),
+    teams: Object.keys(tpeMap).length,
   };
 }
 
+/** Reset to the baked league-wide default (clears any user import). */
 export function clearTradeExceptions(): void {
-  tpeMap = {};
-  commit();
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+  tpeMap = seedMap();
+  listeners.forEach((l) => l());
 }
 
 export function tradeExceptionsFor(abbr: string): TradeException[] {

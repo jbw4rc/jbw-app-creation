@@ -31,6 +31,16 @@ export interface TradeViolation {
   detail: string;
 }
 
+/** A trade exception a team elects to absorb incoming salary into. */
+export interface SelectedTpe {
+  player: string;
+  remaining: number;
+  /** Past its end date — cannot be used. */
+  expired: boolean;
+  /** Generated before the current league year — frozen for second-apron teams. */
+  priorYear: boolean;
+}
+
 export interface TeamTradeResult {
   teamAbbr: string;
   teamName: string;
@@ -41,6 +51,9 @@ export interface TeamTradeResult {
   outgoingSalary: number;
   incomingSalary: number;
   cashSent: number;
+  /** Extra incoming capacity granted by the selected TPE (0 if none/invalid). */
+  tpeCapacity: number;
+  tpeUsed?: SelectedTpe;
   preSalary: number;
   postSalary: number;
   preTier: ApronTier;
@@ -120,6 +133,8 @@ export interface ProposedTradeSide {
   outgoingPlayerIds: string[];
   outgoingPicks?: DraftPick[];
   cashSent?: number;
+  /** A trade exception this side elects to absorb incoming salary into. */
+  tpe?: SelectedTpe;
 }
 
 /**
@@ -153,14 +168,42 @@ export function evaluateTrade(
     const postTier = classifyTier(postSalary, cap);
 
     const capRoom = cap.salaryCap - preSalary;
-    const maxAllowedIncoming = maxIncomingFor(preTier, outgoingSalary, capRoom);
+
+    const violations: TradeViolation[] = [];
+
+    // --- Trade exception (TPE) absorption ---
+    // A valid TPE lets the team take back salary beyond normal matching, up to
+    // its remaining amount, as a separate slot.
+    const tpe = self.tpe;
+    let tpeCapacity = 0;
+    if (tpe) {
+      if (tpe.expired) {
+        violations.push({
+          code: 'tpe-expired',
+          severity: 'block',
+          title: 'Trade exception has expired',
+          detail: `The ${tpe.player} trade exception is past its end date and can no longer be used.`,
+        });
+      } else if (preTier === 'secondApron' && tpe.priorYear) {
+        violations.push({
+          code: 'tpe-second-apron',
+          severity: 'block',
+          title: 'Second-apron team cannot use a prior-year TPE',
+          detail: `Over the second apron, trade exceptions generated in a previous league year (here, ${tpe.player}) are frozen.`,
+        });
+      } else {
+        tpeCapacity = tpe.remaining;
+      }
+    }
+
+    const maxAllowedIncoming =
+      maxIncomingFor(preTier, outgoingSalary, capRoom) + tpeCapacity;
 
     const crossesFirstApron =
       preSalary < cap.firstApron && postSalary >= cap.firstApron;
     const crossesSecondApron =
       preSalary < cap.secondApron && postSalary >= cap.secondApron;
 
-    const violations: TradeViolation[] = [];
     let hardCappedAt: TeamTradeResult['hardCappedAt'];
 
     // --- Salary matching ---
@@ -179,14 +222,16 @@ export function evaluateTrade(
 
     // --- Second-apron team: already over the line ---
     if (preTier === 'secondApron') {
-      if (incomingSalary > outgoingSalary + 1) {
+      if (incomingSalary > outgoingSalary + tpeCapacity + 1) {
         violations.push({
           code: 'second-apron-takeback',
           severity: 'block',
           title: 'Second-apron team cannot take back more than it sends',
           detail: `Over the second apron, incoming salary (${fmt(
             incomingSalary
-          )}) must be ≤ outgoing salary (${fmt(outgoingSalary)}).`,
+          )}) must be ≤ outgoing salary (${fmt(outgoingSalary)})${
+            tpeCapacity > 0 ? ` plus the ${fmt(tpeCapacity)} trade exception` : ''
+          }.`,
         });
       }
       if (outgoingPlayers.length > 1) {
@@ -288,6 +333,8 @@ export function evaluateTrade(
       outgoingSalary,
       incomingSalary,
       cashSent,
+      tpeCapacity,
+      tpeUsed: tpe,
       preSalary,
       postSalary,
       preTier,
