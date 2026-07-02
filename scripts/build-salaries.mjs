@@ -100,6 +100,8 @@ function parseRosterTable(tableHtml) {
     const posCell = cells[4] || '';
     const ageCell = cells[3] || '';
     const termsCell = cells[5] || '';
+    // Two-way players sit in various sections; SalarySwish tags them in Terms.
+    const isTwoWay = /two.?way/i.test(strip(termsCell));
     const contract = [];
     for (const { i, season } of seasonCols) {
       const cell = cells[i] || '';
@@ -115,9 +117,9 @@ function parseRosterTable(tableHtml) {
       else if (/non[_-]?guaranteed/i.test(cell)) option = 'nonGuaranteed';
       contract.push({ season, salary, option });
     }
-    // Drop trailing FA-only entries (no salary) so they don't clutter, but keep
-    // an FA marker for the current season if present.
-    if (!contract.some((c) => c.salary > 0)) continue;
+    // Drop salary-less rows (FAs, empty picks), but keep two-way players (their
+    // cap hit is $0 yet they belong to the roster).
+    if (!isTwoWay && !contract.some((c) => c.salary > 0)) continue;
     const age = parseInt(strip(ageCell).replace(/[^\d]/g, ''), 10);
     players.push({
       id: slugM ? `ss-${slugM[1]}` : `ss-${name.replace(/[^a-z0-9]/gi, '').toLowerCase()}`,
@@ -126,6 +128,7 @@ function parseRosterTable(tableHtml) {
       age: Number.isFinite(age) ? age : 0,
       contract,
       signedUsing: strip(termsCell) || undefined,
+      ...(isTwoWay ? { twoWay: true } : {}),
     });
   }
   return { section, players, stated, checksum2026 };
@@ -346,14 +349,12 @@ async function worker() {
       let checksum = 0;
       for (const tbl of rosterTables) {
         const { section, players: ps, checksum2026 } = parseRosterTable(tbl);
-        const isTwoWay = /two.?way/i.test(section);
-        // Cap-counting sections + two-way (two-way players belong to the team
-        // but their salary does not count against the cap).
-        if (!COUNT_SECTION.test(section) && !isTwoWay) continue;
         if (/active/i.test(section)) checksum = checksum2026;
+        const isCount = COUNT_SECTION.test(section);
         for (const p of ps) {
-          if (isTwoWay) p.twoWay = true;
-          players.push(p);
+          // Cap-counting sections contribute all players; other sections
+          // (Minors/G-League, etc.) contribute only their two-way players.
+          if (isCount || p.twoWay) players.push(p);
         }
       }
       rosters[t.abbr] = players;
