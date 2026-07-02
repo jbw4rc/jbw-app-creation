@@ -21,6 +21,21 @@ scripts.forEach((s, i) => {
   else if (inner.length > 500) log(`  script[${i}] inline ${inner.length}b · has dpm=${/dpm/i.test(inner)} · sample: ${inner.slice(0, 160).replace(/\s+/g, ' ')}`);
 });
 
+// The DPM data is embedded in a big inline script. Dump its record shape.
+const big = scripts.map((s) => s[2]).filter((x) => /dpm/i.test(x)).sort((a, b) => b.length - a.length)[0] || '';
+log(`\nbig inline script: ${big.length.toLocaleString()}b`);
+const firstDpm = big.search(/"?[a-z_]*dpm/i);
+log(`\n-- window around first dpm (idx ${firstDpm}) --\n${big.slice(Math.max(0, firstDpm - 700), firstDpm + 700)}`);
+// Keys appearing near dpm (the record's fields).
+const keyWin = big.slice(Math.max(0, firstDpm - 1500), firstDpm + 1500);
+const keys = [...new Set((keyWin.match(/["']?[a-z_][a-z0-9_]*["']?\s*:/gi) || []).map((k) => k.replace(/[\s:"']/g, '')))].slice(0, 40);
+log(`\n-- candidate keys near dpm --\n${keys.join(', ')}`);
+// A known player, to confirm name field + values.
+for (const nm of ['Jokic', 'Gilgeous', 'Doncic', 'Wembanyama']) {
+  const idx = big.indexOf(nm);
+  if (idx > -1) { log(`\n-- window around "${nm}" (idx ${idx}) --\n${big.slice(idx - 200, idx + 700)}`); break; }
+}
+
 // Fetch JS assets and hunt for data endpoints.
 const assetUrls = [...html.matchAll(/src="([^"]+\.js)"/g)].map((m) => m[1]).map((u) => (u.startsWith('http') ? u : 'https://darko.app' + (u.startsWith('/') ? u : '/' + u)));
 log(`\nJS assets: ${assetUrls.length}`);
