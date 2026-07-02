@@ -21,4 +21,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f signings-debug.txt
-          git commit -m "signings probe output" && git push || echo "no output"
+          git commit -m "signings probe output" || echo "nothing to commit"
+          git pull --rebase && git push
