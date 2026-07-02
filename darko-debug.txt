@@ -2,4 +2,29 @@ index.html 2,537,890 bytes · "dpm" occurrences: 8170
   script[0] inline 1001b · has dpm=false · sample:  (function () { const THEME_KEY = 'darko-theme'; var THEMES = ['black', 'dark', 'light', 'white']; try { var saved = localStorage.getItem(TH
   script[1] inline 748118b · has dpm=true · sample:  { __sveltekit_14d216a = { base: new URL(".", location).pathname.slice(0, -1) }; const element = document.currentScript.parentElement;
 
+big inline script: 748,118b
+
+-- window around first dpm (idx 570) --
+
+				{
+					__sveltekit_14d216a = {
+						base: new URL(".", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("./_app/immutable/entry/start.DbrEcRxj.js"),
+						import("./_app/immutable/entry/app.DCuxZwfB.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2],
+							data: [null,{type:"data",data:{players:[{nba_id:203999,date:"2026-04-30",season:2026,team_name:"Denver Nuggets",tm_id:1610612743,future_game:0,active_roster:1,available:1,poss:83.5,dpm:7.35021,o_dpm:5.2328,d_dpm:2.11741,box_dpm:5.4748,box_odpm:4.43478,box_ddpm:1.04002,on_off_dpm:7.58983,on_off_odpm:5.36519,on_off_ddpm:2.22465,age:31.1931880407403,career_game_num:983,seconds_played:2603,position:"C",position_num:4.5,x_position:"c_pos",bayes_rapm_off:null,bayes_rapm_def:null,bayes_rapm_total:null,rapm_exposure:null,x_minutes:38.4596,x_pace:99.1342,x_pts_100:33.6615,x_ast_100:12.1444,x_orb_100:3.45855,x_drb_100:14.5439,x_stl_100:1.96092,x_blk_100:1.11178,x_tov_100:5.03511,x_fga_100:23.9465,x_fg3a_100:4.89423,x_fta_100:10.3421,x_fg_pct:.517247,x_fg3_pct:.338752,x_ft_pct:.820315,tr_minutes:38.3508,tr_starter:1.06588,tr_fg3_pct:.345261,tr_ft_pct:.823029,projected_years_remai
+
+-- candidate keys near dpm --
+base, node_ids, data, type, players, nba_id, date, season, team_name, tm_id, future_game, active_roster, available, poss, dpm, o_dpm, d_dpm, box_dpm, box_odpm, box_ddpm, on_off_dpm, on_off_odpm, on_off_ddpm, age, career_game_num, seconds_played, position, position_num, x_position, bayes_rapm_off, bayes_rapm_def, bayes_rapm_total, rapm_exposure, x_minutes, x_pace, x_pts_100, x_ast_100, x_orb_100, x_drb_100, x_stl_100
+
+-- window around "Jokic" (idx 1657) --
+8:.88876,s9:.822511,s10:.719807,s11:.637698,s12:.544246,s13:.456929,s14:.330935,s15:.191379,sal_market_fixed:94052625.3731044,surplus_value:38828099.3731044,actual_salary:55224526,player_name:"Nikola Jokic",rookie_season:2016,_rank:1},{nba_id:202695,date:"2026-04-15",season:2026,team_name:"Los Angeles Clippers",tm_id:1610612746,future_game:0,active_roster:1,available:1,poss:83,dpm:6.26216,o_dpm:5.43096,d_dpm:.831205,box_dpm:5.78236,box_odpm:5.45127,box_ddpm:.331082,on_off_dpm:6.3084,on_off_odpm:5.4276,on_off_ddpm:.880803,age:34.7962983243894,career_game_num:1367,seconds_played:2415,position:"F",position_num:3.5,x_position:"sf_pos",bayes_rapm_off:null,bayes_rapm_def:null,bayes_rapm_total:null,rapm_exposure:null,x_minutes:37.6382,x_pace:95.5931,x_pts_100:39.7247,x_ast_100:5.78702,x_orb_100:1.87317,x_drb_100:8.23257,x_stl_100:2.8225,x_blk_100:.509713,x_tov_100:3.4858,x_fga_100:28.9605,x_fg3
+
 JS assets: 0
