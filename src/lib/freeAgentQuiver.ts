@@ -46,7 +46,7 @@ function baeArrow(abbr: string, fallback: Omit<QuiverArrow, 'key' | 'name'>): Qu
     return { key: 'bae', name, amount: b.initial || null, status: 'used', detail: `Spent (${money(b.used)}).`, usedBy: [] };
   }
   // Not available — surface the reason (apron, or a Taxpayer/Room-MLE already used).
-  const reason = b.note && !/bae limit/i.test(b.note) ? b.note : 'Not available this cycle.';
+  const reason = b.note && !/^bae limit$/i.test(b.note.trim()) ? b.note : 'Not available this cycle.';
   return { key: 'bae', name, amount: null, status: 'unavailable', detail: reason, usedBy: [] };
 }
 
