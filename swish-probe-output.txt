@@ -1,7 +1,7 @@
 ▶ Homepage
   status 200 · 357,067 bytes
   internal links: 119
-  sample links:
+  ALL internal links:
     https://cdn.salaryswish.com/images/favicons/favicon.ico
     https://www.salaryswish.com
     https://salaryswish.com/assets/css/style.css?v=1.1.14
@@ -42,6 +42,85 @@
     https://salaryswish.com/past-team-payrolls
     https://salaryswish.com/browse/free-agents
     https://salaryswish.com/browse/active
+    https://salaryswish.com/browse/inactive
+    https://salaryswish.com/browse/rookie-scale
+    https://salaryswish.com/waivers
+    https://salaryswish.com/injury
+    https://salaryswish.com/cost-per-point
+    https://salaryswish.com/trades
+    https://salaryswish.com/signings
+    https://salaryswish.com/transactions
+    https://salaryswish.com/teams/celtics
+    https://salaryswish.com/teams/nets
+    https://salaryswish.com/teams/knicks
+    https://salaryswish.com/teams/sixers
+    https://salaryswish.com/teams/raptors
+    https://salaryswish.com/teams/bulls
+    https://salaryswish.com/teams/cavaliers
+    https://salaryswish.com/teams/pistons
+    https://salaryswish.com/teams/pacers
+    https://salaryswish.com/teams/bucks
+    https://salaryswish.com/teams/hawks
+    https://salaryswish.com/teams/hornets
+    https://salaryswish.com/teams/heat
+    https://salaryswish.com/teams/magic
+    https://salaryswish.com/teams/wizards
+    https://salaryswish.com/teams/warriors
+    https://salaryswish.com/teams/clippers
+    https://salaryswish.com/teams/lakers
+    https://salaryswish.com/teams/suns
+    https://salaryswish.com/teams/kings
+    https://salaryswish.com/teams/mavericks
+    https://salaryswish.com/teams/rockets
+    https://salaryswish.com/teams/grizzlies
+    https://salaryswish.com/teams/pelicans
+    https://salaryswish.com/teams/spurs
+    https://salaryswish.com/teams/nuggets
+    https://salaryswish.com/teams/timberwolves
+    https://salaryswish.com/teams/thunder
+    https://salaryswish.com/teams/trailblazers
+    https://salaryswish.com/teams/jazz
+    https://salaryswish.com/mock-draft
+    https://salaryswish.com/trade-machine
+    https://salaryswish.com/players/marvin-bagleyiii
+    https://salaryswish.com/players/meleek-thomas
+    https://salaryswish.com/players/adam-flagler
+    https://salaryswish.com/players/emanuel-sharp
+    https://salaryswish.com/players/colin-castleton
+    https://salaryswish.com/players/izaiyah-nelson
+    https://salaryswish.com/players/jaxson-hayes
+    https://salaryswish.com/players/tobias-harris
+    https://salaryswish.com/players/jalen-williams
+    https://salaryswish.com/players/dennis-schroder
+    https://salaryswish.com/players/ajay-mitchell
+    https://salaryswish.com/players/deaaron-fox
+    https://salaryswish.com/players/og-anunoby
+    https://salaryswish.com/players/larry-nancejr
+    https://salaryswish.com/transactions/roster-transactions
+    https://salaryswish.com/players/leaky-black
+    https://salaryswish.com/players/kam-jones
+    https://salaryswish.com/players/jonathan-isaac
+    https://salaryswish.com/players/kobe-bufkin
+    https://salaryswish.com/players/terry-rozier
+    https://salaryswish.com/players/cam-payne
+    https://salaryswish.com/players/tyreke-key
+    https://salaryswish.com/transactions/waivers
+    https://salaryswish.com/players/santi-aldama
+    https://salaryswish.com/players/tarik-biberovic
+    https://salaryswish.com/players/aj-johnson
+    https://salaryswish.com/players/paul-george
+    https://salaryswish.com/players/jaylen-brown
+    https://salaryswish.com/players/walker-kessler
+    https://salaryswish.com/players/brandon-ingram
+    https://salaryswish.com/players/gradey-dick
+    https://salaryswish.com/players/kawhi-leonard
+    https://salaryswish.com/players/jerami-grant
+    https://salaryswish.com/players/kris-murray
+    https://salaryswish.com/players/ja-morant
+    https://salaryswish.com/terms
+    https://salaryswish.com/privacy-policy
+    https://salaryswish.com/about
+    https://salaryswish.com/contact
   homepage tables: 6 <table> elements
     table[0] id=- class=column_head rows=10
       headers: PLAYER | VALUE
@@ -62,12 +141,43 @@
       headers: DATE | TRADE DETAILS
       row0:    DATE | TRADE DETAILS
 
-▶ Following candidate team page: https://salaryswish.com/salary-cap
-  status 200 · 110,565 bytes
-  title: NBA Salary Cap History | SalarySwish
-  team-page tables: 1 <table> elements
-    table[0] id=- class=sw_table__default sw_table__fixed sw_tab rows=50
-      headers: Season | Confirmed | % Change | Floor | Cap | Luxury | Apron | 2nd Apron | BAE | Room MLE | MLE | Tax MLE
-      row0:    2032-33 | Projected | 10.00% | $263,830,000 | $293,143,000 | $356,170,000 | $371,428,000 | $393,946,000 | $9,732,000 | $16,647,000 | $26,736,000 | $10,777,000
+  team links inside sw_homepage__table: 30
+    https://salaryswish.com/teams/nuggets
+    https://salaryswish.com/teams/bulls
+    https://salaryswish.com/teams/thunder
+    https://salaryswish.com/teams/suns
+    https://salaryswish.com/teams/magic
+    https://salaryswish.com/teams/timberwolves
+    https://salaryswish.com/teams/knicks
+    https://salaryswish.com/teams/pacers
+
+▶ Following candidate team page: https://salaryswish.com/teams/nuggets
+  status 200 · 150,629 bytes
+  title: Denver Nuggets NBA Salary Cap, Contracts & Roster Details
+  team-page tables: 13 <table> elements
+    table[0] id=sw_table__tradeExptn_tm class=sw_table__tradeExptn sw_table__default s rows=4
+      headers: Player | Exception | Used | Remaining | Start Date | End Date
+      row0:    Michael Porter Jr. | $17,275,985 | $10,395,000 | $6,880,985 | Jul 8, 2025 | Jul 8, 2026
+    table[1] id=sw_teamProfile__draftTable class=sw_table__default sw_table__fixed sw_tab rows=3
+      headers: Draft | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033
+      row0:    Round 1 |  |  |  |  |  |  | 
+    table[2] id=- class=sw_teamProfileRosterSection__table sw_ta rows=14
+      headers: Active (12 - $233,534,668) | Status | Acquired | Age | Pos | Terms | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32
+      row0:    Jokic, Nikola | Active List | Draft | 31 | C | Max | $59,033,114 $59,033,114 $59,033,114 $0 | P $62,841,702 $62,841,702 $62,841,702 $0 | UFA |  |  | 
+    table[3] id=- class=sw_teamProfileRosterSection__table sw_ta rows=5
+      headers: Training Camp and Exhibit 10 (3 - $4,085,907) | Status | Acquired | Age | Pos | Terms | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32
+      row0:    Emejuru, Giovanni | Training Camp and Exhibit 10 | Signed | 23 | C |  | $1,361,969 $0 $1,361,969 $0 | RFA |  |  |  | 
+    table[4] id=- class=sw_teamProfileRosterSection__table sw_ta rows=5
+      headers: Minors/G-League (3 - $0) | Status | Acquired | Age | Pos | Terms | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32
+      row0:    Jones, Curtis | Minors/G-League | Signed | 24 | SG, PG |  | RFA |  |  |  |  | 
+    table[5] id=- class=sw_teamProfileStats__table sw_table__col rows=4
+      headers: ROSTER SIZE | 14 | 6 | 3 | 1 | 1 | -
+      row0:     |  |  |  |  | ROSTER SIZE | 14 | 6 | 3 | 1 | 1 | -
+    table[6] id=- class=sw_teamProfileStats__table sw_table__col rows=9
+      headers: ROSTER CAP HIT | $237,620,575 | $208,748,412 | $142,461,897 | $51,137,910 | $54,437,130 | -
+      row0:     |  |  |  |  | ROSTER CAP HIT | $237,620,575 | $208,748,412 | $142,461,897 | $51,137,910 | $54,437,130 | -
+    table[7] id=- class=sw_teamProfileStats__table sw_table__col rows=12
+      headers: CAP | $164,961,000 | $182,019,000 | $200,221,000 | $220,243,000 | $242,267,000 | $266,494,000
+      row0:     |  |  |  |  | CAP | $164,961,000 | $182,019,000 | $200,221,000 | $220,243,000 | $242,267,000 | $266,494,000
 
 Probe complete.
