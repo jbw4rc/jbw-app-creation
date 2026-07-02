@@ -88,9 +88,11 @@ function parseRosterTable(tableHtml) {
     const name = strip(nameCell);
     // Section subtotal / "TOTAL" row: capture as a checksum, don't treat as a player.
     if (/^total\b/i.test(name)) {
+      // A section can have several "total" rows (e.g. a grand total plus a
+      // dead-money subtotal). The grand total is the largest, so keep the max.
       const c = idx2026 != null ? cells[idx2026] || '' : '';
-      const m = c.match(/\$?([\d,]{5,})/);
-      if (m) checksum2026 = dollars(m[1]);
+      const nums = [...c.matchAll(/([\d,]{6,})/g)].map((x) => dollars(x[1]));
+      if (nums.length) checksum2026 = Math.max(checksum2026, ...nums);
       continue;
     }
     // Skip blanks and all-caps labels (real names carry lowercase letters).
