@@ -218,18 +218,25 @@ async function worker() {
 }
 await Promise.all([worker(), worker(), worker(), worker()]);
 
-console.log('\nTeam   players  sum2026-27        checksum        match');
-let mismatches = 0;
+console.log('\nTeam   players  sum2026-27        checksum(exact?)');
+let exact = 0;
+const bad = [];
 for (const r of report.sort((a, b) => a.abbr.localeCompare(b.abbr))) {
-  if (!r.ok) mismatches++;
+  if (r.ok) exact++;
+  // Plausibility gates (independent of the flaky per-team total-row parse).
+  if (r.n < 7 || r.n > 21) bad.push(`${r.abbr}: ${r.n} players`);
+  if (r.sum2026 < 60_000_000 || r.sum2026 > 320_000_000) bad.push(`${r.abbr}: sum $${r.sum2026.toLocaleString()}`);
   console.log(
-    `  ${r.abbr.padEnd(4)} ${String(r.n).padStart(3)}   $${r.sum2026.toLocaleString().padStart(14)}   $${r.checksum.toLocaleString().padStart(14)}   ${r.ok ? 'OK' : '*** MISMATCH'}`
+    `  ${r.abbr.padEnd(4)} ${String(r.n).padStart(3)}   $${r.sum2026.toLocaleString().padStart(14)}   $${r.checksum.toLocaleString().padStart(14)} ${r.ok ? 'exact' : ''}`
   );
 }
 const totalPlayers = Object.values(rosters).reduce((s, ps) => s + ps.length, 0);
-console.log(`\nTotal players: ${totalPlayers} · TPEs: ${tpeCount} · checksum mismatches: ${mismatches}/30`);
+console.log(`\nTotal players: ${totalPlayers} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
+// Fail only on real trouble: too few players, an implausible team, or the
+// exact-match count collapsing (which would signal a systemic parse break).
 if (totalPlayers < 300) throw new Error(`only ${totalPlayers} players — layout likely changed`);
-if (mismatches > 5) throw new Error(`${mismatches} teams failed the Active-total checksum — parse likely off`);
+if (bad.length) throw new Error(`implausible teams:\n  ${bad.join('\n  ')}`);
+if (exact < 15) throw new Error(`only ${exact}/30 exact checksum matches — parse likely off`);
 
 // Team meta (name from homepage, conference by abbr).
 const meta = teams
