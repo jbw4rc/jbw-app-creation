@@ -1,7 +1,17 @@
 // Throwaway discovery probe for SalarySwish structure (runs in CI).
 // 1) fetch homepage, list internal links + summarize its tables
 // 2) auto-follow the first likely team-page link and dump that page's tables
+// Writes findings to swish-probe-output.txt (committed by the workflow) so the
+// results can be pulled directly, no Actions-log access required.
 import { writeFileSync } from 'fs';
+
+let LOG = '';
+const _log = console.log;
+console.log = (...a) => {
+  const line = a.join(' ');
+  LOG += line + '\n';
+  _log(line);
+};
 
 const HEADERS = {
   'User-Agent':
@@ -85,3 +95,5 @@ if (candidate) {
 }
 
 console.log('\nProbe complete.');
+writeFileSync('swish-probe-output.txt', LOG);
+
