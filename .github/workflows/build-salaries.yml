@@ -1,0 +1,39 @@
+# Pull rosters, salaries, and trade exceptions from SalarySwish and commit the
+# seed files. Runs on GitHub's runners (which can reach SalarySwish).
+name: Build salaries
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *' # daily, 12:00 UTC
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/build-salaries.mjs'
+      - '.github/workflows/build-salaries.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pull from SalarySwish
+        run: node scripts/build-salaries.mjs
+      - name: Commit seeds if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/seededRosters.ts src/data/teamMeta.ts src/data/seededTradeExceptions.ts
+          git add -f build-salaries-report.txt
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update rosters/salaries/TPEs from SalarySwish"
+            git push
+          fi
