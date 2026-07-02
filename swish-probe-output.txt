@@ -1,0 +1,73 @@
+▶ Homepage
+  status 200 · 357,067 bytes
+  internal links: 119
+  sample links:
+    https://cdn.salaryswish.com/images/favicons/favicon.ico
+    https://www.salaryswish.com
+    https://salaryswish.com/assets/css/style.css?v=1.1.14
+    https://cdn.salaryswish.com/images/favicons/apple-touch-icon-180x180.png
+    https://cdn.salaryswish.com/images/favicons/apple-touch-icon-60x60.png
+    https://cdn.salaryswish.com/images/favicons/apple-touch-icon-76x76.png
+    https://cdn.salaryswish.com/images/favicons/apple-touch-icon-120x120.png
+    https://cdn.salaryswish.com/images/favicons/apple-touch-icon-152x152.png
+    https://cdn.salaryswish.com/images/favicons/favicon-32x32.png
+    https://cdn.salaryswish.com/images/favicons/favicon-16x16.png
+    https://salaryswish.com/assets/images/favicons/manifest.json
+    https://salaryswish.com
+    https://salaryswish.com/betting-odds
+    https://salaryswish.com/faq
+    https://salaryswish.com/salary-cap
+    https://salaryswish.com/minimum-salary-faq
+    https://salaryswish.com/maximum-salary-faq
+    https://salaryswish.com/bird-rights-calculator
+    https://salaryswish.com/qualifying-offer-calculator
+    https://salaryswish.com/hold-calculator
+    https://salaryswish.com/minimum-salary-calculator
+    https://salaryswish.com/ten-day-contract-calculator
+    https://salaryswish.com/depth-charts
+    https://salaryswish.com/player-status
+    https://salaryswish.com/draft
+    https://salaryswish.com/agents
+    https://salaryswish.com/agencies
+    https://salaryswish.com/comparables
+    https://salaryswish.com/rookie-scale
+    https://salaryswish.com/coaches
+    https://salaryswish.com/head-executives
+    https://salaryswish.com/bi-annual-exception
+    https://salaryswish.com/disabled-player-exception
+    https://salaryswish.com/mid-level-exception
+    https://salaryswish.com/trade-exception
+    https://salaryswish.com/luxury-tax
+    https://salaryswish.com/hard-cap-tracker
+    https://salaryswish.com/past-team-payrolls
+    https://salaryswish.com/browse/free-agents
+    https://salaryswish.com/browse/active
+  homepage tables: 6 <table> elements
+    table[0] id=- class=column_head rows=10
+      headers: PLAYER | VALUE
+      row0:    Marvin Bagley III | $3,506,659
+    table[1] id=- class=column_head rows=10
+      headers: PLAYER | TRANSACTION
+      row0:    Jalen Williams | Inactive
+    table[2] id=- class=column_head rows=10
+      headers: PLAYER | TRANSACTION
+      row0:    Leaky Black | Placed on waivers
+    table[3] id=sw_homepage__table class=sw_table__default sw_table__stickyFirstC rows=31
+      headers: Team | Roster Size | Two-Ways | Cap Hit | Cap Room | Luxury Room | 1st Apron Rm | 2nd Apron Rm | Hard Cap
+      row0:    Denver Nuggets DEN | 14/21 | 1/3 | $237,620,575 | -$72,659,575 | -$37,192,575 | -$34,223,075 | -$21,552,075 | -
+    table[4] id=sw_annualOutlook__table class=sw_table__default sw_table__sortable sw_ rows=31
+      headers: Team | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32 | 2032-33 | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 | 2031-32
+      row0:    Atlanta Hawks ATL | $181,944,410 | $206,537,505 | $208,563,142 | $144,028,244 | $82,500,000 | $0 | $0 | $180,352,766 | $146,546,427 | $98,003,358 | $55,000,000 | $0 | $0
+    table[5] id=- class=sw_table__trade tbl fixed rows=6
+      headers: DATE | TRADE DETAILS
+      row0:    DATE | TRADE DETAILS
+
+▶ Following candidate team page: https://salaryswish.com/salary-cap
+  status 200 · 110,565 bytes
+  title: NBA Salary Cap History | SalarySwish
+  team-page tables: 1 <table> elements
+    table[0] id=- class=sw_table__default sw_table__fixed sw_tab rows=50
+      headers: Season | Confirmed | % Change | Floor | Cap | Luxury | Apron | 2nd Apron | BAE | Room MLE | MLE | Tax MLE
+      row0:    2032-33 | Projected | 10.00% | $263,830,000 | $293,143,000 | $356,170,000 | $371,428,000 | $393,946,000 | $9,732,000 | $16,647,000 | $26,736,000 | $10,777,000
+
+Probe complete.
