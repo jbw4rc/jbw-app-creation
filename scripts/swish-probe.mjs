@@ -76,22 +76,26 @@ const home = await get(BASE + '/');
 console.log(`  status ${home.status} · ${home.body.length.toLocaleString()} bytes`);
 const allLinks = links(home.body, BASE);
 console.log(`  internal links: ${allLinks.length}`);
-// Show a sample, and any that look team-ish.
-const teamish = allLinks.filter((l) => /team|roster|\/t\/|nuggets|lakers|celtics|/i.test(l));
-console.log('  sample links:');
-allLinks.slice(0, 40).forEach((l) => console.log('    ' + l));
+console.log('  ALL internal links:');
+allLinks.forEach((l) => console.log('    ' + l));
 summarizeTables(home.body, 'homepage tables');
 
-// Heuristic: find a team page. Try known slugs + discovered links.
-const guesses = allLinks.filter((l) => /(team|roster|players|salaries|cap)/i.test(l));
-const candidate = guesses[0] || allLinks.find((l) => l !== BASE && l.split('/').length === 4);
+// Extract hrefs specifically inside the league table (the team links live there).
+const tblM = home.body.match(/<table[^>]*id="sw_homepage__table"[\s\S]*?<\/table>/i);
+const teamLinks = tblM ? links(tblM[0], BASE) : [];
+console.log(`\n  team links inside sw_homepage__table: ${teamLinks.length}`);
+teamLinks.slice(0, 8).forEach((l) => console.log('    ' + l));
+
+const candidate =
+  teamLinks.find((l) => /nugget|denver/i.test(l)) || teamLinks[0] ||
+  allLinks.find((l) => /denver|nuggets/i.test(l));
 console.log(`\n▶ Following candidate team page: ${candidate}`);
 if (candidate) {
   const tp = await get(candidate);
   console.log(`  status ${tp.status} · ${tp.body.length.toLocaleString()} bytes`);
   console.log(`  title: ${(tp.body.match(/<title>([^<]*)<\/title>/) || [])[1] || '?'}`);
   summarizeTables(tp.body, 'team-page tables');
-  writeFileSync('swish-team-sample.html', tp.body.slice(0, 4000));
+  writeFileSync('swish-team-sample.html', tp.body.slice(0, 8000));
 }
 
 console.log('\nProbe complete.');
