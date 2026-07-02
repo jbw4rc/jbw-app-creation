@@ -271,6 +271,46 @@ async function fetchBae() {
   return out;
 }
 
+// --- Luxury-tax schedule + repeater flags (authoritative) --------------------
+function computeBill(over, isRep, width, standard, repeater) {
+  const rates = isRep ? repeater : standard;
+  let bill = 0;
+  for (let i = 0; over - i * width > 0; i++) {
+    const amt = Math.min(over - i * width, width);
+    const rate = i < rates.length ? rates[i] : rates[rates.length - 1] + 0.5 * (i - (rates.length - 1));
+    bill += amt * rate;
+  }
+  return Math.round(bill);
+}
+async function fetchTax() {
+  const html = (await get('https://www.salaryswish.com/luxury-tax/2027')).replace(/<!--/g, '').replace(/-->/g, '');
+  const table = (html.match(/<table[\s\S]*?<\/table>/gi) || []).find((t) => /Bracket/i.test(t));
+  const rows = table ? table.match(/<tr[\s\S]*?<\/tr>/gi) || [] : [];
+  const rateRow = (label) => {
+    const r = rows.find((x) => new RegExp(label, 'i').test(strip(x)) && !/\/teams\//.test(x));
+    return r ? [...strip(r).matchAll(/([\d.]+)x/g)].map((m) => parseFloat(m[1])) : [];
+  };
+  const rangeRow = rows.find((x) => /bracket range/i.test(strip(x)));
+  const firstRange = rangeRow && strip(rangeRow).match(/0-([\d.]+)M/);
+  const bracketWidth = firstRange ? Math.round(parseFloat(firstRange[1]) * 1e6) : 6_064_000;
+  const standard = rateRow('standard rate');
+  const repeater = rateRow('repeater rate');
+  const repeaters = {};
+  const validation = [];
+  for (const r of rows) {
+    if (!/\/teams\//.test(r)) continue;
+    const cells = (r.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || []).map((c) => strip(c));
+    const abbr = (cells[0].match(/([A-Z]{2,4})\s*$/) || [])[1];
+    if (!abbr) continue;
+    const isRep = /✓|✔|check/i.test(cells[2] || '') || /checked/i.test(r);
+    repeaters[abbr] = isRep;
+    const scrapedBill = dollars(cells[1] || '');
+    const over = dollars(cells[3] || '');
+    if (over > 0) validation.push({ abbr, over, isRep, scrapedBill, myBill: computeBill(over, isRep, bracketWidth, standard, repeater) });
+  }
+  return { bracketWidth, standard, repeater, repeaters, validation };
+}
+
 // --- Run ---------------------------------------------------------------------
 try {
   await run();
@@ -349,6 +389,15 @@ const bae = await fetchBae();
 const baeAvail = Object.values(bae).filter((b) => b.space > 0).length;
 console.log(`BAE: ${Object.keys(bae).length} teams · ${baeAvail} with room available`);
 
+// Luxury-tax schedule + repeater flags.
+const tax = await fetchTax();
+const repN = Object.values(tax.repeaters).filter(Boolean).length;
+const taxMiss = tax.validation.filter((v) => Math.abs(v.myBill - v.scrapedBill) > 1000);
+console.log(`Tax: bracket $${tax.bracketWidth.toLocaleString()} · ${tax.standard.length} standard rates · ${repN} repeaters · bill checksum mismatches: ${taxMiss.length}/${tax.validation.length}`);
+taxMiss.slice(0, 6).forEach((v) => console.log(`   ${v.abbr}: over $${v.over.toLocaleString()} rep=${v.isRep} mine $${v.myBill.toLocaleString()} vs $${v.scrapedBill.toLocaleString()}`));
+if (tax.standard.length < 4 || Object.keys(tax.repeaters).length < 20) throw new Error('tax schedule parse looks wrong');
+if (taxMiss.length > 3) throw new Error(`${taxMiss.length} tax-bill checksum mismatches — schedule parse likely off`);
+
 const totalPlayers = Object.values(rosters).reduce((s, ps) => s + ps.length, 0);
 const totalPicks = Object.values(picks).reduce((s, ps) => s + ps.length, 0);
 console.log(`Total players: ${totalPlayers} · picks: ${totalPicks} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
@@ -403,6 +452,18 @@ writeFileSync(
     `export interface BaeInfo { initial: number; used: number; space: number; note: string; }\n\n` +
     `export const SEEDED_BAE: Record<string, BaeInfo> = ${JSON.stringify(bae, null, 2)};\n`
 );
-console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts, seededSignings.ts, seededBae.ts');
+writeFileSync(
+  'src/data/seededTax.ts',
+  `// AUTO-GENERATED luxury-tax schedule + repeater flags from SalarySwish.\n` +
+    `// Regenerate: node scripts/build-salaries.mjs\n` +
+    `export interface TaxSchedule {\n` +
+    `  bracketWidth: number;\n  standard: number[];\n  repeater: number[];\n  repeaters: Record<string, boolean>;\n}\n\n` +
+    `export const SEEDED_TAX: TaxSchedule = ${JSON.stringify(
+      { bracketWidth: tax.bracketWidth, standard: tax.standard, repeater: tax.repeater, repeaters: tax.repeaters },
+      null,
+      2
+    )};\n`
+);
+console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts, seededSignings.ts, seededBae.ts, seededTax.ts');
 writeFileSync('build-salaries-report.txt', LOG);
 }

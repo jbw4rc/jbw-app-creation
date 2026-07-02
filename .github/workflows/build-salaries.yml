@@ -32,7 +32,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/data/seededRosters.ts src/data/teamMeta.ts src/data/seededTradeExceptions.ts src/data/seededPicks.ts src/data/seededSignings.ts src/data/seededBae.ts
+          git add src/data/seededRosters.ts src/data/teamMeta.ts src/data/seededTradeExceptions.ts src/data/seededPicks.ts src/data/seededSignings.ts src/data/seededBae.ts src/data/seededTax.ts
           if git diff --staged --quiet; then
             echo "No changes."
           else

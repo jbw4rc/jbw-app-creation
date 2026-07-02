@@ -170,13 +170,18 @@ check(
   evaluateSigning(uta, CURRENT_SEASON, 20_000_000).recommended?.tool === 'capSpace'
 );
 
-console.log('\n=== Luxury tax ===');
+console.log('\n=== Luxury tax (SalarySwish 2026-27 schedule) ===');
 const TAX = 200_000_000;
 check('under the tax line → $0 bill', computeTax(TAX - 5_000_000, TAX).bill === 0);
-// $10M over: 5M@1.5 ($7.5M) + 5M@1.75 ($8.75M) = $16.25M.
+// $10M over: bracket 1 = $6.064M @ 1.00× ($6,064,000) + $3.936M @ 1.25× ($4,920,000) = $10,984,000.
 check(
-  '$10M over the tax → $16.25M bill',
-  computeTax(TAX + 10_000_000, TAX).bill === 16_250_000
+  '$10M over → $10.984M bill (standard)',
+  computeTax(TAX + 10_000_000, TAX).bill === 10_984_000
+);
+// Reproduces SalarySwish exactly: BOS repeater, $44,226 over → $44,226 × 3.00 = $132,678.
+check(
+  'repeater bracket-1 reproduces SalarySwish (BOS $44,226 → $132,678)',
+  computeTax(TAX + 44_226, TAX, true).bill === 132_678
 );
 const denTax = computeTax(getTeam('DEN').players.reduce((s, p) => s + (p.contract.find((c) => c.season === CURRENT_SEASON)?.salary ?? 0), 0), 200_428_000);
 check('Denver (2nd apron) owes a large tax bill (> $80M)', denTax.bill > 80_000_000);

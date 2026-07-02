@@ -73,7 +73,7 @@ export function CapSummary({ team }: { team: Team }) {
           label="Luxury Tax"
           value={current.cap.luxuryTax}
           space={current.spaceUnderTax}
-          rateNote="1.50× and up"
+          rateNote={`~${marginalRateAt(current.cap.luxuryTax + 1, current.cap.luxuryTax, repeater).toFixed(2)}× and up`}
         />
         <LadderRow
           label="First Apron"
@@ -226,7 +226,7 @@ function TaxCost({
       ) : (
         <div className="cs-tax-note">
           {money(summary.spaceUnderTax)} below the tax line — no tax bill. Rates
-          begin at 1.50× and climb each $5M (1.75× · 2.50× · 3.25× · 3.75× …).
+          rise by bracket (SalarySwish schedule); repeater teams pay the steeper set.
         </div>
       )}
       <div className="cs-tax-foot">
