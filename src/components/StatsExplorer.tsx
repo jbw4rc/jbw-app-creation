@@ -2,7 +2,10 @@ import { useMemo, useState } from 'react';
 import { SEEDED_STATS } from '../data/seededStats';
 import { SEEDED_DARKO } from '../data/seededDarko';
 import { STAT_COLUMNS, type PlayerStats, type StatColumn } from '../data/statsTypes';
+import { TEAMS } from '../data/teams';
 import { useTeams } from '../lib/teamStore';
+
+const FREE_AGENT = 'FA';
 
 // A FanGraphs-style advanced-stats viewer: a sortable league leaderboard and a
 // per-team split. Box/advanced/value stats come from the Basketball-Reference
@@ -22,10 +25,21 @@ const norm = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-// Stats rows augmented with DARKO DPM (once, at module load).
+// Current-roster team for each player, so the Stats view ties to tab 1's live
+// SalarySwish rosters. A player not on any current roster is a Free Agent.
+const CURRENT_TEAM: Record<string, string> = {};
+for (const t of TEAMS) for (const pl of t.players) CURRENT_TEAM[norm(pl.name)] = t.abbreviation;
+
+// Stats rows augmented with DARKO DPM and re-keyed to the current team (once).
 const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {
   const d = SEEDED_DARKO[norm(p.name)];
-  return d ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus } : p;
+  const row: PlayerStats = d
+    ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus }
+    : { ...p };
+  const ct = CURRENT_TEAM[norm(p.name)] ?? FREE_AGENT;
+  row.team = ct;
+  row.teams = [ct];
+  return row;
 });
 
 const IDENTITY_COLS: { key: keyof PlayerStats; label: string; title: string }[] = [
@@ -131,6 +145,7 @@ export function StatsExplorer() {
                   {t.name}
                 </option>
               ))}
+              <option value={FREE_AGENT}>Free Agents</option>
             </select>
           </label>
         ) : (
@@ -244,10 +259,11 @@ export function StatsExplorer() {
         {rows.length === 0 && <div className="stats-empty">No players match.</div>}
       </div>
       <p className="stats-foot">
-        DPM / O-DPM / D-DPM are DARKO Daily Plus-Minus (darko.app); box &amp;
-        advanced stats are Basketball-Reference. Percentages shown ×100. Traded
-        players show their full-season combined line (
-        <span className="stats-multi">*</span> = multiple teams).
+        DPM / O-DPM / D-DPM / Value / Surplus are DARKO (darko.app); box &amp;
+        advanced stats are Basketball-Reference (2025-26). Team &amp; Cap Hit
+        reflect the current SalarySwish roster, so By Team ties to Team Explorer;
+        players not on a current roster show as <strong>FA</strong>. Percentages
+        shown ×100.
       </p>
     </div>
   );
