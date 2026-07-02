@@ -54,9 +54,13 @@ export function rosteredCount(team: Team, season: number): number {
   return team.players.filter((p) => !p.twoWay && playerSalaryForSeason(p, season) > 0).length;
 }
 
-/** NBA minimum active roster and an estimated per-slot minimum salary. */
+/**
+ * NBA minimum active roster and the per-slot salary used to project filling it.
+ * Teams round out the roster with rookie-minimum deals, so the projection uses
+ * the 2026-27 rookie (0 years of service) minimum, not the veteran minimum.
+ */
 export const MIN_ROSTER = 14;
-export const MIN_FILL_SALARY = 2_300_000;
+export const MIN_FILL_SALARY = 1_272_870;
 
 export interface RosterFill {
   count: number;

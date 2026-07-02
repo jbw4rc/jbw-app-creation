@@ -10,7 +10,7 @@ import {
   type SeasonSalarySummary,
 } from '../lib/apron';
 import { getRosterStatus } from '../lib/teamStore';
-import { toggleRepeater, useRepeater } from '../lib/repeaterStore';
+import { useRepeater } from '../lib/repeaterStore';
 import { computeTax, marginalRateAt } from '../lib/luxuryTax';
 import { money, seasonLabel, whenUpdated } from '../lib/format';
 
@@ -91,11 +91,7 @@ export function CapSummary({ team }: { team: Team }) {
         />
       </div>
 
-      <TaxCost
-        summary={current}
-        repeater={repeater}
-        onToggleRepeater={() => toggleRepeater(team.abbreviation)}
-      />
+      <TaxCost summary={current} repeater={repeater} />
 
       <div className="cs-forecast">
         <span className="cs-kicker">Five-Year Outlook</span>
@@ -172,11 +168,9 @@ function LadderRow({
 function TaxCost({
   summary,
   repeater,
-  onToggleRepeater,
 }: {
   summary: SeasonSalarySummary;
   repeater: boolean;
-  onToggleRepeater: () => void;
 }) {
   const tax = computeTax(summary.totalSalary, summary.cap.luxuryTax, repeater);
   const filled = tax.bands.filter((b) => b.used > 0);
@@ -184,14 +178,12 @@ function TaxCost({
     <div className="cs-tax">
       <div className="cs-tax-head">
         <span className="cs-kicker">Cost to Ownership · Luxury Tax</span>
-        <button
-          className={`repeater-toggle${repeater ? ' on' : ''}`}
-          onClick={onToggleRepeater}
-          title="Taxpayer in three of the last four seasons pays steeper rates"
+        <span
+          className={`repeater-badge${repeater ? ' on' : ''}`}
+          title="Repeater: taxpayer in three of the last four seasons — pays steeper rates. From SalarySwish."
         >
-          <span className="repeater-box">{repeater ? '✓' : ''}</span>
-          Repeater rates
-        </button>
+          {repeater ? 'Repeater' : 'Non-repeater'}
+        </span>
       </div>
       <div className="cs-tax-figures">
         <div className="cs-tax-fig">
@@ -231,8 +223,8 @@ function TaxCost({
       )}
       <div className="cs-tax-foot">
         {repeater
-          ? 'Repeater rates (taxpayer in three of the last four seasons), estimated.'
-          : 'Standard (non-repeater) rates, estimated — toggle repeater above for the steeper schedule.'}
+          ? 'Repeater rates (taxpayer in three of the last four seasons), per SalarySwish.'
+          : 'Standard (non-repeater) rates, per SalarySwish.'}
       </div>
     </div>
   );

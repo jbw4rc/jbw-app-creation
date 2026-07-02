@@ -15,8 +15,11 @@ import {
   useTradeExceptions,
   type TradeException,
 } from '../lib/tradeExceptionsStore';
+import { darkoFor } from '../lib/darko';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
+
+const dpmFmt = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}`;
 
 // The current league year begins ~July 1 of the focal season. A TPE created
 // before then is a "prior-year" exception, frozen for second-apron teams.
@@ -26,6 +29,15 @@ function toSelectedTpe(te: TradeException): SelectedTpe {
   const start = te.start ? new Date(te.start) : null;
   const priorYear = Boolean(start && !Number.isNaN(start.getTime()) && start < LEAGUE_YEAR_START);
   return { player: te.player, remaining: te.remaining, expired: te.expired, priorYear };
+}
+
+// The NBA league year that a TPE was created in (starts ~July 1), e.g. a
+// Feb-2026 exception belongs to the 2025-26 league year → "'25-26".
+function leagueYearLabel(iso: string): string | null {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const s = d.getMonth() >= 6 ? d.getFullYear() : d.getFullYear() - 1;
+  return `'${String(s).slice(2)}-${String(s + 1).slice(2)}`;
 }
 
 // The Trade Machine: pick two teams, select outgoing players from each, and see
@@ -230,6 +242,13 @@ function TradeColumn({
         ))}
       </select>
 
+      <div className="trade-roster-head">
+        <span />
+        <span className="rh-name">Player</span>
+        <span title="DARKO Daily Plus-Minus">DPM</span>
+        <span title="DARKO market value">Value</span>
+        <span>Cap Hit</span>
+      </div>
       <div className="trade-roster">
         {sorted.map((p) => (
           <PlayerRow
@@ -283,7 +302,9 @@ function TradeColumn({
           <span className="trade-tpes-head">Trade Exceptions · absorb salary into</span>
           <div className="trade-tpes-list">
             {tpes.map((te, i) => {
-              const frozen = inSecondApron && toSelectedTpe(te).priorYear && !te.expired;
+              const sel = toSelectedTpe(te);
+              const frozen = inSecondApron && sel.priorYear && !te.expired;
+              const lyLabel = te.start ? leagueYearLabel(te.start) : null;
               return (
                 <button
                   key={`${te.player}-${i}`}
@@ -296,12 +317,20 @@ function TradeColumn({
                     te.expired
                       ? 'Expired — no longer usable'
                       : frozen
-                        ? 'Prior-year TPE — frozen over the second apron'
-                        : `Absorb up to ${money(te.remaining)}`
+                        ? `${lyLabel} exception — prior-year TPEs are frozen over the second apron`
+                        : `${lyLabel} trade exception · absorb up to ${money(te.remaining)}`
                   }
                 >
                   <span className="tp-check">{selectedTpe === i ? '✓' : ''}</span>
                   <span className="ttpe-amt">{money(te.remaining)}</span>
+                  {lyLabel && (
+                    <span
+                      className={`ttpe-year${sel.priorYear ? ' prior' : ''}`}
+                      title={sel.priorYear ? 'Prior league year' : 'Current league year'}
+                    >
+                      {lyLabel}
+                    </span>
+                  )}
                   <span className="ttpe-player">{te.player}</span>
                   {te.expired && <span className="ttpe-flag">EXPIRED</span>}
                   {frozen && <span className="ttpe-flag">FROZEN</span>}
@@ -446,6 +475,7 @@ function PlayerRow({
 }) {
   const salary = playerSalaryForSeason(player, CURRENT_SEASON);
   const tradable = salary > 0 && !player.twoWay;
+  const darko = darkoFor(player.name);
   return (
     <button
       className={`trade-player${selected ? ' selected' : ''}${
@@ -460,6 +490,12 @@ function PlayerRow({
       <span className="tp-check">{selected ? '✓' : ''}</span>
       <span className="tp-name">{player.name}</span>
       <span className="tp-pos">{player.position}</span>
+      <span className="tp-dpm" title="DARKO Daily Plus-Minus">
+        {darko ? dpmFmt(darko.dpm) : '·'}
+      </span>
+      <span className="tp-value" title="DARKO market value">
+        {darko?.value != null ? money(darko.value * 1_000_000) : '·'}
+      </span>
       <span className="tp-salary">{player.twoWay ? 'TW' : tradable ? money(salary) : '—'}</span>
     </button>
   );

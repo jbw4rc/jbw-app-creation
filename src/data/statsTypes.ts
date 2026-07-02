@@ -79,41 +79,43 @@ export interface StatColumn {
   percent?: boolean;
   /** Render as a dollar figure in millions (value stored in $M). */
   money?: boolean;
-  /** Grouping for column sets. */
-  group: 'box' | 'advanced' | 'value' | 'darko';
+  /** Column-set memberships (a stat can appear in more than one view). */
+  groups: StatGroup[];
   /** Higher is better (default true) — drives leaderboard default sort direction. */
   higherBetter?: boolean;
 }
 
+export type StatGroup = 'box' | 'advanced' | 'darko';
+
 export const STAT_COLUMNS: StatColumn[] = [
-  { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus (total)', decimals: 1, group: 'darko' },
-  { key: 'odpm', label: 'O-DPM', title: 'DARKO offensive plus-minus', decimals: 1, group: 'darko' },
-  { key: 'ddpm', label: 'D-DPM', title: 'DARKO defensive plus-minus', decimals: 1, group: 'darko' },
-  { key: 'salary', label: 'Cap Hit', title: 'Contract cap hit / actual salary ($M)', decimals: 1, money: true, group: 'darko' },
-  { key: 'value', label: 'Value', title: 'DARKO estimated market value ($M)', decimals: 1, money: true, group: 'darko' },
-  { key: 'surplus', label: 'Surplus', title: 'DARKO market value minus cap hit ($M) — Value − Cap Hit', decimals: 1, money: true, group: 'darko' },
+  // DARKO — its own board, and folded into the Advanced view.
+  { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus — projected net points per 100 possessions vs. an average player', decimals: 1, groups: ['darko', 'advanced'] },
+  { key: 'odpm', label: 'O-DPM', title: 'DARKO offensive plus-minus — offensive impact per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
+  { key: 'ddpm', label: 'D-DPM', title: 'DARKO defensive plus-minus — defensive impact per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
+  { key: 'salary', label: 'Cap Hit', title: 'Contract cap hit / actual salary this season ($M)', decimals: 1, money: true, groups: ['darko'] },
+  { key: 'value', label: 'Value', title: "DARKO's estimated open-market value for this player ($M)", decimals: 1, money: true, groups: ['darko', 'advanced'] },
+  { key: 'surplus', label: 'Surplus', title: 'Value minus Cap Hit ($M) — positive = a bargain, negative = overpaid', decimals: 1, money: true, groups: ['darko'] },
 
-  { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, group: 'box' },
-  { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, group: 'box' },
-  { key: 'ast', label: 'AST', title: 'Assists per game', decimals: 1, group: 'box' },
-  { key: 'stl', label: 'STL', title: 'Steals per game', decimals: 1, group: 'box' },
-  { key: 'blk', label: 'BLK', title: 'Blocks per game', decimals: 1, group: 'box' },
-  { key: 'tov', label: 'TOV', title: 'Turnovers per game', decimals: 1, group: 'box', higherBetter: false },
-  { key: 'fgPct', label: 'FG%', title: 'Field-goal percentage', decimals: 1, percent: true, group: 'box' },
-  { key: 'fg3Pct', label: '3P%', title: 'Three-point percentage', decimals: 1, percent: true, group: 'box' },
-  { key: 'ftPct', label: 'FT%', title: 'Free-throw percentage', decimals: 1, percent: true, group: 'box' },
+  { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, groups: ['box'] },
+  { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, groups: ['box'] },
+  { key: 'ast', label: 'AST', title: 'Assists per game', decimals: 1, groups: ['box'] },
+  { key: 'stl', label: 'STL', title: 'Steals per game', decimals: 1, groups: ['box'] },
+  { key: 'blk', label: 'BLK', title: 'Blocks per game', decimals: 1, groups: ['box'] },
+  { key: 'tov', label: 'TOV', title: 'Turnovers per game (lower is better)', decimals: 1, groups: ['box'], higherBetter: false },
+  { key: 'fgPct', label: 'FG%', title: 'Field-goal percentage', decimals: 1, percent: true, groups: ['box'] },
+  { key: 'fg3Pct', label: '3P%', title: 'Three-point percentage', decimals: 1, percent: true, groups: ['box'] },
+  { key: 'ftPct', label: 'FT%', title: 'Free-throw percentage', decimals: 1, percent: true, groups: ['box'] },
 
-  { key: 'per', label: 'PER', title: 'Player Efficiency Rating', decimals: 1, group: 'advanced' },
-  { key: 'tsPct', label: 'TS%', title: 'True Shooting percentage', decimals: 1, percent: true, group: 'advanced' },
-  { key: 'usgPct', label: 'USG%', title: 'Usage rate', decimals: 1, percent: true, group: 'advanced' },
-  { key: 'astPct', label: 'AST%', title: 'Assist percentage', decimals: 1, percent: true, group: 'advanced' },
-  { key: 'trbPct', label: 'REB%', title: 'Total rebound percentage', decimals: 1, percent: true, group: 'advanced' },
-  { key: 'tovPct', label: 'TOV%', title: 'Turnover percentage', decimals: 1, percent: true, group: 'advanced', higherBetter: false },
+  { key: 'tsPct', label: 'TS%', title: 'True Shooting % — scoring efficiency counting 2s, 3s and free throws', decimals: 1, percent: true, groups: ['advanced'] },
+  { key: 'usgPct', label: 'USG%', title: 'Usage rate — share of team possessions a player uses while on court', decimals: 1, percent: true, groups: ['advanced'] },
+  { key: 'astPct', label: 'AST%', title: "Assist % — share of teammates' field goals a player assisted while on court", decimals: 1, percent: true, groups: ['advanced'] },
+  { key: 'trbPct', label: 'REB%', title: 'Rebound % — share of available rebounds grabbed while on court', decimals: 1, percent: true, groups: ['advanced'] },
+  { key: 'tovPct', label: 'TOV%', title: 'Turnover % — turnovers per 100 plays used (lower is better)', decimals: 1, percent: true, groups: ['advanced'], higherBetter: false },
+  { key: 'bpm', label: 'BPM', title: 'Box Plus/Minus — box-score estimate of points per 100 possessions above average', decimals: 1, groups: ['advanced'] },
+  { key: 'ws', label: 'WS', title: 'Win Shares — estimated wins a player contributed', decimals: 1, groups: ['advanced'] },
 
-  { key: 'ws', label: 'WS', title: 'Win Shares', decimals: 1, group: 'value' },
-  { key: 'ws48', label: 'WS/48', title: 'Win Shares per 48 minutes', decimals: 3, group: 'value' },
-  { key: 'obpm', label: 'OBPM', title: 'Offensive Box Plus/Minus', decimals: 1, group: 'value' },
-  { key: 'dbpm', label: 'DBPM', title: 'Defensive Box Plus/Minus', decimals: 1, group: 'value' },
-  { key: 'bpm', label: 'BPM', title: 'Box Plus/Minus', decimals: 1, group: 'value' },
-  { key: 'vorp', label: 'VORP', title: 'Value Over Replacement Player', decimals: 1, group: 'value' },
+  // Available only in the "All" view.
+  { key: 'obpm', label: 'OBPM', title: 'Offensive Box Plus/Minus', decimals: 1, groups: [] },
+  { key: 'dbpm', label: 'DBPM', title: 'Defensive Box Plus/Minus', decimals: 1, groups: [] },
+  { key: 'ws48', label: 'WS/48', title: 'Win Shares per 48 minutes', decimals: 3, groups: [] },
 ];

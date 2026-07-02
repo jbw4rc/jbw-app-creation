@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { SEEDED_STATS } from '../data/seededStats';
 import { SEEDED_DARKO } from '../data/seededDarko';
-import { STAT_COLUMNS, type PlayerStats, type StatColumn } from '../data/statsTypes';
+import { STAT_COLUMNS, type PlayerStats, type StatColumn, type StatGroup } from '../data/statsTypes';
 import { TEAMS } from '../data/teams';
 import { useTeams } from '../lib/teamStore';
 
@@ -12,7 +12,7 @@ const FREE_AGENT = 'FA';
 // seed; DARKO Daily Plus-Minus is joined by name from darko.app. Both auto-pull.
 
 type Mode = 'leaderboard' | 'team';
-type Group = 'all' | 'darko' | 'box' | 'advanced' | 'value';
+type Group = 'all' | StatGroup;
 
 // Join key: lowercase, no accents/punctuation, suffixes dropped (matches the DARKO seed).
 const norm = (s: string) =>
@@ -68,7 +68,7 @@ export function StatsExplorer() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const cols = useMemo(
-    () => STAT_COLUMNS.filter((c) => group === 'all' || c.group === group),
+    () => STAT_COLUMNS.filter((c) => group === 'all' || c.groups.includes(group)),
     [group]
   );
 
@@ -164,9 +164,8 @@ export function StatsExplorer() {
         <label className="stats-field">
           <span>Columns</span>
           <select value={group} onChange={(e) => setGroup(e.target.value as Group)}>
-            <option value="darko">DARKO DPM</option>
+            <option value="darko">DARKO (DPM + Value)</option>
             <option value="advanced">Advanced</option>
-            <option value="value">Value (BPM/WS/VORP)</option>
             <option value="box">Box score</option>
             <option value="all">All</option>
           </select>
