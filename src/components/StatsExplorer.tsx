@@ -25,7 +25,7 @@ const norm = (s: string) =>
 // Stats rows augmented with DARKO DPM (once, at module load).
 const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {
   const d = SEEDED_DARKO[norm(p.name)];
-  return d ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, value: d.value, surplus: d.surplus } : p;
+  return d ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus } : p;
 });
 
 const IDENTITY_COLS: { key: keyof PlayerStats; label: string; title: string }[] = [

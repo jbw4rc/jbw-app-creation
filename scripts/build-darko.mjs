@@ -46,11 +46,12 @@ for (const p of parts) {
   const rank = num((p.match(/_rank:(\d+)/) || [])[1]);
   const value = num((p.match(/sal_market_fixed:(-?[\d.]+)/) || [])[1]);
   const surplus = num((p.match(/surplus_value:(-?[\d.]+)/) || [])[1]);
+  const salary = num((p.match(/actual_salary:(-?[\d.]+)/) || [])[1]);
   const games = num((p.match(/career_game_num:(\d+)/) || [])[1]) ?? 0;
   if (!id || !name || dpm == null) continue;
   // Keep one row per player (the most-experienced / current snapshot line).
   const prev = byId.get(id);
-  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, value, surplus, rank, games });
+  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games });
 }
 
 const players = [...byId.values()].sort((a, b) => b.dpm - a.dpm);
@@ -62,14 +63,14 @@ console.log('  top 5 by DPM: ' + players.slice(0, 5).map((p) => `${p.name} ${p.d
 const out = {};
 for (const p of players) {
   const key = norm(p.name);
-  if (!(key in out)) out[key] = { name: p.name, dpm: f2(p.dpm), odpm: f2(p.odpm), ddpm: f2(p.ddpm), value: fM(p.value), surplus: fM(p.surplus), rank: p.rank };
+  if (!(key in out)) out[key] = { name: p.name, dpm: f2(p.dpm), odpm: f2(p.odpm), ddpm: f2(p.ddpm), salary: fM(p.salary), value: fM(p.value), surplus: fM(p.surplus), rank: p.rank };
 }
 
 writeFileSync(
   'src/data/seededDarko.ts',
   `// AUTO-GENERATED DARKO Daily Plus-Minus (DPM) from darko.app.\n` +
     `// Regenerate: node scripts/build-darko.mjs\n` +
-    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; value: number | null; surplus: number | null; rank: number | null; }\n\n` +
+    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; }\n\n` +
     `// Keyed by normalized player name (lowercase, no accents/punctuation).\n` +
     `export const SEEDED_DARKO: Record<string, DarkoInfo> = ${JSON.stringify(out, null, 0)};\n`
 );

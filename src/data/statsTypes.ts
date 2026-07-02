@@ -50,6 +50,8 @@ export interface PlayerStats {
   dpm?: number | null;
   odpm?: number | null;
   ddpm?: number | null;
+  /** Contract cap hit (actual salary), in $M. */
+  salary?: number | null;
   /** DARKO estimated market value, in $M. */
   value?: number | null;
   /** DARKO market value minus actual salary, in $M. */
@@ -87,8 +89,9 @@ export const STAT_COLUMNS: StatColumn[] = [
   { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus (total)', decimals: 1, group: 'darko' },
   { key: 'odpm', label: 'O-DPM', title: 'DARKO offensive plus-minus', decimals: 1, group: 'darko' },
   { key: 'ddpm', label: 'D-DPM', title: 'DARKO defensive plus-minus', decimals: 1, group: 'darko' },
+  { key: 'salary', label: 'Cap Hit', title: 'Contract cap hit / actual salary ($M)', decimals: 1, money: true, group: 'darko' },
   { key: 'value', label: 'Value', title: 'DARKO estimated market value ($M)', decimals: 1, money: true, group: 'darko' },
-  { key: 'surplus', label: 'Surplus', title: 'DARKO market value minus actual salary ($M)', decimals: 1, money: true, group: 'darko' },
+  { key: 'surplus', label: 'Surplus', title: 'DARKO market value minus cap hit ($M) — Value − Cap Hit', decimals: 1, money: true, group: 'darko' },
 
   { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, group: 'box' },
   { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, group: 'box' },
