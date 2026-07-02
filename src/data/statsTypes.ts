@@ -6,8 +6,10 @@ export interface PlayerStats {
   /** Basketball-Reference player id, e.g. "jokicni01". */
   id: string;
   name: string;
-  /** Our 3-letter team abbreviation, or "TOT" for a traded player's combined line. */
+  /** Our 3-letter team abbreviation, or "2TM"/"3TM" for a traded player's combined line. */
   team: string;
+  /** Every real team the player suited up for this season (drives the team view). */
+  teams: string[];
   pos: string;
   age: number;
   g: number;

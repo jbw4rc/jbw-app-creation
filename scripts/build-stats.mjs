@@ -109,19 +109,34 @@ function indexRows(rows) {
 }
 const pgById = indexRows(pg.rows);
 
-const players = [];
+// Group advanced rows by player. Traded players have a combined (2TM/3TM) row
+// plus one row per team — keep a single line (prefer the combined, full-season
+// one) and record every real team they suited up for.
+const advByPlayer = new Map();
 for (const r of adv.rows) {
   if (!r.id) continue;
+  const team = pick(r.cells, ['team_name_abbr', 'team_id', 'team']);
+  const g = advByPlayer.get(r.id) || { rows: [], teams: [] };
+  g.rows.push(r);
+  if (!combined.has(team) && team) g.teams.push(fixTeam(team));
+  advByPlayer.set(r.id, g);
+}
+
+const players = [];
+for (const [id, g] of advByPlayer) {
+  const combinedRow = g.rows.find((r) => combined.has(pick(r.cells, ['team_name_abbr', 'team_id', 'team'])));
+  const r = combinedRow || g.rows[0];
   const advTeam = pick(r.cells, ['team_name_abbr', 'team_id', 'team']);
-  // For traded players, the advanced table also has a combined row; keep it.
+  const teams = g.teams.length ? [...new Set(g.teams)] : [fixTeam(advTeam)];
   const a = r.cells;
-  const p = pgById.get(r.id)?.cells ?? {};
+  const p = pgById.get(id)?.cells ?? {};
   const name = pick(a, ['name_display', 'player']);
   if (!name) continue;
   const rec = {
-    id: r.id,
+    id,
     name,
     team: fixTeam(advTeam || pick(p, ['team_name_abbr', 'team_id']) || '—'),
+    teams,
     pos: pick(a, ['pos']) || pick(p, ['pos']),
     age: num(pick(a, ['age'])),
     g: num(pick(p, ['games', 'g']) || pick(a, ['games', 'g'])),
