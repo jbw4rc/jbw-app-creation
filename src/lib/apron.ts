@@ -41,17 +41,17 @@ export function playerSalaryForSeason(player: Player, season: number): number {
   return year.salary;
 }
 
-/** Total committed team salary for a season. */
+/** Total committed team salary for a season (excludes non-cap two-way deals). */
 export function teamSalaryForSeason(team: Team, season: number): number {
   return team.players.reduce(
-    (sum, p) => sum + playerSalaryForSeason(p, season),
+    (sum, p) => sum + (p.twoWay ? 0 : playerSalaryForSeason(p, season)),
     0
   );
 }
 
-/** Number of players carrying salary in a season. */
+/** Number of standard-contract players carrying salary (two-way excluded). */
 export function rosteredCount(team: Team, season: number): number {
-  return team.players.filter((p) => playerSalaryForSeason(p, season) > 0).length;
+  return team.players.filter((p) => !p.twoWay && playerSalaryForSeason(p, season) > 0).length;
 }
 
 /** NBA minimum active roster and an estimated per-slot minimum salary. */

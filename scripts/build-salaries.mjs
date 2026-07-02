@@ -346,13 +346,22 @@ async function worker() {
       let checksum = 0;
       for (const tbl of rosterTables) {
         const { section, players: ps, checksum2026 } = parseRosterTable(tbl);
-        if (!COUNT_SECTION.test(section)) continue;
+        const isTwoWay = /two.?way/i.test(section);
+        // Cap-counting sections + two-way (two-way players belong to the team
+        // but their salary does not count against the cap).
+        if (!COUNT_SECTION.test(section) && !isTwoWay) continue;
         if (/active/i.test(section)) checksum = checksum2026;
-        players.push(...ps);
+        for (const p of ps) {
+          if (isTwoWay) p.twoWay = true;
+          players.push(p);
+        }
       }
       rosters[t.abbr] = players;
       picks[t.abbr] = parseDraft(html);
-      const sum2026 = players.reduce((s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0), 0);
+      // Checksum against the Active total excludes two-way (non-cap) salaries.
+      const sum2026 = players
+        .filter((p) => !p.twoWay)
+        .reduce((s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0), 0);
       const ok = checksum > 0 && Math.abs(sum2026 - checksum) < 2000;
       report.push({ abbr: t.abbr, n: players.length, sum2026, checksum, ok });
 

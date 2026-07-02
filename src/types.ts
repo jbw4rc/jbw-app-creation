@@ -56,6 +56,11 @@ export interface Player {
    * signing exceptions a team has already spent.
    */
   signedUsing?: string;
+  /**
+   * Two-way contract. The player belongs to the team's roster but the salary
+   * does not count against the salary cap / apron.
+   */
+  twoWay?: boolean;
 }
 
 /** A draft pick a team controls (or has traded away). */

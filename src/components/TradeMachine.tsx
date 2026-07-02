@@ -445,7 +445,7 @@ function PlayerRow({
   onToggle: () => void;
 }) {
   const salary = playerSalaryForSeason(player, CURRENT_SEASON);
-  const tradable = salary > 0;
+  const tradable = salary > 0 && !player.twoWay;
   return (
     <button
       className={`trade-player${selected ? ' selected' : ''}${
@@ -453,12 +453,14 @@ function PlayerRow({
       }`}
       onClick={tradable ? onToggle : undefined}
       disabled={!tradable}
-      title={tradable ? '' : 'No current-season salary to trade'}
+      title={
+        tradable ? '' : player.twoWay ? 'Two-way contract' : 'No current-season salary to trade'
+      }
     >
       <span className="tp-check">{selected ? '✓' : ''}</span>
       <span className="tp-name">{player.name}</span>
       <span className="tp-pos">{player.position}</span>
-      <span className="tp-salary">{tradable ? money(salary) : '—'}</span>
+      <span className="tp-salary">{player.twoWay ? 'TW' : tradable ? money(salary) : '—'}</span>
     </button>
   );
 }

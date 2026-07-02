@@ -732,3 +732,9 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .stats-multi { color: var(--coral); font-weight: 700; }
 .stats-empty { padding: 24px; text-align: center; color: var(--ink-faint); }
 .stats-foot { margin-top: 12px; font-size: 11px; color: var(--ink-faint); }
+
+.player-tw {
+  display: inline-block; margin-left: 6px; font-size: 8.5px; font-weight: 800;
+  letter-spacing: 0.04em; color: var(--teal); border: 1px solid var(--teal);
+  border-radius: 2px; padding: 0 3px; vertical-align: middle;
+}
