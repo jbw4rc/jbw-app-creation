@@ -152,8 +152,18 @@ function toISO(s) {
 }
 
 // --- Run ---------------------------------------------------------------------
+try {
+  await run();
+} catch (e) {
+  console.log(`\n!! BUILD FAILED: ${e.stack || e.message}`);
+  writeFileSync('build-salaries-report.txt', LOG);
+  process.exit(1);
+}
+
+async function run() {
 console.log('Pulling rosters from SalarySwish…');
 const home = await get(BASE + '/');
+console.log(`homepage bytes: ${home.length.toLocaleString()}`);
 const teams = parseTeams(home);
 console.log(`Discovered ${teams.length} teams: ${teams.map((t) => `${t.abbr}:${t.slug}`).join(' ')}`);
 if (teams.length !== 30) throw new Error(`expected 30 teams, got ${teams.length}`);
@@ -231,3 +241,4 @@ writeFileSync(
 );
 console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts');
 writeFileSync('build-salaries-report.txt', LOG);
+}

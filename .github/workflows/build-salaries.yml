@@ -24,16 +24,21 @@ jobs:
         with:
           node-version: 22
       - name: Pull from SalarySwish
+        id: pull
+        continue-on-error: true
         run: node scripts/build-salaries.mjs
-      - name: Commit seeds if changed
+      - name: Commit seeds + report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/data/seededRosters.ts src/data/teamMeta.ts src/data/seededTradeExceptions.ts
-          git add -f build-salaries-report.txt
+          git add src/data/seededRosters.ts src/data/teamMeta.ts src/data/seededTradeExceptions.ts 2>/dev/null || true
+          git add -f build-salaries-report.txt 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "No changes."
           else
             git commit -m "Update rosters/salaries/TPEs from SalarySwish"
             git push
           fi
+      - name: Fail if pull failed
+        if: steps.pull.outcome == 'failure'
+        run: exit 1
