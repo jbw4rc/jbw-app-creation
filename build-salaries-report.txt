@@ -2,41 +2,38 @@ Pulling rosters from SalarySwish…
 homepage bytes: 357,067
 Discovered 30 teams: DEN:nuggets CHI:bulls OKC:thunder PHX:suns ORL:magic MIN:timberwolves NYK:knicks IND:pacers UTA:jazz SAC:kings MIA:heat BKN:nets BOS:celtics PHI:sixers LAC:clippers LAL:lakers TOR:raptors DET:pistons HOU:rockets NOP:pelicans POR:trailblazers SAS:spurs CLE:cavaliers ATL:hawks MIL:bucks GSW:warriors WAS:wizards DAL:mavericks CHA:hornets MEM:grizzlies
 
-Team   players  sum2026-27        checksum        match
-  ATL   13   $   178,171,351   $   178,171,351   OK
-  BKN   14   $   149,744,845   $   149,744,845   OK
-  BOS   14   $   197,748,288   $   197,748,288   OK
-  CHA   14   $   145,241,767   $   145,241,767   OK
-  CHI   11   $   140,209,689   $   140,209,689   OK
-  CLE   11   $   180,826,542   $     1,357,763   *** MISMATCH
-  DAL   10   $   155,419,446   $   155,419,446   OK
-  DEN   10   $   233,534,668   $   234,029,406   *** MISMATCH
-  DET   13   $   155,856,069   $   155,856,069   OK
-  GSW    9   $   175,805,827   $   175,805,827   OK
-  HOU   10   $   168,851,543   $       680,985   *** MISMATCH
-  IND   13   $   157,058,330   $   157,058,330   OK
-  LAC   10   $   129,323,741   $       678,882   *** MISMATCH
-  LAL   12   $   190,795,232   $   190,795,232   OK
-  MEM   17   $   141,319,533   $   141,319,533   OK
-  MIA   11   $   199,671,629   $   199,848,381   *** MISMATCH
-  MIL   14   $   132,152,516   $       680,985   *** MISMATCH
-  MIN   12   $   214,086,862   $   214,086,862   OK
-  NOP   14   $   190,671,399   $   190,671,399   OK
-  NYK   10   $   210,638,759   $   210,638,759   OK
-  OKC   11   $   214,212,346   $   214,212,346   OK
-  ORL   12   $   206,254,154   $       678,882   *** MISMATCH
-  PHI   12   $   196,964,451   $   196,964,451   OK
-  PHX   14   $   190,775,839   $   190,775,839   OK
-  POR   12   $   186,154,921   $   186,154,921   OK
-  SAC   11   $   203,389,139   $     2,036,645   *** MISMATCH
-  SAS   11   $   187,794,901   $   187,794,901   OK
-  TOR   10   $   191,130,868   $   191,130,868   OK
-  UTA   11   $   143,710,615   $   143,710,615   OK
-  WAS   13   $   170,830,671   $   170,998,646   *** MISMATCH
+Team   players  sum2026-27        checksum(exact?)
+  ATL   13   $   178,171,351   $   178,171,351 exact
+  BKN   14   $   149,744,845   $   149,744,845 exact
+  BOS   14   $   197,748,288   $   197,748,288 exact
+  CHA   14   $   145,241,767   $   145,241,767 exact
+  CHI   11   $   140,209,689   $   140,209,689 exact
+  CLE   11   $   180,826,542   $     1,357,763 
+  DAL   10   $   155,419,446   $   155,419,446 exact
+  DEN   10   $   233,534,668   $   234,029,406 
+  DET   13   $   155,856,069   $   155,856,069 exact
+  GSW    9   $   175,805,827   $   175,805,827 exact
+  HOU   10   $   168,851,543   $       680,985 
+  IND   13   $   157,058,330   $   157,058,330 exact
+  LAC   10   $   129,323,741   $       678,882 
+  LAL   12   $   190,795,232   $   190,795,232 exact
+  MEM   17   $   141,319,533   $   141,319,533 exact
+  MIA   11   $   199,671,629   $   199,848,381 
+  MIL   14   $   132,152,516   $       680,985 
+  MIN   12   $   214,086,862   $   214,086,862 exact
+  NOP   14   $   190,671,399   $   190,671,399 exact
+  NYK   10   $   210,638,759   $   210,638,759 exact
+  OKC   11   $   214,212,346   $   214,212,346 exact
+  ORL   12   $   206,254,154   $       678,882 
+  PHI   12   $   196,964,451   $   196,964,451 exact
+  PHX   14   $   190,775,839   $   190,775,839 exact
+  POR   12   $   186,154,921   $   186,154,921 exact
+  SAC   11   $   203,389,139   $     2,036,645 
+  SAS   11   $   187,794,901   $   187,794,901 exact
+  TOR   10   $   191,130,868   $   191,130,868 exact
+  UTA   11   $   143,710,615   $   143,710,615 exact
+  WAS   13   $   170,830,671   $   170,998,646 
 
-Total players: 359 · TPEs: 58 · checksum mismatches: 9/30
+Total players: 359 · TPEs: 58 · exact checksum matches: 21/30
 
-!! BUILD FAILED: Error: 9 teams failed the Active-total checksum — parse likely off
-    at run (file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:232:27)
-    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
-    at async file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:168:3
+Wrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts
