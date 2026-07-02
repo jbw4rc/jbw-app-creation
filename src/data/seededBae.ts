@@ -2,4 +2,185 @@
 // Regenerate: node scripts/build-salaries.mjs
 export interface BaeInfo { initial: number; used: number; space: number; note: string; }
 
-export const SEEDED_BAE: Record<string, BaeInfo> = {};
+export const SEEDED_BAE: Record<string, BaeInfo> = {
+  "ATL": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "Taxpayer-MLE Used ( Jock Landale )"
+  },
+  "BOS": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "BKN": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "Room-MLE Used ( Josh Minott )"
+  },
+  "CHA": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "CHI": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "CLE": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "DAL": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "DEN": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "DET": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Used Last Season ( Daniss Jenkins )"
+  },
+  "GSW": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "HOU": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "Taxpayer-MLE Used ( Marcus Smart )"
+  },
+  "IND": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "LAC": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "LAL": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Used Last Season ( Marcus Smart )"
+  },
+  "MEM": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "MIA": {
+    "initial": 5257464,
+    "used": 0,
+    "space": 5257464,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "MIL": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "MIN": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "NOP": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "NYK": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "OKC": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "ORL": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "PHI": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "PHX": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "POR": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "SAC": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
+  },
+  "SAS": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "TOR": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  },
+  "UTA": {
+    "initial": 0,
+    "used": 0,
+    "space": 0,
+    "note": "Taxpayer-MLE Used ( Jaxson Hayes )"
+  },
+  "WAS": {
+    "initial": 5477000,
+    "used": 0,
+    "space": 5477000,
+    "note": "BAE Limit"
+  }
+};
