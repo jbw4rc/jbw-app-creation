@@ -2,6 +2,7 @@ import type { Team } from '../types';
 import { classifyTier, teamSalaryForSeason } from './apron';
 import { getSeasonCap } from '../data/leagueConstants';
 import type { UsedException } from './signingsStore';
+import { SEEDED_BAE } from '../data/seededBae';
 
 // ---------------------------------------------------------------------------
 // Free Agent Quiver — the signing "arrows" a team has this offseason, based on
@@ -26,6 +27,28 @@ export interface QuiverArrow {
 }
 
 const MIN_SALARY = 2_300_000;
+
+/**
+ * The bi-annual exception arrow, driven by SalarySwish's authoritative BAE
+ * table when available (it encodes the biennial rule and mutual exclusivity
+ * with the Taxpayer/Room MLE that a June-1-onward signings scan can't see).
+ * Falls back to a tier-based guess when no seeded data exists.
+ */
+function baeArrow(abbr: string, fallback: Omit<QuiverArrow, 'key' | 'name'>): QuiverArrow {
+  const name = 'Bi-Annual Exception';
+  const b = SEEDED_BAE[abbr];
+  if (!b) return { key: 'bae', name, ...fallback };
+  const money = (n: number) => `$${(n / 1_000_000).toFixed(2)}M`;
+  if (b.space > 0) {
+    return { key: 'bae', name, amount: b.space, status: 'available', detail: `${money(b.space)} available.`, usedBy: [] };
+  }
+  if (b.used > 0) {
+    return { key: 'bae', name, amount: b.initial || null, status: 'used', detail: `Spent (${money(b.used)}).`, usedBy: [] };
+  }
+  // Not available — surface the reason (apron, or a Taxpayer/Room-MLE already used).
+  const reason = b.note && !/bae limit/i.test(b.note) ? b.note : 'Not available this cycle.';
+  return { key: 'bae', name, amount: null, status: 'unavailable', detail: reason, usedBy: [] };
+}
 
 /**
  * Build an exception arrow, flipping its status to "used" when the team has
@@ -81,7 +104,12 @@ export function freeAgentQuiver(
       exceptionArrow('ntmle', 'Non-Taxpayer MLE', cap.nonTaxpayerMLE, 'available', 'Full mid-level for non-apron teams.', 'mle', used)
     );
     arrows.push(
-      exceptionArrow('bae', 'Bi-Annual Exception', cap.biAnnualException, 'available', 'Usable every other year.', 'bae', used)
+      baeArrow(team.abbreviation, {
+        amount: cap.biAnnualException,
+        status: 'available',
+        detail: 'Usable every other year.',
+        usedBy: [],
+      })
     );
   } else if (tier === 'firstApron') {
     arrows.push(
@@ -95,14 +123,14 @@ export function freeAgentQuiver(
       detail: 'Lost at the first apron.',
       usedBy: [],
     });
-    arrows.push({
-      key: 'bae',
-      name: 'Bi-Annual Exception',
-      amount: cap.biAnnualException,
-      status: 'unavailable',
-      detail: 'Lost at the first apron.',
-      usedBy: [],
-    });
+    arrows.push(
+      baeArrow(team.abbreviation, {
+        amount: cap.biAnnualException,
+        status: 'unavailable',
+        detail: 'Lost at the first apron.',
+        usedBy: [],
+      })
+    );
   } else {
     // secondApron
     arrows.push({
@@ -113,14 +141,14 @@ export function freeAgentQuiver(
       detail: 'No mid-level of any kind above the second apron.',
       usedBy: [],
     });
-    arrows.push({
-      key: 'bae',
-      name: 'Bi-Annual Exception',
-      amount: null,
-      status: 'unavailable',
-      detail: 'Lost above the second apron.',
-      usedBy: [],
-    });
+    arrows.push(
+      baeArrow(team.abbreviation, {
+        amount: null,
+        status: 'unavailable',
+        detail: 'Lost above the second apron.',
+        usedBy: [],
+      })
+    );
   }
 
   arrows.push({

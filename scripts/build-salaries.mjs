@@ -243,6 +243,34 @@ async function fetchSignings() {
   return { lines, count: lines.length - 1, tracked };
 }
 
+// --- Bi-annual exception availability (authoritative per-team table) ----------
+// Captures what a June-1-onward signings scan can't: the biennial rule and
+// mutual exclusivity with the Taxpayer/Room MLE.
+async function fetchBae() {
+  const html = (await get('https://www.salaryswish.com/bi-annual-exception')).replace(/<!--/g, '').replace(/-->/g, '');
+  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
+  const table = tables.find((t) => /Space Calc/i.test(t)) || tables[0];
+  const out = {};
+  if (!table) return out;
+  const rows = table.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  const header = (rows[0]?.match(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi) || []).map((c) => strip(c).toLowerCase());
+  const col = (re) => header.findIndex((h) => re.test(h));
+  const iCalc = col(/calc/); const iInit = col(/initial/); const iUsed = col(/used/); const iSpace = col(/space$/);
+  for (let i = 1; i < rows.length; i++) {
+    const cells = (rows[i].match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi) || []).map((c) => strip(c));
+    if (cells.length < 5) continue;
+    const abbr = (cells[0].match(/([A-Z]{2,4})\s*$/) || [])[1];
+    if (!abbr) continue;
+    out[abbr] = {
+      initial: dollars(cells[iInit] ?? ''),
+      used: dollars(cells[iUsed] ?? ''),
+      space: dollars(cells[iSpace] ?? ''),
+      note: (iCalc >= 0 ? cells[iCalc] : '').replace(/\s+/g, ' ').trim(),
+    };
+  }
+  return out;
+}
+
 // --- Run ---------------------------------------------------------------------
 try {
   await run();
@@ -316,6 +344,11 @@ for (const r of report.sort((a, b) => a.abbr.localeCompare(b.abbr))) {
 const signings = await fetchSignings();
 console.log(`\nSignings: ${signings.count} parsed · ${signings.tracked} MLE/BAE tracked`);
 
+// Bi-annual exception availability.
+const bae = await fetchBae();
+const baeAvail = Object.values(bae).filter((b) => b.space > 0).length;
+console.log(`BAE: ${Object.keys(bae).length} teams · ${baeAvail} with room available`);
+
 const totalPlayers = Object.values(rosters).reduce((s, ps) => s + ps.length, 0);
 const totalPicks = Object.values(picks).reduce((s, ps) => s + ps.length, 0);
 console.log(`Total players: ${totalPlayers} · picks: ${totalPicks} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
@@ -363,6 +396,13 @@ writeFileSync(
     `// Regenerate: node scripts/build-salaries.mjs\n` +
     `export const SEEDED_SIGNINGS = ${JSON.stringify(signings.lines.join('\n'))};\n`
 );
-console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts, seededSignings.ts');
+writeFileSync(
+  'src/data/seededBae.ts',
+  `// AUTO-GENERATED bi-annual exception availability from SalarySwish.\n` +
+    `// Regenerate: node scripts/build-salaries.mjs\n` +
+    `export interface BaeInfo { initial: number; used: number; space: number; note: string; }\n\n` +
+    `export const SEEDED_BAE: Record<string, BaeInfo> = ${JSON.stringify(bae, null, 2)};\n`
+);
+console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts, seededSignings.ts, seededBae.ts');
 writeFileSync('build-salaries-report.txt', LOG);
 }
