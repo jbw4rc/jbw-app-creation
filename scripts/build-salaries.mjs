@@ -213,6 +213,36 @@ function toISO(s) {
   return Number.isNaN(d.getTime()) ? s : d.toISOString().slice(0, 10);
 }
 
+// --- Offseason signings (dedicated SalarySwish page) -------------------------
+// The app's focal season is 2026-27; signings count from June 1, 2026 onward.
+const SIGNINGS_FROM_YEAR = 2026;
+function mmddyyyy(d) {
+  return `${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}${d.getFullYear()}`;
+}
+async function fetchSignings() {
+  const from = `0601${SIGNINGS_FROM_YEAR}`;
+  const to = mmddyyyy(new Date());
+  const url = `https://www.salaryswish.com/signings/all/all/all/all/1-6/0-100000000/${from}-${to}`;
+  const html = await get(url);
+  const m = html.match(/<table[^>]*id="signings"[\s\S]*?<\/table>/i);
+  const lines = ['PLAYER\tTEAM\tMETHOD\tDATE'];
+  if (!m) return { lines, count: 0, tracked: 0 };
+  const rows = m[0].match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  let tracked = 0;
+  for (let i = 1; i < rows.length; i++) {
+    const cells = rows[i].match(/<td[^>]*>[\s\S]*?<\/td>/gi) || [];
+    if (cells.length < 8) continue;
+    const player = strip(cells[0]).replace(/unconfirmed information/i, '').trim();
+    const team = (strip(cells[4]).match(/([A-Z]{2,4})\s*$/) || [])[1] || '';
+    const date = strip(cells[5]);
+    const method = strip(cells[7]);
+    if (!player || !team) continue;
+    lines.push([player, team, method, toISO(date)].join('\t'));
+    if (/\bmle\b/i.test(method) || /bi.?annual|\bbae\b/i.test(method)) tracked++;
+  }
+  return { lines, count: lines.length - 1, tracked };
+}
+
 // --- Run ---------------------------------------------------------------------
 try {
   await run();
@@ -282,9 +312,13 @@ for (const r of report.sort((a, b) => a.abbr.localeCompare(b.abbr))) {
     `  ${r.abbr.padEnd(4)} ${String(r.n).padStart(3)}   $${r.sum2026.toLocaleString().padStart(14)}   $${r.checksum.toLocaleString().padStart(14)} ${r.ok ? 'exact' : ''}`
   );
 }
+// Offseason signings (separate page).
+const signings = await fetchSignings();
+console.log(`\nSignings: ${signings.count} parsed · ${signings.tracked} MLE/BAE tracked`);
+
 const totalPlayers = Object.values(rosters).reduce((s, ps) => s + ps.length, 0);
 const totalPicks = Object.values(picks).reduce((s, ps) => s + ps.length, 0);
-console.log(`\nTotal players: ${totalPlayers} · picks: ${totalPicks} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
+console.log(`Total players: ${totalPlayers} · picks: ${totalPicks} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
 if (totalPicks < 200) throw new Error(`only ${totalPicks} draft picks parsed — draft table layout likely changed`);
 // Fail only on real trouble: too few players, an implausible team, or the
 // exact-match count collapsing (which would signal a systemic parse break).
@@ -323,6 +357,12 @@ writeFileSync(
     `import type { DraftPick } from '../types';\n\n` +
     `export const SEEDED_PICKS: Record<string, DraftPick[]> = ${JSON.stringify(picks, null, 2)};\n`
 );
-console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts');
+writeFileSync(
+  'src/data/seededSignings.ts',
+  `// AUTO-GENERATED offseason signings log from SalarySwish.\n` +
+    `// Regenerate: node scripts/build-salaries.mjs\n` +
+    `export const SEEDED_SIGNINGS = ${JSON.stringify(signings.lines.join('\n'))};\n`
+);
+console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts, seededSignings.ts');
 writeFileSync('build-salaries-report.txt', LOG);
 }
