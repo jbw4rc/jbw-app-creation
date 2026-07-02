@@ -183,11 +183,21 @@ async function worker() {
       const rosterTables = html.match(/<table[^>]*class="[^"]*sw_teamProfileRosterSection__table[^"]*"[\s\S]*?<\/table>/gi) || [];
       const players = [];
       let statedActive = 0;
+      const sectionsSeen = [];
       for (const tbl of rosterTables) {
         const { section, players: ps, stated } = parseRosterTable(tbl);
+        sectionsSeen.push(`${section}[${ps.length}]`);
         if (!COUNT_SECTION.test(section)) continue;
         if (/active/i.test(section)) statedActive = stated;
         players.push(...ps);
+      }
+      if (t.abbr === 'DEN') {
+        console.log(`\nDEN sections (${rosterTables.length} tables): ${sectionsSeen.join(' ; ')}`);
+        console.log('DEN players (name : 2026 : #years):');
+        for (const p of players) {
+          const s = p.contract.find((c) => c.season === 2026)?.salary ?? 0;
+          console.log(`   ${p.name.padEnd(24)} $${s.toLocaleString().padStart(13)}  years=${p.contract.length} seasons=[${p.contract.map((c) => c.season).join(',')}]`);
+        }
       }
       rosters[t.abbr] = players;
       const sum2026 = players.reduce((s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0), 0);
