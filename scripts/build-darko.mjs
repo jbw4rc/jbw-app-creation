@@ -69,7 +69,7 @@ writeFileSync(
   'src/data/seededDarko.ts',
   `// AUTO-GENERATED DARKO Daily Plus-Minus (DPM) from darko.app.\n` +
     `// Regenerate: node scripts/build-darko.mjs\n` +
-    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; rank: number | null; }\n\n` +
+    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; value: number | null; surplus: number | null; rank: number | null; }\n\n` +
     `// Keyed by normalized player name (lowercase, no accents/punctuation).\n` +
     `export const SEEDED_DARKO: Record<string, DarkoInfo> = ${JSON.stringify(out, null, 0)};\n`
 );
