@@ -136,6 +136,56 @@ function normalizeName(name) {
   return m ? `${m[2].trim()} ${m[1].trim()}` : name.trim();
 }
 
+// --- Parse the draft-pick table ----------------------------------------------
+const NICK2ABBR = {
+  Hawks: 'ATL', Celtics: 'BOS', Nets: 'BKN', Hornets: 'CHA', Bulls: 'CHI', Cavaliers: 'CLE',
+  Mavericks: 'DAL', Nuggets: 'DEN', Pistons: 'DET', Warriors: 'GSW', Rockets: 'HOU', Pacers: 'IND',
+  Clippers: 'LAC', Lakers: 'LAL', Grizzlies: 'MEM', Heat: 'MIA', Bucks: 'MIL', Timberwolves: 'MIN',
+  Pelicans: 'NOP', Knicks: 'NYK', Thunder: 'OKC', Magic: 'ORL', '76ers': 'PHI', Suns: 'PHX',
+  Blazers: 'POR', Kings: 'SAC', Spurs: 'SAS', Raptors: 'TOR', Jazz: 'UTA', Wizards: 'WAS',
+};
+const altToAbbr = (alt) => NICK2ABBR[alt.trim().split(/\s+/).pop()] || null;
+const decode = (s) => s.replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&quot;/g, '"');
+
+// Returns the picks a team CONTROLS (own + incoming), excluding picks it has
+// traded away. Unresolved swaps ("in contention") are flagged encumbered.
+function parseDraft(html) {
+  const m = html.match(/<table[^>]*id="sw_teamProfile__draftTable"[\s\S]*?<\/table>/i);
+  if (!m) return [];
+  const rows = m[0].match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  if (!rows.length) return [];
+  const header = (rows[0].match(/<t[hd][^>]*>([\s\S]*?)<\/t[hd]>/gi) || []).map(strip);
+  const years = header.map((h) => { const y = h.match(/\b(20\d{2})\b/); return y ? +y[1] : null; });
+  const picks = [];
+  for (let ri = 1; ri < rows.length; ri++) {
+    const cells = rows[ri].match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) || [];
+    const roundLabel = strip(cells[0] || '');
+    const round = /round\s*1/i.test(roundLabel) ? 1 : /round\s*2/i.test(roundLabel) ? 2 : null;
+    if (!round) continue;
+    for (let ci = 1; ci < cells.length; ci++) {
+      const year = years[ci];
+      if (!year) continue;
+      const cell = cells[ci];
+      for (const pm of cell.matchAll(/<div class="rel (d_pick[^"]*)">\s*<img\b[^>]*\balt="Logo of the ([^"]+)"[^>]*>/g)) {
+        const cls = pm[1];
+        if (/d_pick_traded/.test(cls)) continue; // traded away — not controlled
+        const abbr = altToAbbr(pm[2]);
+        if (!abbr) continue;
+        const before = cell.slice(Math.max(0, pm.index - 200), pm.index);
+        const after = cell.slice(pm.index, pm.index + 260);
+        const titles = before.match(/title="([^"]*)"/g);
+        const notes = titles ? decode(titles[titles.length - 1].slice(7, -1)) : undefined;
+        const encumbered = /inContention/.test(after) || /class="condit"/.test(after) || /contention/i.test(notes || '');
+        const pick = { year, round, originalTeam: abbr };
+        if (encumbered) pick.encumbered = true;
+        if (notes) pick.notes = notes;
+        picks.push(pick);
+      }
+    }
+  }
+  return picks;
+}
+
 // --- Parse the trade-exception table -----------------------------------------
 function parseTpeTable(html) {
   const m = html.match(/<table[^>]*id="sw_table__tradeExptn_tm"[\s\S]*?<\/table>/i);
@@ -181,6 +231,7 @@ console.log(`Discovered ${teams.length} teams: ${teams.map((t) => `${t.abbr}:${t
 if (teams.length !== 30) throw new Error(`expected 30 teams, got ${teams.length}`);
 
 const rosters = {};
+const picks = {};
 const tpeLines = ['Team\tPlayer\tException\tUsed\tRemaining\tStart Date\tEnd Date'];
 let tpeCount = 0;
 const report = [];
@@ -202,6 +253,7 @@ async function worker() {
         players.push(...ps);
       }
       rosters[t.abbr] = players;
+      picks[t.abbr] = parseDraft(html);
       const sum2026 = players.reduce((s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0), 0);
       const ok = checksum > 0 && Math.abs(sum2026 - checksum) < 2000;
       report.push({ abbr: t.abbr, n: players.length, sum2026, checksum, ok });
@@ -231,7 +283,9 @@ for (const r of report.sort((a, b) => a.abbr.localeCompare(b.abbr))) {
   );
 }
 const totalPlayers = Object.values(rosters).reduce((s, ps) => s + ps.length, 0);
-console.log(`\nTotal players: ${totalPlayers} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
+const totalPicks = Object.values(picks).reduce((s, ps) => s + ps.length, 0);
+console.log(`\nTotal players: ${totalPlayers} · picks: ${totalPicks} · TPEs: ${tpeCount} · exact checksum matches: ${exact}/30`);
+if (totalPicks < 200) throw new Error(`only ${totalPicks} draft picks parsed — draft table layout likely changed`);
 // Fail only on real trouble: too few players, an implausible team, or the
 // exact-match count collapsing (which would signal a systemic parse break).
 if (totalPlayers < 300) throw new Error(`only ${totalPlayers} players — layout likely changed`);
@@ -262,6 +316,13 @@ writeFileSync(
     `// Regenerate: node scripts/build-salaries.mjs\n` +
     `export const SEEDED_TRADE_EXCEPTIONS = ${JSON.stringify(tpeLines.join('\n'))};\n`
 );
-console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts');
+writeFileSync(
+  'src/data/seededPicks.ts',
+  `// AUTO-GENERATED draft-pick ownership from SalarySwish (2027–2033).\n` +
+    `// Regenerate: node scripts/build-salaries.mjs\n` +
+    `import type { DraftPick } from '../types';\n\n` +
+    `export const SEEDED_PICKS: Record<string, DraftPick[]> = ${JSON.stringify(picks, null, 2)};\n`
+);
+console.log('\nWrote seededRosters.ts, teamMeta.ts, seededTradeExceptions.ts, seededPicks.ts');
 writeFileSync('build-salaries-report.txt', LOG);
 }
