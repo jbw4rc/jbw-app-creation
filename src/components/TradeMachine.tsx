@@ -17,7 +17,7 @@ import {
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
 import { gradeTrade, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
-import { USING_WIN_TOTALS } from '../lib/draftValue';
+import { USING_TANKATHON } from '../lib/draftValue';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
 
@@ -213,7 +213,7 @@ function TradeGradePanel({ grade }: { grade: TradeGrade }) {
         <span className="tg-title">Trade Grade</span>
         <span className="tg-basis">
           DARKO market value + projected pick value ·{' '}
-          {USING_WIN_TOTALS ? 'picks via win totals' : 'picks via DARKO team strength'}
+          {USING_TANKATHON ? 'picks via Tankathon projected order' : 'picks via DARKO team strength'}
         </span>
       </div>
       <div className="tg-cards">

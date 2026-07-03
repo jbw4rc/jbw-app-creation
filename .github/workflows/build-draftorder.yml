@@ -1,0 +1,38 @@
+# Pull Tankathon's projected draft order and commit src/data/seededDraftOrder.ts.
+# Runs on GitHub's runners (which can reach Tankathon, unlike the dev sandbox).
+name: Build draft order
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *' # daily, 12:00 UTC
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/build-draftorder.mjs'
+      - '.github/workflows/build-draftorder.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Pull projected draft order from Tankathon
+        run: node scripts/build-draftorder.mjs
+      - name: Commit seed if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/seededDraftOrder.ts
+          if git diff --staged --quiet; then
+            echo "No draft-order changes."
+          else
+            git commit -m "Update projected draft order from Tankathon"
+            git push
+          fi

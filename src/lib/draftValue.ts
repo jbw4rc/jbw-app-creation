@@ -1,7 +1,7 @@
 import type { DraftPick } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { TEAMS } from '../data/teams';
-import { SEEDED_WIN_TOTALS } from '../data/seededWinTotals';
+import { SEEDED_DRAFT_ORDER } from '../data/seededDraftOrder';
 import { darkoFor } from './darko';
 
 // ---------------------------------------------------------------------------
@@ -16,9 +16,10 @@ import { darkoFor } from './darko';
 // with a horizon regression that pulls far-out picks toward a league-average
 // slot (a 2032 pick from any team is close to a coin flip today).
 //
-// Finish is projected from Vegas win totals when the seed is populated (the
-// market prices in offseason moves); otherwise it falls back to a DARKO
-// team-strength ranking so the engine still differentiates teams today.
+// Finish comes from Tankathon's projected draft board when the seed is
+// populated (it prices in offseason moves and updates live during the season);
+// otherwise it falls back to a DARKO team-strength ranking so the engine still
+// differentiates teams today.
 // ---------------------------------------------------------------------------
 
 /** The draft that follows CURRENT_SEASON (2026-27 season -> 2027 draft). */
@@ -95,30 +96,35 @@ function darkoStrength(abbr: string): number {
   return dpms.reduce((s, d) => s + d, 0);
 }
 
-// Rank of every team, 1 = best projected finish .. 30 = worst. Built once from
-// win totals if the seed covers most of the league, else from DARKO strength.
-const PROJECTED_RANK: Record<string, number> = (() => {
+const TANK_ORDER = SEEDED_DRAFT_ORDER.order;
+
+/** True when picks are slotted from Tankathon's projected board (vs DARKO). */
+export const USING_TANKATHON =
+  TEAMS.filter((t) => t.abbreviation in TANK_ORDER).length >= 25;
+
+// DARKO-based fallback ranking (1 = best .. 30 = worst), used only when the
+// Tankathon seed is absent.
+const DARKO_RANK: Record<string, number> = (() => {
   const abbrs = TEAMS.map((t) => t.abbreviation);
-  const wins = SEEDED_WIN_TOTALS.wins;
-  const useWins = abbrs.filter((a) => a in wins).length >= 25;
-  const score = (a: string) => (useWins ? wins[a] ?? 0 : darkoStrength(a));
-  const ranked = [...abbrs].sort((a, b) => score(b) - score(a));
+  const ranked = [...abbrs].sort((a, b) => darkoStrength(b) - darkoStrength(a));
   const rank: Record<string, number> = {};
   ranked.forEach((a, i) => (rank[a] = i + 1));
   return rank;
 })();
 
-/** True when picks are ordered by market win totals rather than DARKO fallback. */
-export const USING_WIN_TOTALS =
-  TEAMS.filter((t) => t.abbreviation in SEEDED_WIN_TOTALS.wins).length >= 25;
+/** Turn a lottery board slot (1..14) into its expected post-lottery slot. */
+function lotterySmooth(slot: number): number {
+  return slot >= 1 && slot <= 14 ? LOTTERY_EXPECTED_SLOT[slot - 1] : slot;
+}
 
-/** Expected draft slot for a team's own pick, from its projected league rank. */
+/** Expected draft slot for a team's own pick, from its projected finish. */
 function teamExpectedSlot(abbr: string): number {
-  const rank = PROJECTED_RANK[abbr] ?? NEUTRAL_SLOT;
-  // Ranks 17..30 (the 14 worst teams) are the lottery; seed = 31 - rank.
+  const boardSlot = TANK_ORDER[abbr];
+  if (boardSlot != null) return lotterySmooth(boardSlot);
+  // Fallback: DARKO rank -> slot. Ranks 17..30 (14 worst) are the lottery.
+  const rank = DARKO_RANK[abbr] ?? NEUTRAL_SLOT;
   if (rank >= 17) return LOTTERY_EXPECTED_SLOT[31 - rank - 1];
-  // Playoff/play-in teams (ranks 1..16) draft 15..30 in reverse standing order.
-  return 31 - rank;
+  return 31 - rank; // playoff/play-in teams draft 15..30 in reverse order
 }
 
 export interface PickValuation {
