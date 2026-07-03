@@ -49,6 +49,8 @@ for (const p of parts) {
   const salary = num((p.match(/actual_salary:(-?[\d.]+)/) || [])[1]);
   const games = num((p.match(/career_game_num:(\d+)/) || [])[1]) ?? 0;
   const age = num((p.match(/(?:^|[,{])age:(-?[\d.]+)/) || [])[1]);
+  const pos = (p.match(/(?:^|[,{])position:"([^"]*)"/) || [])[1] || null;
+  const posNum = num((p.match(/(?:^|[,{])position_num:(-?[\d.]+)/) || [])[1]);
   // s1..s15: DARKO's player-specific value-retention curve by future season
   // (s1 = this season = 1.0). Used as the aging curve in trade value.
   const decline = [];
@@ -58,7 +60,7 @@ for (const p of parts) {
   if (!id || !name || dpm == null) continue;
   // Keep one row per player (the most-experienced / current snapshot line).
   const prev = byId.get(id);
-  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games, age, decline });
+  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games, age, pos, posNum, decline });
 }
 
 const players = [...byId.values()].sort((a, b) => b.dpm - a.dpm);
@@ -82,6 +84,8 @@ for (const p of players) {
       surplus: fM(p.surplus),
       rank: p.rank,
       age: p.age == null ? null : Math.round(p.age * 10) / 10,
+      pos: p.pos,
+      posNum: p.posNum == null ? null : Math.round(p.posNum * 10) / 10,
       decline: p.decline.map(r3),
     };
 }
@@ -90,7 +94,7 @@ writeFileSync(
   'src/data/seededDarko.ts',
   `// AUTO-GENERATED DARKO Daily Plus-Minus (DPM) from darko.app.\n` +
     `// Regenerate: node scripts/build-darko.mjs\n` +
-    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; decline: (number | null)[]; }\n\n` +
+    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; posNum: number | null; decline: (number | null)[]; }\n\n` +
     `// Keyed by normalized player name (lowercase, no accents/punctuation).\n` +
     `export const SEEDED_DARKO: Record<string, DarkoInfo> = ${JSON.stringify(out, null, 0)};\n`
 );

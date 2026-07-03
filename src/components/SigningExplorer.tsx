@@ -43,6 +43,8 @@ interface FA {
   value: number; // projected salary, $M (DARKO market value)
   dpm: number | null;
   age: number | null;
+  pos: string | null;
+  posNum: number | null;
   rights: string | null; // team abbr holding Bird rights, if any
 }
 
@@ -54,9 +56,25 @@ const FA_POOL: FA[] = Object.entries(SEEDED_DARKO)
     value: d.value ?? 0,
     dpm: d.dpm ?? null,
     age: d.age ?? null,
+    pos: d.pos ?? null,
+    posNum: d.posNum ?? null,
     rights: RIGHTS[key] ?? null,
   }))
   .sort((a, b) => b.value - a.value);
+
+type PosGroup = 'all' | 'G' | 'F' | 'C';
+
+// Bucket a free agent into guard / forward / center (by DARKO position number,
+// falling back to the position string).
+function posGroup(fa: FA): 'G' | 'F' | 'C' | null {
+  if (fa.posNum != null) return fa.posNum < 2.5 ? 'G' : fa.posNum < 4.3 ? 'F' : 'C';
+  const p = (fa.pos ?? '').toUpperCase();
+  if (!p) return null;
+  if (p.includes('C')) return 'C';
+  if (p.includes('F')) return 'F';
+  if (p.includes('G')) return 'G';
+  return null;
+}
 
 const MIN_SALARY = 2_296_274; // 2026-27 minimum (approx, vet)
 const ROSTER_MIN_FOR_CAP = 12; // cap-space teams charge empty slots up to 12
@@ -67,6 +85,7 @@ export function SigningExplorer() {
   const [selectedFA, setSelectedFA] = useState<string | null>(null);
   const [renounced, setRenounced] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
+  const [posFilter, setPosFilter] = useState<PosGroup>('all');
 
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const cap = getSeasonCap(CURRENT_SEASON);
@@ -120,8 +139,12 @@ export function SigningExplorer() {
   const fa = FA_POOL.find((f) => f.key === selectedFA) ?? null;
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return FA_POOL.filter((f) => !q || f.name.toLowerCase().includes(q)).slice(0, 60);
-  }, [query]);
+    return FA_POOL.filter(
+      (f) =>
+        (!q || f.name.toLowerCase().includes(q)) &&
+        (posFilter === 'all' || posGroup(f) === posFilter)
+    ).slice(0, 60);
+  }, [query, posFilter]);
 
   return (
     <div className="signing-explorer">
@@ -158,19 +181,32 @@ export function SigningExplorer() {
         <div className="se-list">
           <div className="se-list-head">
             <span>Free Agents</span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search…"
-              spellCheck={false}
-            />
+            <div className="se-list-controls">
+              <select
+                className="se-posfilter"
+                value={posFilter}
+                onChange={(e) => setPosFilter(e.target.value as PosGroup)}
+              >
+                <option value="all">All positions</option>
+                <option value="G">Guards</option>
+                <option value="F">Forwards</option>
+                <option value="C">Centers</option>
+              </select>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search…"
+                spellCheck={false}
+              />
+            </div>
           </div>
           <div className="se-table-wrap">
             <table className="se-table">
               <thead>
                 <tr>
                   <th className="se-name">Player</th>
+                  <th>Pos</th>
                   <th>Age</th>
                   <th title="Projected salary = DARKO market value">Proj $</th>
                   <th title="DARKO Daily Plus-Minus">DPM</th>
@@ -185,6 +221,7 @@ export function SigningExplorer() {
                     onClick={() => setSelectedFA(f.key)}
                   >
                     <td className="se-name">{f.name}</td>
+                    <td className="se-pos">{f.pos ?? '—'}</td>
                     <td>{f.age ?? '—'}</td>
                     <td className="se-projsal">${f.value.toFixed(1)}M</td>
                     <td className={f.dpm == null ? '' : f.dpm >= 0 ? 'se-pos' : 'se-neg'}>
@@ -325,6 +362,7 @@ function SigningAnalysis({
         <div>
           <span className="se-fa-name">{fa.name}</span>
           <span className="se-fa-meta">
+            {fa.pos ? `${fa.pos} · ` : ''}
             {fa.age ?? '—'} yo · DPM {fa.dpm == null ? '—' : fa.dpm.toFixed(1)}
             {fa.rights && ` · rights: ${fa.rights}`}
           </span>

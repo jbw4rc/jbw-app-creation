@@ -1021,3 +1021,8 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .qcr-neg { color: var(--ink-soft); }
 .qcr-arrow { color: var(--ink-faint); font-size: 18px; }
 .qcr-note { display: block; margin-top: 8px; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+/* --- Signings: position filter/column ------------------------------------ */
+.se-list-controls { display: flex; align-items: center; gap: 8px; }
+.se-posfilter { font-size: 12px; padding: 4px 8px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--card-2); color: var(--ink); }
+.se-pos { text-align: center; font-weight: 600; font-size: 11px; color: var(--ink-soft); }
