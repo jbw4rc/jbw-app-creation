@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm i playwright@latest
+      - run: npx playwright install --with-deps chromium
       - run: node scripts/probe-contracts.mjs || true
       - run: |
           git config user.name "github-actions[bot]"
