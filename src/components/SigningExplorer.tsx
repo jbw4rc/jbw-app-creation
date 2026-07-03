@@ -12,6 +12,7 @@ import {
   TIER_INFO,
 } from '../lib/apron';
 import { money } from '../lib/format';
+import { FreeAgentQuiver } from './FreeAgentQuiver';
 
 // Signing Explorer: browse the remaining free agents (with DARKO-projected
 // salaries), pick a team, and model what signing a player would take — via the
@@ -77,30 +78,37 @@ export function SigningExplorer() {
     setSelectedFA(null);
   };
 
-  // Cap-room math after any renouncements.
-  const room = useMemo(() => {
+  // Cap-room math for a given set of renounced holds.
+  const computeRoom = (renouncedSet: Set<string>) => {
     const salary = teamSalaryForSeason(team, CURRENT_SEASON);
-    const kept = holds.filter((h) => !renounced.has(h.player));
+    const kept = holds.filter((h) => !renouncedSet.has(h.player));
     const holdsTotal = kept.reduce((s, h) => s + h.amount, 0);
     const rostered = rosteredCount(team, CURRENT_SEASON);
     const emptySlots = Math.max(0, ROSTER_MIN_FOR_CAP - rostered - kept.length);
     const rosterCharge = emptySlots * MIN_FILL_SALARY;
     const capNumber = salary + holdsTotal + rosterCharge;
-    return {
-      salary,
-      holdsTotal,
-      rosterCharge,
-      capNumber,
-      space: cap.salaryCap - capNumber, // positive = room
-      renouncedTotal: holds.filter((h) => renounced.has(h.player)).reduce((s, h) => s + h.amount, 0),
-    };
-  }, [team, holds, renounced, cap.salaryCap]);
+    return { salary, holdsTotal, rosterCharge, capNumber, space: cap.salaryCap - capNumber };
+  };
+  const room = useMemo(
+    () => computeRoom(renounced),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [team, holds, renounced, cap.salaryCap]
+  );
+  const roomBefore = useMemo(
+    () => computeRoom(new Set<string>()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [team, holds, cap.salaryCap]
+  );
 
   const tier = summarizeTeamSeason(team, CURRENT_SEASON).tier;
-  const hasRoom = room.space > 0;
   // A team whose committed salary is under the cap operates as a cap-space team
   // (renounce holds to open room); otherwise it's an over-cap team (exceptions).
   const capSpaceTeam = room.salary < cap.salaryCap;
+
+  const capNote =
+    `${money(room.salary)} salary + ${money(room.holdsTotal)} holds` +
+    (room.rosterCharge > 0 ? ` + ${money(room.rosterCharge)} charges` : '') +
+    ` = ${money(room.capNumber)} vs ${money(cap.salaryCap)} cap · ${TIER_INFO[tier].label}`;
 
   const fa = FA_POOL.find((f) => f.key === selectedFA) ?? null;
   const rows = useMemo(() => {
@@ -130,27 +138,12 @@ export function SigningExplorer() {
         </label>
       </div>
 
-      {/* Team cap snapshot */}
-      <div className="se-capbar">
-        <div className="se-capfig">
-          <span className="se-capfig-label">Cap room</span>
-          <span className={`se-capfig-val ${hasRoom ? 'se-pos' : 'se-neg'}`}>
-            {hasRoom
-              ? `${money(room.space)} room`
-              : capSpaceTeam
-                ? 'No usable room — holds fill it'
-                : `${money(Math.abs(room.space))} over the cap`}
-          </span>
-        </div>
-        <div className="se-capbreak">
-          <span>{money(room.salary)} salary</span>
-          <span>+ {money(room.holdsTotal)} holds</span>
-          {room.rosterCharge > 0 && <span>+ {money(room.rosterCharge)} roster charges</span>}
-          <span>
-            = {money(room.capNumber)} vs {money(cap.salaryCap)} cap
-          </span>
-          <span className={`tier-chip tier-${TIER_INFO[tier].color}`}>{TIER_INFO[tier].label}</span>
-        </div>
+      {/* Team's signing tools + cap room before/after renouncing holds. */}
+      <div className="se-quiver-panel">
+        <FreeAgentQuiver
+          team={team}
+          capRoom={{ before: roomBefore.space, after: room.space, note: capNote }}
+        />
       </div>
 
       <div className="se-grid">

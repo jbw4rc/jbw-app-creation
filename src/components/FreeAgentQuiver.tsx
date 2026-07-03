@@ -14,10 +14,21 @@ const BADGE: Record<ArrowStatus, string> = {
   used: 'Used',
 };
 
-export function FreeAgentQuiver({ team }: { team: Team }) {
+/** Cap room shown at the top of the quiver (Signings module only). */
+export interface CapRoomInfo {
+  /** Room with all holds kept, in dollars. */
+  before: number;
+  /** Room after the current renouncements, in dollars. */
+  after: number;
+  /** Composition note (salary + holds vs cap). */
+  note: string;
+}
+
+export function FreeAgentQuiver({ team, capRoom }: { team: Team; capRoom?: CapRoomInfo }) {
   useSignings(); // re-render when the transactions list changes
   const haveSignings = signingsCount() > 0;
   const arrows = freeAgentQuiver(team, CURRENT_SEASON, usedExceptionsFor(team.abbreviation));
+  const roomFmt = (n: number) => (n > 0 ? money(n) : 'none');
 
   return (
     <div className="quiver">
@@ -25,6 +36,28 @@ export function FreeAgentQuiver({ team }: { team: Team }) {
         <span>Free Agent Quiver</span>
         <span className="quiver-sub">Signing tools this offseason</span>
       </div>
+
+      {capRoom && (
+        <div className="quiver-caproom">
+          <span className="qcr-label">Cap Room</span>
+          <div className="qcr-figs">
+            <div className="qcr-fig">
+              <span className="qcr-fig-label">Before renouncing</span>
+              <span className={`qcr-fig-val ${capRoom.before > 0 ? 'qcr-pos' : 'qcr-neg'}`}>
+                {roomFmt(capRoom.before)}
+              </span>
+            </div>
+            <span className="qcr-arrow">→</span>
+            <div className="qcr-fig">
+              <span className="qcr-fig-label">After renouncing</span>
+              <span className={`qcr-fig-val ${capRoom.after > 0 ? 'qcr-pos' : 'qcr-neg'}`}>
+                {roomFmt(capRoom.after)}
+              </span>
+            </div>
+          </div>
+          <span className="qcr-note">{capRoom.note}</span>
+        </div>
+      )}
 
       <div className="quiver-list">
         {arrows.map((a) => (

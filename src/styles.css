@@ -1005,3 +1005,19 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .se-renounce-amt { font-variant-numeric: tabular-nums; font-weight: 600; }
 .se-renounce-note { margin: 8px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
 .se-foot { margin: 14px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+
+/* --- Signings: quiver panel + cap-room block ----------------------------- */
+.se-quiver-panel { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+.quiver-caproom {
+  margin: 10px 0 14px; padding: 12px 14px; background: var(--card-2);
+  border: 1px solid var(--rule); border-left: 3px solid var(--coral); border-radius: var(--radius-sm);
+}
+.qcr-label { display: block; font-family: var(--serif); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--coral); margin-bottom: 8px; }
+.qcr-figs { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.qcr-fig { display: flex; flex-direction: column; }
+.qcr-fig-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.qcr-fig-val { font-family: var(--serif); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.qcr-pos { color: var(--green); }
+.qcr-neg { color: var(--ink-soft); }
+.qcr-arrow { color: var(--ink-faint); font-size: 18px; }
+.qcr-note { display: block; margin-top: 8px; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
