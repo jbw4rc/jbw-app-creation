@@ -851,3 +851,26 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   border: 1px solid var(--rule); border-radius: 2px; padding: 0 3px;
   font-variant-numeric: tabular-nums;
 }
+
+/* --- Trade grade: show-the-math ------------------------------------------ */
+.tg-asset.tg-expandable { cursor: pointer; border-radius: 2px; }
+.tg-asset.tg-expandable:hover { background: rgba(0,0,0,0.03); }
+.tg-asset.tg-open { background: rgba(0,0,0,0.04); }
+.tg-caret { display: inline-block; width: 10px; color: var(--ink-faint); font-size: 9px; }
+.tg-hint { font-style: italic; opacity: 0.8; }
+
+.tg-math {
+  margin-top: 8px; padding: 8px 10px; background: var(--card);
+  border: 1px solid var(--rule); border-radius: var(--radius-sm);
+}
+.tg-math-head { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; }
+.tg-math-scroll { overflow-x: auto; }
+.tg-math-table { border-collapse: collapse; width: 100%; font-size: 11px; font-variant-numeric: tabular-nums; }
+.tg-math-table th, .tg-math-table td {
+  padding: 2px 6px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--rule);
+}
+.tg-math-table thead th { color: var(--ink-soft); font-weight: 700; border-bottom: 1px solid var(--rule-strong); }
+.tg-math-table tbody th { text-align: left; font-weight: 500; color: var(--ink-soft); }
+.tg-math-table .tg-opt { color: var(--orange); font-weight: 700; font-size: 9px; }
+.tg-math-surplus td, .tg-math-surplus th { border-top: 1px solid var(--rule-strong); font-weight: 600; }
+.tg-math-contrib td, .tg-math-contrib th { font-weight: 700; border-bottom: none; }

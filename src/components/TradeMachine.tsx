@@ -242,11 +242,26 @@ function TradeGradePanel({ grade }: { grade: TradeGrade }) {
   );
 }
 
-// One asset line: name + its signed surplus (value − cap hit for players).
-function AssetRow({ a }: { a: AssetValue }) {
+// One asset line: name + its signed surplus. Players with a breakdown are
+// clickable to expand the per-year "show the math" table.
+function AssetRow({
+  a,
+  isOpen,
+  onToggle,
+}: {
+  a: AssetValue;
+  isOpen: boolean;
+  onToggle?: () => void;
+}) {
+  const expandable = Boolean(onToggle);
   return (
-    <div className="tg-asset" title={assetTitle(a)}>
+    <div
+      className={`tg-asset${expandable ? ' tg-expandable' : ''}${isOpen ? ' tg-open' : ''}`}
+      title={expandable ? 'Show the math' : assetTitle(a)}
+      onClick={onToggle}
+    >
       <span className="tg-asset-name">
+        {expandable && <span className="tg-caret">{isOpen ? '▾' : '▸'}</span>}
         {a.label}
         {a.kind === 'player' && a.term && <span className="tg-term">{a.term}</span>}
         {a.unmatched && <span className="tg-flag" title="No DARKO value — treated as neutral"> ~</span>}
@@ -256,7 +271,118 @@ function AssetRow({ a }: { a: AssetValue }) {
   );
 }
 
+// The per-year value math for one player — DARKO value, salary, surplus, and the
+// aging / cap / NPV factors applied to each future season.
+function AssetMath({ a }: { a: AssetValue }) {
+  const rows = a.breakdown ?? [];
+  const yr = (s: number) => `${s}-${String(s + 1).slice(2)}`;
+  const hasOption = rows.some((r) => r.effective !== r.surplus);
+  return (
+    <div className="tg-math">
+      <div className="tg-math-head">
+        <strong>{a.label}</strong> · DARKO value ${a.grossValue?.toFixed(1)}M → net{' '}
+        {netM(a.value)} over {rows.length} controlled {rows.length === 1 ? 'yr' : 'yrs'}
+      </div>
+      <div className="tg-math-scroll">
+        <table className="tg-math-table">
+          <thead>
+            <tr>
+              <th />
+              {rows.map((r) => (
+                <th key={r.season}>
+                  {yr(r.season)}
+                  {r.option === 'player' && <span className="tg-opt"> PO</span>}
+                  {r.option === 'team' && <span className="tg-opt"> TO</span>}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Aging ×</th>
+              {rows.map((r) => <td key={r.season}>{r.retention.toFixed(3)}</td>)}
+            </tr>
+            <tr>
+              <th>DARKO value (aged)</th>
+              {rows.map((r) => <td key={r.season}>${r.agedValue.toFixed(1)}M</td>)}
+            </tr>
+            <tr>
+              <th>Salary (nominal)</th>
+              {rows.map((r) => <td key={r.season}>${r.salaryNominal.toFixed(1)}M</td>)}
+            </tr>
+            <tr>
+              <th>Cap growth ×</th>
+              {rows.map((r) => <td key={r.season}>{r.capGrowth.toFixed(2)}</td>)}
+            </tr>
+            <tr>
+              <th>Salary (today's $)</th>
+              {rows.map((r) => <td key={r.season}>${r.salaryReal.toFixed(1)}M</td>)}
+            </tr>
+            <tr className="tg-math-surplus">
+              <th>Surplus</th>
+              {rows.map((r) => (
+                <td key={r.season} className={r.surplus >= 0 ? 'tg-pos' : 'tg-neg'}>
+                  {netM(r.surplus)}
+                </td>
+              ))}
+            </tr>
+            {hasOption && (
+              <tr>
+                <th>Option adj</th>
+                {rows.map((r) => (
+                  <td key={r.season}>
+                    {r.effective !== r.surplus ? netM(r.effective) : '—'}
+                  </td>
+                ))}
+              </tr>
+            )}
+            <tr>
+              <th>NPV ×</th>
+              {rows.map((r) => <td key={r.season}>{r.npv.toFixed(2)}</td>)}
+            </tr>
+            <tr className="tg-math-contrib">
+              <th>Contribution</th>
+              {rows.map((r) => (
+                <td key={r.season} className={r.contribution >= 0 ? 'tg-pos' : 'tg-neg'}>
+                  {netM(r.contribution)}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function SideGradeCard({ side }: { side: SideGrade }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const canExpand = (a: AssetValue) => a.kind === 'player' && (a.breakdown?.length ?? 0) > 0;
+  const openAsset = [...side.assetsIn, ...side.assetsOut].find(
+    (a) => a.label === open && canExpand(a)
+  );
+  const toggle = (a: AssetValue) => setOpen((o) => (o === a.label ? null : a.label));
+
+  const renderCol = (assets: AssetValue[], head: string, total: number) => (
+    <div className="tg-col">
+      <span className="tg-col-head">
+        {head} · {netM(total)}
+      </span>
+      {assets.length ? (
+        assets.map((a, i) => (
+          <AssetRow
+            key={i}
+            a={a}
+            isOpen={open === a.label && canExpand(a)}
+            onToggle={canExpand(a) ? () => toggle(a) : undefined}
+          />
+        ))
+      ) : (
+        <div className="tg-asset tg-empty">—</div>
+      )}
+    </div>
+  );
+
   return (
     <div className="tg-card">
       <div className="tg-card-top">
@@ -274,23 +400,11 @@ function SideGradeCard({ side }: { side: SideGrade }) {
         </span>
       </div>
       <div className="tg-ledger">
-        <div className="tg-col tg-in">
-          <span className="tg-col-head">Gets · {netM(side.valueIn)}</span>
-          {side.assetsIn.length ? (
-            side.assetsIn.map((a, i) => <AssetRow key={i} a={a} />)
-          ) : (
-            <div className="tg-asset tg-empty">—</div>
-          )}
-        </div>
-        <div className="tg-col tg-out">
-          <span className="tg-col-head">Sends · {netM(side.valueOut)}</span>
-          {side.assetsOut.length ? (
-            side.assetsOut.map((a, i) => <AssetRow key={i} a={a} />)
-          ) : (
-            <div className="tg-asset tg-empty">—</div>
-          )}
-        </div>
+        {renderCol(side.assetsIn, 'Gets', side.valueIn)}
+        {renderCol(side.assetsOut, 'Sends', side.valueOut)}
       </div>
+      {openAsset && <AssetMath a={openAsset} />}
+      <div className="tg-note tg-hint">Click a player to show the year-by-year math.</div>
       {side.approximate && (
         <div className="tg-note">~ = player without a DARKO value; treated as neutral.</div>
       )}

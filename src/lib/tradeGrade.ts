@@ -2,7 +2,7 @@ import type { DraftPick, Player } from '../types';
 import type { TeamTradeResult } from './trade';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { playerSalaryForSeason } from './apron';
-import { contractTerm, controlledSurplus } from './contract';
+import { contractTerm, controlledSurplus, surplusBreakdown, type SurplusYear } from './contract';
 import { darkoFor } from './darko';
 import { valuePick } from './draftValue';
 
@@ -35,6 +35,8 @@ export interface AssetValue {
   term?: string;
   /** Years of team control from the current season (players only). */
   years?: number;
+  /** Per-season value math (players with a DARKO value) for "show the math". */
+  breakdown?: SurplusYear[];
   /** DARKO DPM for players (undefined otherwise / if unmatched). */
   dpm?: number;
   /** True when a player has no DARKO match, so surplus is unknown (treated 0). */
@@ -71,6 +73,8 @@ function playerAsset(p: Player): AssetValue {
   // Multi-year surplus over the years the team controls the player, aged by
   // DARKO's own per-player curve. Unknown value -> neutral 0 (flagged).
   const value = gross == null ? 0 : controlledSurplus(p, CURRENT_SEASON, gross, d?.decline);
+  const breakdown =
+    gross == null ? undefined : surplusBreakdown(p, CURRENT_SEASON, gross, d?.decline);
   return {
     label: p.name,
     value,
@@ -80,6 +84,7 @@ function playerAsset(p: Player): AssetValue {
     currentSurplus: gross == null ? undefined : gross - salary,
     term: term.label,
     years: term.years,
+    breakdown,
     dpm: d?.dpm ?? undefined,
     unmatched: gross == null,
   };

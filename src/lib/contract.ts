@@ -139,13 +139,38 @@ export function contractTerm(player: Player, from: number): ContractTerm {
  * holds them: team options keep only positive years, player options leave the
  * team only the negative ones (the player opts out of the good ones).
  */
-export function controlledSurplus(
+/** One controlled season's value math, in present-day $M (for "show the math"). */
+export interface SurplusYear {
+  season: number;
+  option: ContractOption;
+  /** Aging retention factor applied to value this season. */
+  retention: number;
+  /** Aged market value, $M. */
+  agedValue: number;
+  /** Contract salary that season, $M (nominal). */
+  salaryNominal: number;
+  /** Cap growth vs the current season. */
+  capGrowth: number;
+  /** Salary deflated to present-day dollars, $M. */
+  salaryReal: number;
+  /** agedValue − salaryReal, $M. */
+  surplus: number;
+  /** Surplus after the option rule (team keeps upside, player keeps downside). */
+  effective: number;
+  /** NPV discount factor for this season. */
+  npv: number;
+  /** effective × npv — what this season adds to the total, $M. */
+  contribution: number;
+}
+
+/** Per-season value breakdown over the years a team controls the player. */
+export function surplusBreakdown(
   player: Player,
   from: number,
   value: number,
   darkoDecline?: (number | null)[] | null
-): number {
-  let total = 0;
+): SurplusYear[] {
+  const rows: SurplusYear[] = [];
   for (const cy of futureYears(player, from)) {
     if (CONTROL_ENDS(cy.option) || cy.salary <= 0) break;
     const k = cy.season - from;
@@ -153,17 +178,42 @@ export function controlledSurplus(
     // ages, per DARKO's own curve when available) and deflate that year's salary
     // by cap growth (a flat salary is a shrinking share of a rising cap),
     // keeping both in present-day dollars.
-    const seasonValue = value * retentionFactor(player.age, k, darkoDecline);
-    const realSalary = cy.salary / 1_000_000 / capGrowth(cy.season);
-    const seasonSurplus = seasonValue - realSalary;
-    const w = Math.pow(NPV_DISCOUNT, k); // NPV: discount future years to present
-    if (cy.option === 'team') {
-      total += w * Math.max(seasonSurplus, 0);
-    } else if (cy.option === 'player' && k > 0) {
-      total += w * Math.min(seasonSurplus, 0);
-    } else {
-      total += w * seasonSurplus;
-    }
+    const retention = retentionFactor(player.age, k, darkoDecline);
+    const agedValue = value * retention;
+    const salaryNominal = cy.salary / 1_000_000;
+    const cg = capGrowth(cy.season);
+    const salaryReal = salaryNominal / cg;
+    const surplus = agedValue - salaryReal;
+    let effective = surplus;
+    if (cy.option === 'team') effective = Math.max(surplus, 0);
+    else if (cy.option === 'player' && k > 0) effective = Math.min(surplus, 0);
+    const npv = Math.pow(NPV_DISCOUNT, k); // discount future years to present
+    rows.push({
+      season: cy.season,
+      option: cy.option,
+      retention,
+      agedValue,
+      salaryNominal,
+      capGrowth: cg,
+      salaryReal,
+      surplus,
+      effective,
+      npv,
+      contribution: effective * npv,
+    });
   }
-  return total;
+  return rows;
+}
+
+/** Total controlled surplus, $M — the sum of the per-season breakdown. */
+export function controlledSurplus(
+  player: Player,
+  from: number,
+  value: number,
+  darkoDecline?: (number | null)[] | null
+): number {
+  return surplusBreakdown(player, from, value, darkoDecline).reduce(
+    (s, r) => s + r.contribution,
+    0
+  );
 }
