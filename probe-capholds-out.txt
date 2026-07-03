@@ -1,0 +1,24 @@
+
+
+######## denver-nuggets -> 404 (31116b)
+  "cap hold": no
+  "caphold": no
+  "hold": yes @4972
+  "bird": yes @7698
+  "free agent": yes @912
+  "renounce": no
+  "incomplete": no
+  "dead": no
+  tables: 0
+
+
+######## los-angeles-lakers -> 404 (31116b)
+  "cap hold": no
+  "caphold": no
+  "hold": yes @4972
+  "bird": yes @7698
+  "free agent": yes @912
+  "renounce": no
+  "incomplete": no
+  "dead": no
+  tables: 0
