@@ -49,7 +49,7 @@ export function FreeAgentQuiver({ team, capRoom }: { team: Team; capRoom?: CapRo
             </div>
             <span className="qcr-arrow">→</span>
             <div className="qcr-fig">
-              <span className="qcr-fig-label">After renouncing</span>
+              <span className="qcr-fig-label">After renouncing all</span>
               <span className={`qcr-fig-val ${capRoom.after > 0 ? 'qcr-pos' : 'qcr-neg'}`}>
                 {roomFmt(capRoom.after)}
               </span>

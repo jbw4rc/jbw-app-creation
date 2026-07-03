@@ -94,8 +94,14 @@ export function SigningExplorer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [team, holds, renounced, cap.salaryCap]
   );
+  // Room now (all holds kept) vs. the most a team could open by renouncing all.
   const roomBefore = useMemo(
     () => computeRoom(new Set<string>()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [team, holds, cap.salaryCap]
+  );
+  const roomAfterAll = useMemo(
+    () => computeRoom(new Set(holds.map((h) => h.player))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [team, holds, cap.salaryCap]
   );
@@ -105,10 +111,11 @@ export function SigningExplorer() {
   // (renounce holds to open room); otherwise it's an over-cap team (exceptions).
   const capSpaceTeam = room.salary < cap.salaryCap;
 
+  // Composition note describes the baseline (before any renouncements).
   const capNote =
-    `${money(room.salary)} salary + ${money(room.holdsTotal)} holds` +
-    (room.rosterCharge > 0 ? ` + ${money(room.rosterCharge)} charges` : '') +
-    ` = ${money(room.capNumber)} vs ${money(cap.salaryCap)} cap · ${TIER_INFO[tier].label}`;
+    `${money(roomBefore.salary)} salary + ${money(roomBefore.holdsTotal)} holds` +
+    (roomBefore.rosterCharge > 0 ? ` + ${money(roomBefore.rosterCharge)} charges` : '') +
+    ` = ${money(roomBefore.capNumber)} vs ${money(cap.salaryCap)} cap · ${TIER_INFO[tier].label}`;
 
   const fa = FA_POOL.find((f) => f.key === selectedFA) ?? null;
   const rows = useMemo(() => {
@@ -142,7 +149,7 @@ export function SigningExplorer() {
       <div className="se-quiver-panel">
         <FreeAgentQuiver
           team={team}
-          capRoom={{ before: roomBefore.space, after: room.space, note: capNote }}
+          capRoom={{ before: roomBefore.space, after: roomAfterAll.space, note: capNote }}
         />
       </div>
 
