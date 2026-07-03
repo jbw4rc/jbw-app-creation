@@ -1,0 +1,30 @@
+homepage 2537890 bytes
+data script 748118 bytes
+records: 582
+
+=== distinct field keys (first 400 recs) ===
+_rank  active_roster  actual_salary  age  available  bayes_rapm_def  bayes_rapm_off  bayes_rapm_total  box_ddpm  box_dpm  box_odpm  career_game_num  d_dpm  date  dpm  future_game  o_dpm  on_off_ddpm  on_off_dpm  on_off_odpm  player_name  position  position_num  poss  projected_years_remaining  projected_years_remaining_cal  rapm_exposure  rookie_season  s1  s10  s11  s12  s13  s14  s15  s2  s3  s4  s5  s6  s7  s8  s9  sal_market_fixed  season  seconds_played  surplus_value  team_name  tm_id  tr_fg3_pct  tr_ft_pct  tr_minutes  tr_starter  x_ast_100  x_blk_100  x_drb_100  x_fg3_pct  x_fg3a_100  x_fg_pct  x_fga_100  x_ft_pct  x_fta_100  x_minutes  x_orb_100  x_pace  x_position  x_pts_100  x_retirement_age  x_retirement_age_cal  x_stl_100  x_tov_100
+
+=== season/projection markers in data script ===
+  "season": yes @462
+  "proj": yes @1249
+  "forecast": no
+  "future": yes @518
+  "pred": no
+  "2027": yes @29850
+  "2028": yes @83449
+  "year": yes @1259
+
+=== FULL first record (2500 chars) ===
+nba_id:203999,date:"2026-04-30",season:2026,team_name:"Denver Nuggets",tm_id:1610612743,future_game:0,active_roster:1,available:1,poss:83.5,dpm:7.35021,o_dpm:5.2328,d_dpm:2.11741,box_dpm:5.4748,box_odpm:4.43478,box_ddpm:1.04002,on_off_dpm:7.58983,on_off_odpm:5.36519,on_off_ddpm:2.22465,age:31.1931880407403,career_game_num:983,seconds_played:2603,position:"C",position_num:4.5,x_position:"c_pos",bayes_rapm_off:null,bayes_rapm_def:null,bayes_rapm_total:null,rapm_exposure:null,x_minutes:38.4596,x_pace:99.1342,x_pts_100:33.6615,x_ast_100:12.1444,x_orb_100:3.45855,x_drb_100:14.5439,x_stl_100:1.96092,x_blk_100:1.11178,x_tov_100:5.03511,x_fga_100:23.9465,x_fg3a_100:4.89423,x_fta_100:10.3421,x_fg_pct:.517247,x_fg3_pct:.338752,x_ft_pct:.820315,tr_minutes:38.3508,tr_starter:1.06588,tr_fg3_pct:.345261,tr_ft_pct:.823029,projected_years_remaining:11.3955,projected_years_remaining_cal:9,x_retirement_age:42.5886577062677,x_retirement_age_cal:40.1931880407403,s1:1,s2:.99643,s3:.991682,s4:.983276,s5:.96835,s6:.942184,s7:.921283,s8:.88876,s9:.822511,s10:.719807,s11:.637698,s12:.544246,s13:.456929,s14:.330935,s15:.191379,sal_market_fixed:94052625.3731044,surplus_value:38828099.3731044,actual_salary:55224526,player_name:"Nikola Jokic",rookie_season:2016,_rank:1},{
+
+### https://darko.app/projections -> 200 (8656b)
+  "season" @7564: season simulations</a> <a href="/lineups" class="svelte-1v8gxh">View lineup proj
+  "proj" @3210: projections" class="svelte-12qhfyh active">Projections</a><a href="/rate" class=
+  "value" @3859: value="3" class="theme-slider__input svelte-12qhfyh" aria-label="Theme" aria-val
+
+### https://darko.app/projection -> 404 (7620b)
+
+### https://darko.app/season-projections -> 404 (7620b)
+
+### https://darko.app/api/players -> 404 (7624b)
