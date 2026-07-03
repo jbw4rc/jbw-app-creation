@@ -42,22 +42,22 @@ export function TeamExplorer() {
       </div>
 
       <div className="explorer-grid">
+        {/* Headline: where the team's salary sits relative to the aprons. */}
         <section className="panel span-4">
           <CapSummary team={team} />
         </section>
 
+        {/* The roster itself — who makes up that salary (leads the detail). */}
+        <section className="panel span-4">
+          <RosterTable team={team} />
+        </section>
+
+        {/* Multi-year salary outlook. */}
         <section className="panel span-4">
           <SalaryTimeline team={team} />
         </section>
 
-        <section className="panel span-2">
-          <RestrictionPanel tier={summary.tier} />
-        </section>
-
-        <section className="panel span-2">
-          <FreeAgentQuiver team={team} />
-        </section>
-
+        {/* Tradable assets: picks and trade exceptions. */}
         <section className="panel span-2">
           <DraftCapital team={team} />
         </section>
@@ -66,8 +66,13 @@ export function TeamExplorer() {
           <TradeExceptions team={team} />
         </section>
 
-        <section className="panel span-4">
-          <RosterTable team={team} />
+        {/* Apron rules in effect and the free-agent tool set. */}
+        <section className="panel span-2">
+          <RestrictionPanel tier={summary.tier} />
+        </section>
+
+        <section className="panel span-2">
+          <FreeAgentQuiver team={team} />
         </section>
       </div>
     </div>
