@@ -1,66 +1,29 @@
-slugs found (30): celtics, nets, knicks, sixers, raptors, bulls, cavaliers, pistons
+team: celtics
 
 
-######## celtics -> 200 (155708b)
-  "cap hold": yes @78475
-  "hold": yes @53420
-  "bird": yes @56146
-  "free agent": yes @1088
-  "renounce": yes @123949
-  "incomplete": yes @126420
-  "dead": yes @126061
-  "two-way": yes @80119
-  tables: 14
-   [0] id=sw_table__tradeExptn_tm class="sw_table__tradeExptn sw_table__default sw_table__fixed sw_table__sortable sw_table__collapsibleTeamColumn" rows=7 hdr: Player Exception Used Remaining Start Date End Date
-   [1] id=sw_teamProfile__draftTable class="sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=3 hdr: Draft 2027 2028 2029 2030 2031 2032 2033
-   [2] id=(no id) class="sw_teamProfileRosterSection__table sw_table__collapsiblePlayerColumn sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=17 hdr: Active (15 - $197,748,288) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [3] id=(no id) class="sw_teamProfileRosterSection__table sw_table__collapsiblePlayerColumn sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=4 hdr: Training Camp and Exhibit 10 (2 - $2,723,938) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [4] id=(no id) class="sw_teamProfileRosterSection__table sw_table__collapsiblePlayerColumn sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=3 hdr: Minors/G-League (1 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [5] id=(no id) class="sw_teamProfileStats__table sw_table__collapsiblePlayerColumn sw_table__fixed rel" rows=4 hdr: ROSTER SIZE 17 9 6 1 - -
-   [6] id=(no id) class="sw_teamProfileStats__table sw_table__collapsiblePlayerColumn sw_table__fixed rel" rows=9 hdr: ROSTER CAP HIT $200,472,226 $198,740,340 $140,136,811 $71,446,914 - -
-   [7] id=(no id) class="sw_teamProfileStats__table sw_table__collapsiblePlayerColumn sw_table__fixed rel" rows=12 hdr: CAP $164,961,000 $182,019,000 $200,221,000 $220,243,000 $242,267,000 $266,494,000
-   [8] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=3 hdr: 1st Rd Picks (1 - $2,988,120) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [9] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=7 hdr: 2nd Rd Picks (5 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [10] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=8 hdr: RFAs (6 - $2,185,116) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [11] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=14 hdr: UFAs (12 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [12] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=7 hdr: FA Cap Hold (5 - $41,491,296) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [13] id=legend class="" rows=1 hdr: Legend Incentives Injured Unrestricted Free Agent Restricted Free Agent Unconfirmed Info 38+ Over 38 Contract RSC Rookie Scale Contract NTC No Trade C
-  --- cap-ish table (4 rows), first 6 stripped ---
-    ROSTER SIZE 17 9 6 1 - -
-    ROSTER & HOLD SIZE 24 17 9 6 1 -
-    TWO-WAY CONTRACTS 1 0 0 0 0 0
-    AVERAGE AGE 27.6 28.9 29 31 - -
-  --- raw data row (1000 chars) ---
-    <tr><td></td><td></td><td></td><td></td><td></td><td class="sw_teamProfileStats__table_rowTitle"><span class="q" title="This is the roster size plus the sum of unrenounced holds (excluding 2nd round draft pick holds)"><img src="https://cdn.salaryswish.com/images/icons/general/q.svg" alt="tooltip" height="13" width="13" style="margin-bottom:-1px"></span> ROSTER & HOLD SIZE</td><td>24</td><td>17</td><td>9</td><td>6</td><td>1</td><td>-</td></tr>
+===== SECTION: 1st Rd Picks (1 - $2,988,120) Status Acquired Age Pos Terms 2026-27 2027-28 2028 =====
+--- stripped: Cenac Jr., Chris ( 27th pick 2026 ) 120% RSC Hold 19 PF, C $2,988,120 $2,988,120
+--- raw: <tr><td><a href='/players/chris-cenac-jr'>Cenac Jr., Chris</a> <span style='text-wrap:nowrap'>(<a href='/draft/2026?pick=27'>27th pick 2026</a>)</span></td><td>120% RSC Hold</td><td></td><td>19</td><td>PF, C</td><td class="con_d"></td><td><span class="cap_hit team_salary_data">$2,988,120</span><span class="base_salary team_salary_data hide">$2,988,120</span></td><td></td><td></td><td></td><td></td><td></td></tr>
+--- stripped: TOTAL $2,988,120 $2,988,120
+--- raw: <tr><td>TOTAL</td><td></td><td></td><td></td><td></td><td class="con_d"></td><td><span class="cap_hit team_salary_data">$2,988,120</span><span class="base_salary team_salary_data hide">$2,988,120</span></td><td></td><td></td><td></td><td></td><td></td></tr>
 
 
-######## nets -> 200 (160186b)
-  "cap hold": yes @78457
-  "hold": yes @53407
-  "bird": yes @56133
-  "free agent": yes @1083
-  "renounce": yes @128835
-  "incomplete": yes @131295
-  "dead": yes @130936
-  "two-way": yes @80104
-  tables: 13
-   [0] id=sw_teamProfile__draftTable class="sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=3 hdr: Draft 2027 2028 2029 2030 2031 2032 2033
-   [1] id=(no id) class="sw_teamProfileRosterSection__table sw_table__collapsiblePlayerColumn sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=18 hdr: Active (16 - $149,744,845) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [2] id=(no id) class="sw_teamProfileRosterSection__table sw_table__collapsiblePlayerColumn sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=4 hdr: Training Camp and Exhibit 10 (2 - $2,723,938) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [3] id=(no id) class="sw_teamProfileRosterSection__table sw_table__collapsiblePlayerColumn sw_table__default sw_table__fixed sw_table__stickyFirstColumn" rows=5 hdr: Minors/G-League (3 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [4] id=(no id) class="sw_teamProfileStats__table sw_table__collapsiblePlayerColumn sw_table__fixed rel" rows=4 hdr: ROSTER SIZE 18 11 5 - - -
-   [5] id=(no id) class="sw_teamProfileStats__table sw_table__collapsiblePlayerColumn sw_table__fixed rel" rows=9 hdr: ROSTER CAP HIT $152,468,783 $107,743,738 $33,479,048 - - -
-   [6] id=(no id) class="sw_teamProfileStats__table sw_table__collapsiblePlayerColumn sw_table__fixed rel" rows=12 hdr: CAP $164,961,000 $182,019,000 $200,221,000 $220,243,000 $242,267,000 $266,494,000
-   [7] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=4 hdr: 1st Rd Picks (2 - $11,756,520) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [8] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=6 hdr: 2nd Rd Picks (4 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [9] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=16 hdr: RFAs (14 - $23,785,112) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [10] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=9 hdr: UFAs (7 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [11] id=(no id) class="sw_teamProfileRosterSection__table sw_table__default sw_table__stickyFirstColumn sw_table__fixed sw_table__collapsiblePlayerColumn" rows=4 hdr: FA Cap Hold (2 - $14,060,116) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 2030-31 2031-32
-   [12] id=legend class="" rows=1 hdr: Legend Incentives Injured Unrestricted Free Agent Restricted Free Agent Unconfirmed Info 38+ Over 38 Contract RSC Rookie Scale Contract NTC No Trade C
-  --- cap-ish table (4 rows), first 6 stripped ---
-    ROSTER SIZE 18 11 5 - - -
-    ROSTER & HOLD SIZE 25 18 11 5 - -
-    TWO-WAY CONTRACTS 2 0 0 0 0 0
-    AVERAGE AGE 24.2 25 22.4 - - -
-  --- raw data row (1000 chars) ---
-    <tr><td></td><td></td><td></td><td></td><td></td><td class="sw_teamProfileStats__table_rowTitle"><span class="q" title="This is the roster size plus the sum of unrenounced holds (excluding 2nd round draft pick holds)"><img src="https://cdn.salaryswish.com/images/icons/general/q.svg" alt="tooltip" height="13" width="13" style="margin-bottom:-1px"></span> ROSTER & HOLD SIZE</td><td>25</td><td>18</td><td>11</td><td>5</td><td>-</td><td>-</td></tr>
+===== SECTION: RFAs (6 - $2,185,116) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029 =====
+--- stripped: Tonje, John RFA 25 PG, SG $2,185,116 $0
+--- raw: <tr><td><a href="/players/john-tonje">Tonje, John</a></td><td>RFA</td><td></td><td>25</td><td>PG, SG</td><td class="con_d"></td><td><span class="cap_hit team_salary_data">$2,185,116</span><span class="base_salary team_salary_data hide">$0</span></td><td></td><td></td><td></td><td></td><td></td></tr>
+--- stripped: DeVries, Tucker RFA 23 SG, SF $2,411,075 $0
+--- raw: <tr><td><a href="/players/tucker-devries">DeVries, Tucker</a></td><td>RFA</td><td></td><td>23</td><td>SG, SF</td><td class="con_d"></td><td></td><td><span class="cap_hit team_salary_data">$2,411,075</span><span class="base_salary team_salary_data hide">$0</span></td><td></td><td></td><td></td><td></td></tr>
+
+
+===== SECTION: UFAs (12 - $0) Status Acquired Age Pos Terms 2026-27 2027-28 2028-29 2029-30 203 =====
+--- stripped: Banton, Dalano UFA 26 PG $2,702,711 $0
+--- raw: <tr><td><a href="/players/dalano-banton">Banton, Dalano</a></td><td>UFA</td><td></td><td>26</td><td>PG</td><td class="con_d"></td><td></td><td><span class="cap_hit team_salary_data">$2,702,711</span><span class="base_salary team_salary_data hide">$0</span></td><td></td><td></td><td></td><td></td></tr>
+--- stripped: Conley, Mike UFA 38 PG $2,702,711 $0
+--- raw: <tr><td><a href="/players/mike-conley">Conley, Mike</a></td><td>UFA</td><td></td><td>38</td><td>PG</td><td class="con_d"></td><td></td><td><span class="cap_hit team_salary_data">$2,702,711</span><span class="base_salary team_salary_data hide">$0</span></td><td></td><td></td><td></td><td></td></tr>
+
+
+===== SECTION: FA Cap Hold (5 - $41,491,296) Status Acquired Age Pos Terms 2026-27 2027-28 2028 =====
+--- stripped: Vucevic, Nikola FA Cap Hold 35 C $32,222,222 $0
+--- raw: <tr><td><a href="/players/nikola-vucevic">Vucevic, Nikola</a></td><td>FA Cap Hold</td><td></td><td>35</td><td>C</td><td class="con_d"></td><td><span class="cap_hit team_salary_data">$32,222,222</span><span class="base_salary team_salary_data hide">$0</span></td><td></td><td></td><td></td><td></td><td></td></tr>
+--- stripped: Griffin, Blake FA Cap Hold 37 PF $2,449,421 $0
+--- raw: <tr><td><a href="/players/blake-griffin">Griffin, Blake</a></td><td>FA Cap Hold</td><td></td><td>37</td><td>PF</td><td class="con_d"></td><td><span class="cap_hit team_salary_data">$2,449,421</span><span class="base_salary team_salary_data hide">$0</span></td><td></td><td></td><td></td><td></td><td></td></tr>
