@@ -848,3 +848,29 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .tg-math-table .tg-opt { color: var(--orange); font-weight: 700; font-size: 9px; }
 .tg-math-surplus td, .tg-math-surplus th { border-top: 1px solid var(--rule-strong); font-weight: 600; }
 .tg-math-contrib td, .tg-math-contrib th { font-weight: 700; border-bottom: none; }
+
+/* --- Projected roster explorer ------------------------------------------- */
+.rp-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.rp-title { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 2px 0 0; }
+.rp-year { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.rp-year select {
+  font-family: var(--sans); font-size: 13px; padding: 5px 8px; border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm); background: var(--card); color: var(--ink);
+}
+.rp-table-wrap { overflow-x: auto; }
+.rp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.rp-table th, .rp-table td { padding: 5px 8px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--rule); }
+.rp-table th { color: var(--ink-soft); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--rule-strong); }
+.rp-table th.sortable { cursor: pointer; user-select: none; }
+.rp-table th.sortable:hover { color: var(--ink); }
+.rp-table .rp-name { text-align: left; font-weight: 600; font-family: var(--serif); }
+.rp-table td.rp-name { font-weight: 500; }
+.rp-arrow { font-size: 8px; color: var(--coral); margin-left: 2px; }
+.rp-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+.rp-pos { color: var(--green); font-weight: 600; }
+.rp-neg { color: var(--red); font-weight: 600; }
+.rp-nomatch { color: var(--ink-faint); font-weight: 700; }
+.rp-table tfoot td { border-top: 2px solid var(--rule-strong); border-bottom: none; font-weight: 700; padding-top: 7px; }
+.rp-empty { text-align: center; color: var(--ink-faint); font-style: italic; padding: 16px; }
+.rp-foot { margin: 10px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+.rp-table .opt-tag { margin-left: 5px; }

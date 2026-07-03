@@ -8,6 +8,7 @@ import { FreeAgentQuiver } from './FreeAgentQuiver';
 import { DraftCapital } from './DraftCapital';
 import { TradeExceptions } from './TradeExceptions';
 import { RosterTable } from './RosterTable';
+import { RosterProjection } from './RosterProjection';
 
 // Read-only analysis of a single team: where its salary sits now and across the
 // horizon, what apron restrictions apply, its picks, and the full roster.
@@ -51,6 +52,12 @@ export function TeamExplorer() {
             Outlook cards above, so there's no separate chart panel here. */}
         <section className="panel span-4">
           <RosterTable team={team} />
+        </section>
+
+        {/* Year-selectable projected roster: age, salary, and DARKO value /
+            surplus / DPM aged into the chosen season. */}
+        <section className="panel span-4">
+          <RosterProjection team={team} />
         </section>
 
         {/* Tradable assets: picks and trade exceptions. */}
