@@ -16,6 +16,8 @@ import {
   type TradeException,
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
+import { gradeTrade, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
+import { USING_WIN_TOTALS } from '../lib/draftValue';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
 
@@ -120,6 +122,8 @@ export function TradeMachine() {
     }
   };
 
+  const grade = useMemo(() => gradeTrade(evaluation.teams), [evaluation]);
+
   const hasSelection =
     selA.size > 0 ||
     selB.size > 0 ||
@@ -127,6 +131,9 @@ export function TradeMachine() {
     pickB.size > 0 ||
     tpeA != null ||
     tpeB != null;
+
+  // The grade is only meaningful once players/picks are actually moving.
+  const hasAssets = selA.size > 0 || selB.size > 0 || pickA.size > 0 || pickB.size > 0;
 
   return (
     <div className="trade-machine">
@@ -149,6 +156,8 @@ export function TradeMachine() {
           </div>
         )}
       </div>
+
+      {hasAssets && <TradeGradePanel grade={grade} />}
 
       <div className="trade-sides">
         <TradeColumn
@@ -178,6 +187,98 @@ export function TradeMachine() {
           result={evaluation.teams[1]}
         />
       </div>
+    </div>
+  );
+}
+
+// $M figure with sign, e.g. "+$4.2M" / "−$1.1M".
+const netM = (n: number) => `${n >= 0 ? '+' : '−'}$${Math.abs(n).toFixed(1)}M`;
+const absM = (n: number) => `$${n.toFixed(1)}M`;
+
+function gradeClass(grade: string): string {
+  const g = grade[0];
+  if (g === 'A') return 'grade-a';
+  if (g === 'B') return 'grade-b';
+  if (g === 'C') return 'grade-c';
+  if (g === 'D') return 'grade-d';
+  return 'grade-f';
+}
+
+// Per-side trade grade: values every asset in one currency (DARKO market value
+// for players, projected value for picks) and scores each team's net haul.
+function TradeGradePanel({ grade }: { grade: TradeGrade }) {
+  return (
+    <div className="trade-grade">
+      <div className="tg-head">
+        <span className="tg-title">Trade Grade</span>
+        <span className="tg-basis">
+          DARKO market value + projected pick value ·{' '}
+          {USING_WIN_TOTALS ? 'picks via win totals' : 'picks via DARKO team strength'}
+        </span>
+      </div>
+      <div className="tg-cards">
+        {grade.sides.map((s) => (
+          <SideGradeCard key={s.teamAbbr} side={s} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SideGradeCard({ side }: { side: SideGrade }) {
+  return (
+    <div className="tg-card">
+      <div className="tg-card-top">
+        <span className="tg-team">{side.teamAbbr}</span>
+        <span className={`tg-letter ${gradeClass(side.grade)}`}>{side.grade}</span>
+      </div>
+      <div className="tg-net">
+        <span className={side.netValue >= 0 ? 'tg-pos' : 'tg-neg'}>
+          {netM(side.netValue)}
+        </span>
+        <span className="tg-net-label">net value</span>
+        <span className={`tg-dpm ${side.netDpm >= 0 ? 'tg-pos' : 'tg-neg'}`}>
+          {side.netDpm >= 0 ? '+' : '−'}
+          {Math.abs(side.netDpm).toFixed(1)} DPM
+        </span>
+      </div>
+      <div className="tg-ledger">
+        <div className="tg-col tg-in">
+          <span className="tg-col-head">Gets · {absM(side.valueIn)}</span>
+          {side.assetsIn.length ? (
+            side.assetsIn.map((a, i) => (
+              <div key={i} className="tg-asset" title={a.note ?? ''}>
+                <span className="tg-asset-name">
+                  {a.label}
+                  {a.unmatched && <span className="tg-flag" title="No DARKO value — approx."> ~</span>}
+                </span>
+                <span className="tg-asset-val">{absM(a.value)}</span>
+              </div>
+            ))
+          ) : (
+            <div className="tg-asset tg-empty">—</div>
+          )}
+        </div>
+        <div className="tg-col tg-out">
+          <span className="tg-col-head">Sends · {absM(side.valueOut)}</span>
+          {side.assetsOut.length ? (
+            side.assetsOut.map((a, i) => (
+              <div key={i} className="tg-asset" title={a.note ?? ''}>
+                <span className="tg-asset-name">
+                  {a.label}
+                  {a.unmatched && <span className="tg-flag" title="No DARKO value — approx."> ~</span>}
+                </span>
+                <span className="tg-asset-val">{absM(a.value)}</span>
+              </div>
+            ))
+          ) : (
+            <div className="tg-asset tg-empty">—</div>
+          )}
+        </div>
+      </div>
+      {side.approximate && (
+        <div className="tg-note">~ = player without a DARKO value; grade is approximate.</div>
+      )}
     </div>
   );
 }

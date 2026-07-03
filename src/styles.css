@@ -778,3 +778,62 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   letter-spacing: 0.04em; color: var(--teal); border: 1px solid var(--teal);
   border-radius: 2px; padding: 0 3px; vertical-align: middle;
 }
+
+/* --- Trade grade ---------------------------------------------------------- */
+.trade-grade {
+  margin: 10px 0 4px; padding: 12px 14px; background: var(--card);
+  border: 1px solid var(--rule); border-top: 3px solid var(--ink);
+  border-radius: var(--radius);
+}
+.tg-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.tg-title {
+  font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--ink);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.tg-basis { font-size: 10.5px; color: var(--ink-faint); }
+.tg-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+@media (max-width: 620px) { .tg-cards { grid-template-columns: 1fr; } }
+
+.tg-card {
+  border: 1px solid var(--rule); border-radius: var(--radius-sm);
+  background: var(--card-2); padding: 10px 12px;
+}
+.tg-card-top { display: flex; align-items: center; justify-content: space-between; }
+.tg-team { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); }
+.tg-letter {
+  font-family: var(--serif); font-size: 26px; font-weight: 700; line-height: 1;
+  min-width: 38px; text-align: center; padding: 2px 6px; border-radius: var(--radius-sm);
+}
+.tg-letter.grade-a { color: #fff; background: var(--green); }
+.tg-letter.grade-b { color: #fff; background: var(--blue); }
+.tg-letter.grade-c { color: var(--ink); background: var(--rule-strong); }
+.tg-letter.grade-d { color: #fff; background: var(--orange); }
+.tg-letter.grade-f { color: #fff; background: var(--red); }
+
+.tg-net {
+  display: flex; align-items: baseline; gap: 8px; margin: 8px 0;
+  font-variant-numeric: tabular-nums;
+}
+.tg-net > span:first-child { font-size: 17px; font-weight: 700; }
+.tg-net-label { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+.tg-dpm { margin-left: auto; font-size: 12px; font-weight: 600; }
+.tg-pos { color: var(--green); }
+.tg-neg { color: var(--red); }
+
+.tg-ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.tg-col-head {
+  display: block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--ink-soft); margin-bottom: 4px;
+  border-bottom: 1px solid var(--rule); padding-bottom: 3px;
+}
+.tg-in .tg-col-head { color: var(--green); }
+.tg-out .tg-col-head { color: var(--red); }
+.tg-asset {
+  display: flex; justify-content: space-between; gap: 6px; font-size: 11.5px;
+  padding: 1px 0; color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.tg-asset-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tg-asset-val { color: var(--ink-soft); flex-shrink: 0; }
+.tg-empty { color: var(--ink-faint); }
+.tg-flag { color: var(--ink-faint); font-weight: 700; }
+.tg-note { margin-top: 7px; font-size: 10px; color: var(--ink-faint); font-style: italic; }
