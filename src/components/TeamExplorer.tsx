@@ -3,7 +3,6 @@ import { getRosterStatus, useTeams } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
 import { CapSummary } from './CapSummary';
-import { SalaryTimeline } from './SalaryTimeline';
 import { RestrictionPanel } from './RestrictionPanel';
 import { FreeAgentQuiver } from './FreeAgentQuiver';
 import { DraftCapital } from './DraftCapital';
@@ -47,14 +46,11 @@ export function TeamExplorer() {
           <CapSummary team={team} />
         </section>
 
-        {/* The roster itself — who makes up that salary (leads the detail). */}
+        {/* The roster itself — who makes up that salary (leads the detail).
+            The five-year salary trajectory lives in the Cap Report's Five-Year
+            Outlook cards above, so there's no separate chart panel here. */}
         <section className="panel span-4">
           <RosterTable team={team} />
-        </section>
-
-        {/* Multi-year salary outlook. */}
-        <section className="panel span-4">
-          <SalaryTimeline team={team} />
         </section>
 
         {/* Tradable assets: picks and trade exceptions. */}

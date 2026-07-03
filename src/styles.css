@@ -425,32 +425,6 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .legend-value { font-variant-numeric: tabular-nums; }
 .legend-space { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; min-width: 96px; }
 
-/* ---------- Timeline ---------- */
-.timeline-title {
-  font-family: var(--serif); font-weight: 600; font-size: 17px; margin-bottom: 14px;
-  padding-bottom: 8px; border-bottom: 1px solid var(--rule);
-}
-.timeline-bars { display: flex; gap: 12px; align-items: flex-end; height: 200px; }
-.timeline-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
-.timeline-plot {
-  position: relative; width: 100%; flex: 1; background: var(--card-2);
-  border-radius: 2px 2px 0 0; border: 1px solid var(--rule); border-bottom: none;
-}
-.timeline-bar { position: absolute; left: 14%; right: 14%; bottom: 0; opacity: 0.9; }
-.timeline-threshold { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed; }
-.timeline-threshold.t-cap { border-color: rgba(32,29,24,0.3); }
-.timeline-threshold.t-apron1 { border-color: var(--orange); }
-.timeline-threshold.t-apron2 { border-color: var(--red); }
-.timeline-value { font-size: 11px; font-variant-numeric: tabular-nums; margin-top: 6px; color: var(--ink-soft); }
-.timeline-season { font-family: var(--serif); font-size: 11.5px; font-weight: 600; }
-.proj-dot { color: var(--ink-faint); }
-.timeline-key { display: flex; gap: 16px; margin-top: 14px; font-size: 10.5px; color: var(--ink-soft); flex-wrap: wrap; text-transform: uppercase; letter-spacing: 0.05em; }
-.key-swatch { display: inline-block; width: 14px; height: 0; border-top: 2px dashed; margin-right: 5px; vertical-align: middle; }
-.key-swatch.t-cap { border-color: rgba(32,29,24,0.45); }
-.key-swatch.t-apron1 { border-color: var(--orange); }
-.key-swatch.t-apron2 { border-color: var(--red); }
-.timeline-note { color: var(--ink-faint); }
-
 /* ---------- Restrictions ---------- */
 .restrictions-head {
   display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 13px;
