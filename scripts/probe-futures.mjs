@@ -1,7 +1,7 @@
-// THROWAWAY PROBE. Tries several free sources for NBA team "expected finish"
-// signals (win-total futures, championship odds, projected standings) that a
-// GitHub runner can reach, and writes findings to probe-futures-out.txt so the
-// dev sandbox (no web) can read them after a git pull. Delete after use.
+// THROWAWAY PROBE. Digs into Tankathon's page structure to find the projected
+// draft order / standings for the upcoming draft, and dumps the shape to
+// probe-futures-out.txt so the dev sandbox (no web) can read it after a pull.
+// Delete after use.
 import { writeFileSync } from 'fs';
 
 const UA =
@@ -13,59 +13,70 @@ const log = (...a) => {
   console.log(...a);
 };
 
-async function tryGet(label, url, opts = {}) {
-  log(`\n### ${label}`);
-  log(`URL ${url}`);
-  try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': UA, Accept: '*/*', ...(opts.headers || {}) },
-    });
-    log(`status ${res.status} ${res.headers.get('content-type') || ''}`);
-    const text = await res.text();
-    log(`bytes ${text.length}`);
-    // A short, safe snippet.
-    log('snippet:');
-    log(text.slice(0, opts.snip || 900).replace(/\s+/g, ' ').trim());
-    return { ok: res.ok, text };
-  } catch (e) {
-    log(`ERROR ${e.message}`);
-    return { ok: false, text: '' };
-  }
+async function get(url) {
+  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: '*/*' } });
+  const text = await res.text();
+  return { status: res.status, ct: res.headers.get('content-type') || '', text };
 }
 
-// 1) ESPN hidden futures/odds API (no key). Basketball futures provider list.
-await tryGet(
-  'ESPN core futures index',
-  'https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/futures?limit=100'
-);
+const URLS = [
+  'https://www.tankathon.com/',
+  'https://www.tankathon.com/nba',
+  'https://www.tankathon.com/draft_order',
+  'https://www.tankathon.com/nba/draft_order',
+  'https://www.tankathon.com/full_standings',
+  'https://www.tankathon.com/nba/full_standings',
+  'https://www.tankathon.com/picks',
+];
 
-// 2) ESPN BPI / projected standings (site API).
-await tryGet(
-  'ESPN BPI standings',
-  'https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?level=3'
-);
+for (const url of URLS) {
+  log(`\n\n########## ${url}`);
+  try {
+    const { status, ct, text } = await get(url);
+    log(`status ${status} ${ct} bytes ${text.length}`);
+    if (status !== 200) continue;
 
-// 3) ESPN teams odds provider (per-team futures sometimes here).
-await tryGet(
-  'ESPN scoreboard (season probe)',
-  'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard'
-);
+    // Embedded state blobs used by React/Next apps.
+    for (const marker of ['__NEXT_DATA__', 'window.__INITIAL', '__PRELOADED', 'application/json']) {
+      const idx = text.indexOf(marker);
+      log(`  marker ${marker}: ${idx >= 0 ? 'FOUND @' + idx : 'no'}`);
+    }
 
-// 4) Tankathon projected standings / draft order (HTML).
-await tryGet('Tankathon standings', 'https://www.tankathon.com/', { snip: 600 });
+    // Does it look like projected/record data is inline? Sample surrounding text
+    // around signal words.
+    for (const word of ['projected', 'wins', 'record', 'draft-order', 'pick_number', 'proj_record', 'standing']) {
+      const i = text.toLowerCase().indexOf(word);
+      if (i >= 0) {
+        log(`  ~"${word}" @${i}: ${text.slice(i - 40, i + 120).replace(/\s+/g, ' ').trim()}`);
+      }
+    }
 
-// 5) Basketball-Reference preseason odds page (if any).
-await tryGet(
-  'BBRef 2027 preview',
-  'https://www.basketball-reference.com/leagues/NBA_2027.html',
-  { snip: 400 }
-);
+    // If a __NEXT_DATA__ script is present, dump a big slice of it (that's the
+    // full page data as JSON).
+    const nd = text.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if (nd) {
+      log(`  __NEXT_DATA__ length ${nd[1].length}`);
+      log(`  __NEXT_DATA__ head: ${nd[1].slice(0, 3000)}`);
+    }
 
-// 6) The Odds API sample (needs key, but check reachability/shape).
-await tryGet(
-  'the-odds-api sports list',
-  'https://api.the-odds-api.com/v4/sports/?apiKey=demo'
-);
+    // Otherwise: extract any team-row-ish table cells to learn the DOM shape.
+    // Tankathon rows tend to carry team abbreviations and records.
+    const rowSample = text.match(/<tr[\s\S]{0,600}?<\/tr>/g);
+    if (rowSample) {
+      log(`  <tr> rows: ${rowSample.length}; first 2 stripped:`);
+      for (const r of rowSample.slice(0, 2)) {
+        log('   ' + r.replace(/<[^>]+>/g, '|').replace(/\s+/g, ' ').replace(/\|+/g, ' | ').trim().slice(0, 300));
+      }
+    }
+    // class names hint at the component structure.
+    const classes = [...new Set((text.match(/class="([^"]{0,40})"/g) || []).map((c) => c))]
+      .filter((c) => /team|pick|record|standing|draft|proj|row/i.test(c))
+      .slice(0, 25);
+    log(`  relevant classes: ${classes.join('  ')}`);
+  } catch (e) {
+    log(`  ERROR ${e.message}`);
+  }
+}
 
 writeFileSync('probe-futures-out.txt', out.join('\n'));
 log('\n\nWROTE probe-futures-out.txt');
