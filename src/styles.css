@@ -1026,3 +1026,15 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .se-list-controls { display: flex; align-items: center; gap: 8px; }
 .se-posfilter { font-size: 12px; padding: 4px 8px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--card-2); color: var(--ink); }
 .se-pos { text-align: center; font-weight: 600; font-size: 11px; color: var(--ink-soft); }
+
+/* --- Signings: quality (value vs projected contract) --------------------- */
+.se-val { color: var(--ink-soft); }
+.se-quality { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0; padding: 10px 12px; background: var(--card-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.se-quality-fig { display: flex; flex-direction: column; }
+.se-q-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.se-q-val { font-family: var(--serif); font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.se-q-op { color: var(--ink-faint); font-size: 15px; }
+.se-q-badge { margin-left: auto; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 9px; border-radius: 2px; color: #fff; }
+.se-q-bargain { background: var(--green); }
+.se-q-overpay { background: var(--red); }
+.se-q-fair { background: var(--rule-strong); color: var(--ink); }

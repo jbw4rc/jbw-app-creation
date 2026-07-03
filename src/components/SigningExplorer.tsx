@@ -12,6 +12,7 @@ import {
   TIER_INFO,
 } from '../lib/apron';
 import { money } from '../lib/format';
+import { projectedContract, CONTRACT_MODEL_INFO } from '../lib/contractModel';
 import { FreeAgentQuiver } from './FreeAgentQuiver';
 
 // Signing Explorer: browse the remaining free agents (with DARKO-projected
@@ -40,7 +41,8 @@ for (const [abbr, holds] of Object.entries(SEEDED_CAP_HOLDS))
 interface FA {
   name: string;
   key: string;
-  value: number; // projected salary, $M (DARKO market value)
+  value: number; // DARKO fair-value benchmark, $M
+  projected: number; // modeled market contract, $M
   dpm: number | null;
   age: number | null;
   pos: string | null;
@@ -48,19 +50,28 @@ interface FA {
   rights: string | null; // team abbr holding Bird rights, if any
 }
 
+/** value − projected: positive = bargain, negative = overpay. */
+const quality = (f: FA) => f.value - f.projected;
+
 const FA_POOL: FA[] = Object.entries(SEEDED_DARKO)
   .filter(([key]) => !ROSTERED.has(key))
-  .map(([key, d]) => ({
-    name: d.name,
-    key,
-    value: d.value ?? 0,
-    dpm: d.dpm ?? null,
-    age: d.age ?? null,
-    pos: d.pos ?? null,
-    posNum: d.posNum ?? null,
-    rights: RIGHTS[key] ?? null,
-  }))
-  .sort((a, b) => b.value - a.value);
+  .map(([key, d]) => {
+    const value = d.value ?? 0;
+    const age = d.age ?? 27;
+    const projected = projectedContract(value, age, d.dpm ?? 0).salary;
+    return {
+      name: d.name,
+      key,
+      value,
+      projected,
+      dpm: d.dpm ?? null,
+      age: d.age ?? null,
+      pos: d.pos ?? null,
+      posNum: d.posNum ?? null,
+      rights: RIGHTS[key] ?? null,
+    };
+  })
+  .sort((a, b) => b.projected - a.projected);
 
 type PosGroup = 'all' | 'G' | 'F' | 'C';
 
@@ -153,7 +164,8 @@ export function SigningExplorer() {
           <span className="cs-kicker">Signing Explorer</span>
           <h2 className="se-title">Model a free-agent signing</h2>
           <span className="se-sub">
-            {FA_POOL.length} free agents · projected salary = DARKO market value
+            {FA_POOL.length} free agents · projected contract from a market model
+            (n={CONTRACT_MODEL_INFO.n} deals, R²={CONTRACT_MODEL_INFO.r2.toFixed(2)}) vs DARKO value
           </span>
         </div>
         <label className="se-team">
@@ -208,8 +220,9 @@ export function SigningExplorer() {
                   <th className="se-name">Player</th>
                   <th>Pos</th>
                   <th>Age</th>
-                  <th title="Projected salary = DARKO market value">Proj $</th>
-                  <th title="DARKO Daily Plus-Minus">DPM</th>
+                  <th title="Projected annual contract (market model)">Proj $</th>
+                  <th title="DARKO fair-value benchmark">Value</th>
+                  <th title="DARKO value − projected contract (bargain vs overpay)">Qual</th>
                   <th>Rights</th>
                 </tr>
               </thead>
@@ -223,9 +236,10 @@ export function SigningExplorer() {
                     <td className="se-name">{f.name}</td>
                     <td className="se-pos">{f.pos ?? '—'}</td>
                     <td>{f.age ?? '—'}</td>
-                    <td className="se-projsal">${f.value.toFixed(1)}M</td>
-                    <td className={f.dpm == null ? '' : f.dpm >= 0 ? 'se-pos' : 'se-neg'}>
-                      {f.dpm == null ? '—' : `${f.dpm > 0 ? '+' : ''}${f.dpm.toFixed(1)}`}
+                    <td className="se-projsal">${f.projected.toFixed(1)}M</td>
+                    <td className="se-val">${f.value.toFixed(1)}M</td>
+                    <td className={quality(f) >= 0 ? 'se-pos' : 'se-neg'}>
+                      {quality(f) >= 0 ? '+' : '−'}${Math.abs(quality(f)).toFixed(1)}M
                     </td>
                     <td>
                       {f.rights ? (
@@ -269,8 +283,10 @@ export function SigningExplorer() {
         </div>
       </div>
       <p className="se-foot">
-        Projected salary is DARKO's market value; cap room = cap − salary − unrenounced holds −
-        roster charges. Exception amounts are the 2026-27 CBA figures. A simplified planning model.
+        Projected contract is a ridge regression fit on {CONTRACT_MODEL_INFO.n} real veteran deals
+        (DARKO value + age → salary, clamped to the min and an age-based max), refit as rosters
+        update; DARKO value is the analytical fair-value benchmark. Signing quality = value −
+        projected. Cap room = cap − salary − unrenounced holds − roster charges. A planning model.
       </p>
     </div>
   );
@@ -297,7 +313,9 @@ function SigningAnalysis({
   renounced: Set<string>;
   onToggleRenounce: (name: string) => void;
 }) {
-  const target = fa.value * 1_000_000; // projected salary in $
+  const target = fa.projected * 1_000_000; // projected contract (cost) in $
+  const surplus = fa.value - fa.projected; // DARKO value − projected pay
+  const qualLabel = surplus > 4 ? 'Bargain' : surplus < -4 ? 'Overpay' : 'Fair value';
   const ownRights = fa.rights === abbr;
 
   // Cap-space teams sign with room (no MLE/BAE); over-cap teams use exceptions.
@@ -368,9 +386,31 @@ function SigningAnalysis({
           </span>
         </div>
         <div className="se-fa-sal">
-          <span className="se-fa-sal-val">${fa.value.toFixed(1)}M</span>
-          <span className="se-fa-sal-label">projected salary</span>
+          <span className="se-fa-sal-val">${fa.projected.toFixed(1)}M</span>
+          <span className="se-fa-sal-label">projected contract / yr</span>
         </div>
+      </div>
+
+      <div className="se-quality">
+        <div className="se-quality-fig">
+          <span className="se-q-label">DARKO value</span>
+          <span className="se-q-val">${fa.value.toFixed(1)}M</span>
+        </div>
+        <span className="se-q-op">−</span>
+        <div className="se-quality-fig">
+          <span className="se-q-label">Proj contract</span>
+          <span className="se-q-val">${fa.projected.toFixed(1)}M</span>
+        </div>
+        <span className="se-q-op">=</span>
+        <div className="se-quality-fig">
+          <span className="se-q-label">Signing quality</span>
+          <span className={`se-q-val ${surplus >= 0 ? 'se-pos' : 'se-neg'}`}>
+            {surplus >= 0 ? '+' : '−'}${Math.abs(surplus).toFixed(1)}M
+          </span>
+        </div>
+        <span className={`se-q-badge ${surplus > 4 ? 'se-q-bargain' : surplus < -4 ? 'se-q-overpay' : 'se-q-fair'}`}>
+          {qualLabel}
+        </span>
       </div>
 
       <div className={`se-verdict ${ownRights || best || room >= target ? 'se-verdict-ok' : 'se-verdict-no'}`}>
