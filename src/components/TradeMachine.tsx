@@ -16,6 +16,7 @@ import {
   type TradeException,
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
+import { contractTerm } from '../lib/contract';
 import { gradeTrade, type AssetValue, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
 import { USING_TANKATHON } from '../lib/draftValue';
 import { money } from '../lib/format';
@@ -195,11 +196,18 @@ export function TradeMachine() {
 const netM = (n: number) => `${n >= 0 ? '+' : '−'}$${Math.abs(n).toFixed(1)}M`;
 const absM = (n: number) => `$${n.toFixed(1)}M`;
 
-// Tooltip explaining a player's surplus as value − cap hit.
+// Tooltip: this-year surplus (value − cap hit) plus the multi-year controlled total.
 function assetTitle(a: AssetValue): string {
   if (a.kind === 'player') {
     if (a.grossValue == null) return 'No DARKO value — treated as neutral';
-    return `DARKO value ${absM(a.grossValue)} − cap hit ${absM(a.salary ?? 0)} = ${netM(a.value)} surplus`;
+    const thisYr = `value ${absM(a.grossValue)} − cap hit ${absM(a.salary ?? 0)} = ${netM(
+      a.currentSurplus ?? 0
+    )} this yr`;
+    const ctrl =
+      (a.years ?? 0) > 1
+        ? ` · controlled ${a.term} (${a.years}y) → ${netM(a.value)} total`
+        : ' · expiring';
+    return thisYr + ctrl;
   }
   return a.note ?? '';
 }
@@ -221,7 +229,7 @@ function TradeGradePanel({ grade }: { grade: TradeGrade }) {
       <div className="tg-head">
         <span className="tg-title">Trade Grade</span>
         <span className="tg-basis">
-          Surplus = DARKO value − cap hit ·{' '}
+          Surplus = value − cap hit over years controlled ·{' '}
           {USING_TANKATHON ? 'picks via Tankathon projected order' : 'picks via DARKO team strength'}
         </span>
       </div>
@@ -240,6 +248,7 @@ function AssetRow({ a }: { a: AssetValue }) {
     <div className="tg-asset" title={assetTitle(a)}>
       <span className="tg-asset-name">
         {a.label}
+        {a.kind === 'player' && a.term && <span className="tg-term">{a.term}</span>}
         {a.unmatched && <span className="tg-flag" title="No DARKO value — treated as neutral"> ~</span>}
       </span>
       <span className={`tg-asset-val ${a.value >= 0 ? 'tg-pos' : 'tg-neg'}`}>{netM(a.value)}</span>
@@ -583,6 +592,7 @@ function PlayerRow({
   const salary = playerSalaryForSeason(player, CURRENT_SEASON);
   const tradable = salary > 0 && !player.twoWay;
   const darko = darkoFor(player.name);
+  const term = contractTerm(player, CURRENT_SEASON);
   return (
     <button
       className={`trade-player${selected ? ' selected' : ''}${
@@ -595,7 +605,21 @@ function PlayerRow({
       }
     >
       <span className="tp-check">{selected ? '✓' : ''}</span>
-      <span className="tp-name">{player.name}</span>
+      <span className="tp-name">
+        {player.name}
+        {tradable && (
+          <span
+            className={`tp-term${term.years <= 1 ? ' expiring' : ''}`}
+            title={
+              term.years <= 1
+                ? 'Expiring contract'
+                : `Controlled through ${term.label} · ${term.years} yrs`
+            }
+          >
+            {term.label}
+          </span>
+        )}
+      </span>
       <span className="tp-pos">{player.position}</span>
       <span className="tp-dpm" title="DARKO Daily Plus-Minus">
         {darko ? dpmFmt(darko.dpm) : '·'}

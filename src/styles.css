@@ -837,3 +837,17 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .tg-empty { color: var(--ink-faint); }
 .tg-flag { color: var(--ink-faint); font-weight: 700; }
 .tg-note { margin-top: 7px; font-size: 10px; color: var(--ink-faint); font-style: italic; }
+
+/* --- Contract term chips (trade machine) --------------------------------- */
+.tp-term {
+  display: inline-block; margin-left: 6px; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.02em; color: var(--ink-soft); background: var(--card-2);
+  border: 1px solid var(--rule); border-radius: 2px; padding: 0 3px;
+  vertical-align: middle; font-variant-numeric: tabular-nums;
+}
+.tp-term.expiring { color: var(--orange); border-color: var(--orange); background: transparent; }
+.tg-term {
+  margin-left: 5px; font-size: 9px; font-weight: 700; color: var(--ink-faint);
+  border: 1px solid var(--rule); border-radius: 2px; padding: 0 3px;
+  font-variant-numeric: tabular-nums;
+}
