@@ -536,8 +536,39 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .verdict-illegal { background: rgba(192,52,42,0.08); border: 1px solid var(--red); color: var(--red); }
 
 .trade-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-@media (max-width: 900px) { .trade-sides { grid-template-columns: 1fr; } }
+.trade-sides.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.trade-sides.cols-4 { grid-template-columns: repeat(4, 1fr); }
+/* 3–4 teams get tight on desktop — allow horizontal scroll rather than squish. */
+.trade-sides.cols-3, .trade-sides.cols-4 { display: flex; overflow-x: auto; padding-bottom: 6px; }
+.trade-sides.cols-3 > .trade-column, .trade-sides.cols-4 > .trade-column { flex: 0 0 320px; }
+@media (max-width: 900px) {
+  .trade-sides, .trade-sides.cols-3, .trade-sides.cols-4 { grid-template-columns: 1fr; display: grid; }
+  .trade-sides.cols-3 > .trade-column, .trade-sides.cols-4 > .trade-column { flex: none; }
+}
 .trade-column { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); padding: 18px; }
+
+/* Multi-team controls + routing */
+.trade-teambar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.tt-count { font-family: var(--serif); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; }
+.tt-add {
+  background: var(--ink); color: var(--paper); border: none; border-radius: var(--radius-sm);
+  padding: 5px 12px; font-size: 12px; font-weight: 600;
+}
+.tt-add:disabled { opacity: 0.4; cursor: not-allowed; }
+.tt-hint { font-size: 11px; color: var(--ink-faint); font-style: italic; }
+.trade-column-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.trade-column-top .trade-team-select { margin-bottom: 0; flex: 1; }
+.trade-remove {
+  background: none; border: 1px solid var(--rule-strong); color: var(--ink-soft);
+  width: 26px; height: 26px; border-radius: var(--radius-sm); font-size: 16px; line-height: 1; flex: none;
+}
+.trade-remove:hover { border-color: var(--red); color: var(--red); }
+.trade-routing { margin: 12px 0; padding: 10px 12px; background: var(--card-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.trade-routing-head { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--coral); margin-bottom: 7px; }
+.route-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; font-size: 12.5px; }
+.route-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.route-arrow { color: var(--ink-faint); }
+.route-row select { font-family: var(--sans); font-size: 12px; padding: 2px 6px; border: 1px solid var(--rule-strong); border-radius: 2px; background: var(--card); color: var(--ink); font-weight: 600; }
 .trade-team-select, .fa-field select {
   width: 100%; background: var(--paper); color: var(--ink);
   border: 1px solid var(--rule-strong); border-radius: var(--radius-sm);

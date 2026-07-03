@@ -1,4 +1,4 @@
-import type { DraftPick, Player, Team } from '../types';
+import type { DraftPick, Player, SeasonCap, Team } from '../types';
 import {
   type ApronTier,
   classifyTier,
@@ -137,25 +137,18 @@ export interface ProposedTradeSide {
   tpe?: SelectedTpe;
 }
 
-/**
- * Evaluate a two-team trade. Each side lists the players it sends out; the
- * engine routes those players to the other side as incoming.
- */
-export function evaluateTrade(
-  sideA: ProposedTradeSide,
-  sideB: ProposedTradeSide,
+// Per-team result: given what a team sends out (self) and what it takes in
+// (incomingPlayers/Picks, routed from partners), classify tiers, salary matching
+// and apron violations. Shared by two-team and multi-team evaluation.
+function computeTeamResult(
+  self: ProposedTradeSide,
+  incomingPlayers: Player[],
+  incomingPicks: DraftPick[],
+  cap: SeasonCap,
   season: number
-): TradeEvaluation {
-  const cap = getSeasonCap(season);
-
-  const buildResult = (
-    self: ProposedTradeSide,
-    other: ProposedTradeSide
-  ): TeamTradeResult => {
+): TeamTradeResult {
     const outgoingPlayers = playersByIds(self.team, self.outgoingPlayerIds);
-    const incomingPlayers = playersByIds(other.team, other.outgoingPlayerIds);
     const outgoingPicks = self.outgoingPicks ?? [];
-    const incomingPicks = other.outgoingPicks ?? [];
 
     const outgoingSalary = sumSalaries(outgoingPlayers, season);
     const incomingSalary = sumSalaries(incomingPlayers, season);
@@ -345,19 +338,68 @@ export function evaluateTrade(
       hardCappedAt,
       violations,
     };
-  };
+}
 
-  const teams = [buildResult(sideA, sideB), buildResult(sideB, sideA)];
+function finalize(season: number, teams: TeamTradeResult[]): TradeEvaluation {
   const blockingViolations = teams.flatMap((t) =>
     t.violations.filter((v) => v.severity === 'block')
   );
+  return { season, teams, legal: blockingViolations.length === 0, blockingViolations };
+}
 
-  return {
-    season,
-    teams,
-    legal: blockingViolations.length === 0,
-    blockingViolations,
-  };
+/**
+ * Evaluate a two-team trade. Each side lists the players it sends out; the
+ * engine routes those players to the other side as incoming.
+ */
+export function evaluateTrade(
+  sideA: ProposedTradeSide,
+  sideB: ProposedTradeSide,
+  season: number
+): TradeEvaluation {
+  const cap = getSeasonCap(season);
+  const aOut = playersByIds(sideA.team, sideA.outgoingPlayerIds);
+  const bOut = playersByIds(sideB.team, sideB.outgoingPlayerIds);
+  return finalize(season, [
+    computeTeamResult(sideA, bOut, sideB.outgoingPicks ?? [], cap, season),
+    computeTeamResult(sideB, aOut, sideA.outgoingPicks ?? [], cap, season),
+  ]);
+}
+
+/** A team's side of a multi-team trade, with per-asset destinations. */
+export interface MultiTeamSide extends ProposedTradeSide {
+  /** outgoing player id -> destination team abbreviation. */
+  playerDest: Record<string, string>;
+  /** destination team abbreviation for each outgoing pick (index-aligned). */
+  pickDest: string[];
+}
+
+/**
+ * Evaluate a trade among 2–4 teams. Each side's outgoing assets carry a
+ * destination; a team's incoming set is everything routed to it.
+ */
+export function evaluateMultiTeamTrade(
+  sides: MultiTeamSide[],
+  season: number
+): TradeEvaluation {
+  const cap = getSeasonCap(season);
+  const results = sides.map((self) => {
+    const incomingPlayers: Player[] = [];
+    const incomingPicks: DraftPick[] = [];
+    for (const other of sides) {
+      if (other.team.abbreviation === self.team.abbreviation) continue;
+      other.outgoingPlayerIds.forEach((pid) => {
+        if (other.playerDest[pid] === self.team.abbreviation) {
+          const p = other.team.players.find((x) => x.id === pid);
+          if (p) incomingPlayers.push(p);
+        }
+      });
+      (other.outgoingPicks ?? []).forEach((pick, i) => {
+        if (other.pickDest[i] === self.team.abbreviation) incomingPicks.push(pick);
+      });
+    }
+    return computeTeamResult(self, incomingPlayers, incomingPicks, cap, season);
+  });
+  return finalize(season, results);
 }
 
 function fmt(n: number): string {

@@ -9,7 +9,11 @@ import {
   summarizeTeamSeason,
   TIER_INFO,
 } from '../lib/apron';
-import { evaluateTrade, type SelectedTpe, type TeamTradeResult } from '../lib/trade';
+import {
+  evaluateMultiTeamTrade,
+  type SelectedTpe,
+  type TeamTradeResult,
+} from '../lib/trade';
 import {
   tradeExceptionsFor,
   useTradeExceptions,
@@ -43,105 +47,129 @@ function leagueYearLabel(iso: string): string | null {
   return `'${String(s).slice(2)}-${String(s + 1).slice(2)}`;
 }
 
-// The Trade Machine: pick two teams, select outgoing players from each, and see
-// the legality verdict plus a before/after apron read for both sides.
+// The Trade Machine: build a trade among 2–4 teams, route each outgoing asset
+// to a destination, and see the legality verdict, the grade, and a before/after
+// apron read for every team.
+
+const MAX_TEAMS = 4;
+
+interface Slot {
+  abbr: string;
+  players: string[]; // outgoing player ids
+  playerDest: Record<string, string>; // id -> destination abbr (3+ teams)
+  picks: number[]; // draftCapital indices
+  pickDest: Record<number, string>;
+  tpe: number | null;
+}
+
+const emptySlot = (abbr: string): Slot => ({
+  abbr,
+  players: [],
+  playerDest: {},
+  picks: [],
+  pickDest: {},
+  tpe: null,
+});
 
 export function TradeMachine() {
-  const [abbrA, setAbbrA] = useState('PHX');
-  const [abbrB, setAbbrB] = useState('UTA');
-  const [selA, setSelA] = useState<Set<string>>(new Set());
-  const [selB, setSelB] = useState<Set<string>>(new Set());
-  const [pickA, setPickA] = useState<Set<number>>(new Set());
-  const [pickB, setPickB] = useState<Set<number>>(new Set());
-  const [tpeA, setTpeA] = useState<number | null>(null);
-  const [tpeB, setTpeB] = useState<number | null>(null);
-
+  const [slots, setSlots] = useState<Slot[]>([emptySlot('PHX'), emptySlot('UTA')]);
   const teams = useTeams();
   useTradeExceptions(); // re-render when the imported TPE set changes
-  const teamA = teams.find((t) => t.abbreviation === abbrA) ?? teams[0];
-  const teamB = teams.find((t) => t.abbreviation === abbrB) ?? teams[1];
 
-  const picksOut = (team: Team, sel: Set<number>): DraftPick[] =>
-    [...sel].map((i) => team.draftCapital[i]).filter(Boolean);
+  const teamOf = (abbr: string): Team => teams.find((t) => t.abbreviation === abbr) ?? teams[0];
+  const multi = slots.length > 2;
 
-  const tpeOf = (team: Team, idx: number | null): SelectedTpe | undefined => {
-    if (idx == null) return undefined;
-    const te = tradeExceptionsFor(team.abbreviation)[idx];
-    return te ? toSelectedTpe(te) : undefined;
-  };
+  const otherAbbrs = (i: number) => slots.filter((_, j) => j !== i).map((s) => s.abbr);
+  // Default destination is the next team in the ring (0→1→2→0), a balanced
+  // starting point; with two teams that's simply the other side.
+  const nextAbbr = (i: number) => slots[(i + 1) % slots.length].abbr;
+  const effPlayerDest = (i: number, id: string) =>
+    slots.length === 2 ? nextAbbr(i) : slots[i].playerDest[id] ?? nextAbbr(i);
+  const effPickDest = (i: number, idx: number) =>
+    slots.length === 2 ? nextAbbr(i) : slots[i].pickDest[idx] ?? nextAbbr(i);
 
-  const evaluation = useMemo(
-    () =>
-      evaluateTrade(
-        {
-          team: teamA,
-          outgoingPlayerIds: [...selA],
-          outgoingPicks: picksOut(teamA, pickA),
-          tpe: tpeOf(teamA, tpeA),
-        },
-        {
-          team: teamB,
-          outgoingPlayerIds: [...selB],
-          outgoingPicks: picksOut(teamB, pickB),
-          tpe: tpeOf(teamB, tpeB),
-        },
-        CURRENT_SEASON
-      ),
-    [teamA, teamB, selA, selB, pickA, pickB, tpeA, tpeB]
-  );
-
-  const toggle = (side: 'A' | 'B', id: string) => {
-    const [sel, setSel] = side === 'A' ? [selA, setSelA] : [selB, setSelB];
-    const next = new Set(sel);
-    next.has(id) ? next.delete(id) : next.add(id);
-    setSel(next);
-  };
-
-  const togglePick = (side: 'A' | 'B', index: number) => {
-    const [sel, setSel] = side === 'A' ? [pickA, setPickA] : [pickB, setPickB];
-    const next = new Set(sel);
-    next.has(index) ? next.delete(index) : next.add(index);
-    setSel(next);
-  };
-
-  const toggleTpe = (side: 'A' | 'B', index: number) => {
-    const [sel, setSel] = side === 'A' ? [tpeA, setTpeA] : [tpeB, setTpeB];
-    setSel(sel === index ? null : index);
-  };
-
-  const changeTeam = (side: 'A' | 'B', abbr: string) => {
-    if (side === 'A') {
-      setAbbrA(abbr);
-      setSelA(new Set());
-      setPickA(new Set());
-      setTpeA(null);
-    } else {
-      setAbbrB(abbr);
-      setSelB(new Set());
-      setPickB(new Set());
-      setTpeB(null);
-    }
-  };
+  const evaluation = useMemo(() => {
+    const sides = slots.map((s, i) => {
+      const team = teamOf(s.abbr);
+      const outgoingPicks = s.picks.map((idx) => team.draftCapital[idx]).filter(Boolean);
+      const pickDest = s.picks.map((idx) => effPickDest(i, idx));
+      const playerDest: Record<string, string> = {};
+      s.players.forEach((id) => (playerDest[id] = effPlayerDest(i, id)));
+      const te = s.tpe != null ? tradeExceptionsFor(s.abbr)[s.tpe] : undefined;
+      return {
+        team,
+        outgoingPlayerIds: s.players,
+        outgoingPicks,
+        pickDest,
+        playerDest,
+        tpe: te ? toSelectedTpe(te) : undefined,
+      };
+    });
+    return evaluateMultiTeamTrade(sides, CURRENT_SEASON);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slots, teams]);
 
   const grade = useMemo(() => gradeTrade(evaluation.teams), [evaluation]);
 
-  const hasSelection =
-    selA.size > 0 ||
-    selB.size > 0 ||
-    pickA.size > 0 ||
-    pickB.size > 0 ||
-    tpeA != null ||
-    tpeB != null;
+  const setSlot = (i: number, patch: Partial<Slot>) =>
+    setSlots((prev) => prev.map((s, j) => (j === i ? { ...s, ...patch } : s)));
 
-  // The grade is only meaningful once players/picks are actually moving.
-  const hasAssets = selA.size > 0 || selB.size > 0 || pickA.size > 0 || pickB.size > 0;
+  const togglePlayer = (i: number, id: string) =>
+    setSlots((prev) =>
+      prev.map((s, j) =>
+        j !== i
+          ? s
+          : {
+              ...s,
+              players: s.players.includes(id)
+                ? s.players.filter((x) => x !== id)
+                : [...s.players, id],
+            }
+      )
+    );
+  const togglePick = (i: number, idx: number) =>
+    setSlots((prev) =>
+      prev.map((s, j) =>
+        j !== i
+          ? s
+          : { ...s, picks: s.picks.includes(idx) ? s.picks.filter((x) => x !== idx) : [...s.picks, idx] }
+      )
+    );
+  const toggleTpe = (i: number, idx: number) => setSlot(i, { tpe: slots[i].tpe === idx ? null : idx });
+  const setPlayerDest = (i: number, id: string, d: string) =>
+    setSlot(i, { playerDest: { ...slots[i].playerDest, [id]: d } });
+  const setPickDest = (i: number, idx: number, d: string) =>
+    setSlot(i, { pickDest: { ...slots[i].pickDest, [idx]: d } });
+  const changeTeam = (i: number, abbr: string) =>
+    setSlot(i, { abbr, players: [], playerDest: {}, picks: [], pickDest: {}, tpe: null });
+
+  const addTeam = () =>
+    setSlots((prev) => {
+      if (prev.length >= MAX_TEAMS) return prev;
+      const used = new Set(prev.map((s) => s.abbr));
+      const next = teams.find((t) => !used.has(t.abbreviation));
+      return next ? [...prev, emptySlot(next.abbreviation)] : prev;
+    });
+  const removeTeam = (i: number) =>
+    setSlots((prev) => (prev.length <= 2 ? prev : prev.filter((_, j) => j !== i)));
+
+  const hasSelection = slots.some((s) => s.players.length || s.picks.length || s.tpe != null);
+  const hasAssets = slots.some((s) => s.players.length || s.picks.length);
 
   return (
     <div className="trade-machine">
+      <div className="trade-teambar">
+        <span className="tt-count">{slots.length}-team trade</span>
+        <button className="tt-add" onClick={addTeam} disabled={slots.length >= MAX_TEAMS}>
+          + Add team
+        </button>
+        {multi && <span className="tt-hint">Route each asset with the “send to” pickers.</span>}
+      </div>
+
       <div className="verdict-bar">
         {!hasSelection ? (
           <div className="verdict verdict-idle">
-            Select players from each side to build a trade.
+            Select players from each team to build a trade.
           </div>
         ) : evaluation.legal ? (
           <div className="verdict verdict-legal">
@@ -160,33 +188,28 @@ export function TradeMachine() {
 
       {hasAssets && <TradeGradePanel grade={grade} />}
 
-      <div className="trade-sides">
-        <TradeColumn
-          side="A"
-          team={teamA}
-          selected={selA}
-          selectedPicks={pickA}
-          selectedTpe={tpeA}
-          onToggle={(id) => toggle('A', id)}
-          onTogglePick={(i) => togglePick('A', i)}
-          onToggleTpe={(i) => toggleTpe('A', i)}
-          onTeamChange={(abbr) => changeTeam('A', abbr)}
-          disabledTeam={abbrB}
-          result={evaluation.teams[0]}
-        />
-        <TradeColumn
-          side="B"
-          team={teamB}
-          selected={selB}
-          selectedPicks={pickB}
-          selectedTpe={tpeB}
-          onToggle={(id) => toggle('B', id)}
-          onTogglePick={(i) => togglePick('B', i)}
-          onToggleTpe={(i) => toggleTpe('B', i)}
-          onTeamChange={(abbr) => changeTeam('B', abbr)}
-          disabledTeam={abbrA}
-          result={evaluation.teams[1]}
-        />
+      <div className={`trade-sides cols-${slots.length}`}>
+        {slots.map((s, i) => (
+          <TradeColumn
+            key={i}
+            team={teamOf(s.abbr)}
+            multi={multi}
+            selected={new Set(s.players)}
+            selectedPicks={new Set(s.picks)}
+            selectedTpe={s.tpe}
+            playerDestOf={(id) => effPlayerDest(i, id)}
+            pickDestOf={(idx) => effPickDest(i, idx)}
+            onToggle={(id) => togglePlayer(i, id)}
+            onTogglePick={(idx) => togglePick(i, idx)}
+            onToggleTpe={(idx) => toggleTpe(i, idx)}
+            onTeamChange={(abbr) => changeTeam(i, abbr)}
+            onPlayerDest={(id, d) => setPlayerDest(i, id, d)}
+            onPickDest={(idx, d) => setPickDest(i, idx, d)}
+            onRemove={slots.length > 2 ? () => removeTeam(i) : undefined}
+            usedAbbrs={otherAbbrs(i)}
+            result={evaluation.teams[i]}
+          />
+        ))}
       </div>
     </div>
   );
@@ -413,29 +436,41 @@ function SideGradeCard({ side }: { side: SideGrade }) {
 }
 
 interface ColumnProps {
-  side: 'A' | 'B';
   team: Team;
+  multi: boolean;
   selected: Set<string>;
   selectedPicks: Set<number>;
   selectedTpe: number | null;
+  playerDestOf: (id: string) => string;
+  pickDestOf: (index: number) => string;
   onToggle: (id: string) => void;
   onTogglePick: (index: number) => void;
   onToggleTpe: (index: number) => void;
   onTeamChange: (abbr: string) => void;
-  disabledTeam: string;
+  onPlayerDest: (id: string, dest: string) => void;
+  onPickDest: (index: number, dest: string) => void;
+  onRemove?: () => void;
+  /** Abbreviations used by the OTHER teams in the trade. */
+  usedAbbrs: string[];
   result: TeamTradeResult;
 }
 
 function TradeColumn({
   team,
+  multi,
   selected,
   selectedPicks,
   selectedTpe,
+  playerDestOf,
+  pickDestOf,
   onToggle,
   onTogglePick,
   onToggleTpe,
   onTeamChange,
-  disabledTeam,
+  onPlayerDest,
+  onPickDest,
+  onRemove,
+  usedAbbrs,
   result,
 }: ColumnProps) {
   const teams = useTeams();
@@ -454,23 +489,31 @@ function TradeColumn({
       playerSalaryForSeason(a, CURRENT_SEASON)
   );
 
+  const used = new Set(usedAbbrs);
   return (
     <div className="trade-column">
-      <select
-        className="trade-team-select"
-        value={team.abbreviation}
-        onChange={(e) => onTeamChange(e.target.value)}
-      >
-        {teams.map((t) => (
-          <option
-            key={t.abbreviation}
-            value={t.abbreviation}
-            disabled={t.abbreviation === disabledTeam}
-          >
-            {t.name}
-          </option>
-        ))}
-      </select>
+      <div className="trade-column-top">
+        <select
+          className="trade-team-select"
+          value={team.abbreviation}
+          onChange={(e) => onTeamChange(e.target.value)}
+        >
+          {teams.map((t) => (
+            <option
+              key={t.abbreviation}
+              value={t.abbreviation}
+              disabled={used.has(t.abbreviation)}
+            >
+              {t.name}
+            </option>
+          ))}
+        </select>
+        {onRemove && (
+          <button className="trade-remove" onClick={onRemove} title="Remove team from trade">
+            ×
+          </button>
+        )}
+      </div>
 
       <div className="trade-roster-head">
         <span />
@@ -568,6 +611,44 @@ function TradeColumn({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {multi && (selected.size > 0 || selectedPicks.size > 0) && (
+        <div className="trade-routing">
+          <span className="trade-routing-head">Send to</span>
+          {[...selected].map((id) => {
+            const p = team.players.find((x) => x.id === id);
+            return (
+              <div key={id} className="route-row">
+                <span className="route-name">{p?.name ?? id}</span>
+                <span className="route-arrow">→</span>
+                <select value={playerDestOf(id)} onChange={(e) => onPlayerDest(id, e.target.value)}>
+                  {usedAbbrs.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
+          {[...selectedPicks].map((idx) => {
+            const pk = team.draftCapital[idx];
+            if (!pk) return null;
+            return (
+              <div key={`pk-${idx}`} className="route-row">
+                <span className="route-name">
+                  {pk.year} {pk.round === 1 ? '1st' : '2nd'}
+                  {pk.originalTeam !== team.abbreviation ? ` (${pk.originalTeam})` : ''}
+                </span>
+                <span className="route-arrow">→</span>
+                <select value={pickDestOf(idx)} onChange={(e) => onPickDest(idx, e.target.value)}>
+                  {usedAbbrs.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
         </div>
       )}
 
