@@ -2,29 +2,13 @@
 
 ######## Spotrac NBA free agents
 https://www.spotrac.com/nba/free-agents/
-status 403 text/html · bytes 3589 · final https://www.spotrac.com/nba/free-agents/
-snippet: Update Your Browser — Spotrac *{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:#222738;color:#b0b5c3;min-height:100vh;display:flex;flex-direction:column;align-items:center}.nb{width:100%;background:#1a1e2e;b
+status 403 · final https://www.spotrac.com/nba/free-agents/
+bytes 3604
+  STILL BLOCKED
 
 
-######## Spotrac NBA free agents (year)
-https://www.spotrac.com/nba/free-agents/2026/
-status 403 text/html · bytes 3589 · final https://www.spotrac.com/nba/free-agents/2026/
-snippet: Update Your Browser — Spotrac *{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:#222738;color:#b0b5c3;min-height:100vh;display:flex;flex-direction:column;align-items:center}.nb{width:100%;background:#1a1e2e;b
-
-
-######## Spotrac player market value (Jokic)
-https://www.spotrac.com/nba/denver-nuggets/nikola-jokic/market-value/
-status 403 text/html · bytes 3589 · final https://www.spotrac.com/nba/denver-nuggets/nikola-jokic/market-value/
-snippet: Update Your Browser — Spotrac *{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:#222738;color:#b0b5c3;min-height:100vh;display:flex;flex-direction:column;align-items:center}.nb{width:100%;background:#1a1e2e;b
-
-
-######## HoopsHype free agents
-https://hoopshype.com/nba-free-agents/
-status 404 text/html; charset=utf-8 · bytes 109043 · final https://www.hoopshype.com/nba-free-agents/
-snippet: Page Not Found (404) | HoopsHype "use strict";if(window.FontFace){const a=new FontFace("Unify Sans","url(data:application/font-woff2;charset=utf-8;base64,d09GMgABAAAAACAgABQAAAAAOqwAAB+yAAICjwAAAAAAAAAAAAAAAAAAAAAAAAAAGoECG4MqHIE+P0hWQVKBIgZgP1NUQVRKJxoAggYvPBEICrR8qBEwqloBNgIkA4MsC4FiAAQgBYEqByAMBx
-
-
-######## RealGM free agents
-https://basketball.realgm.com/nba/free-agents
-status 403 text/html; charset=UTF-8 · bytes 5776 · final https://basketball.realgm.com/nba/free-agents
-snippet: Just a moment... *{box-sizing:border-box;margin:0;padding:0}html{line-height:1.15;-webkit-text-size-adjust:100%;color:#313131;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",
+######## Spotrac NBA market value (rankings)
+https://www.spotrac.com/nba/rankings/market-value/
+status 403 · final https://www.spotrac.com/nba/rankings/market-value/
+bytes 3604
+  STILL BLOCKED
