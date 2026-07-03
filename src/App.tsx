@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { TeamExplorer } from './components/TeamExplorer';
 import { TradeMachine } from './components/TradeMachine';
 import { StatsExplorer } from './components/StatsExplorer';
+import { SigningExplorer } from './components/SigningExplorer';
 import { LeagueThresholds } from './components/LeagueThresholds';
 
-type Tab = 'explorer' | 'stats' | 'trade';
+type Tab = 'explorer' | 'stats' | 'trade' | 'signings';
 
 const TABS: { id: Tab; label: string; blurb: string }[] = [
   { id: 'explorer', label: 'Team Explorer', blurb: 'Rosters, salary, picks, apron status & FA quiver' },
   { id: 'stats', label: 'Stats', blurb: 'Advanced metrics — leaderboard & by team' },
   { id: 'trade', label: 'Trade Machine', blurb: 'Test a swap against the apron rules' },
+  { id: 'signings', label: 'Signings', blurb: 'Free agents & signing a player against the cap' },
 ];
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'stats' && <StatsExplorer />}
         {tab === 'trade' && <TradeMachine />}
+        {tab === 'signings' && <SigningExplorer />}
       </main>
 
       <footer className="app-footer">
