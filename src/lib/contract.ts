@@ -15,6 +15,31 @@ const CONTROL_ENDS = (o: ContractOption) => o === 'ufa' || o === 'rfa';
 const DISCOUNT = 0.8;
 const HORIZON = 8;
 
+// Value-by-age curve (fraction of peak), modeled on public NBA aging research
+// and DARKO's aging prior: value peaks ~26-27, declines gently to 30, then
+// accelerates. Future-season value is scaled by the ratio of these factors.
+const AGE_VALUE: Record<number, number> = {
+  19: 0.55, 20: 0.65, 21: 0.74, 22: 0.82, 23: 0.89, 24: 0.94, 25: 0.98,
+  26: 1.0, 27: 1.0, 28: 0.97, 29: 0.93, 30: 0.88, 31: 0.81, 32: 0.73,
+  33: 0.63, 34: 0.52, 35: 0.41, 36: 0.31, 37: 0.22, 38: 0.15, 39: 0.1,
+};
+
+function ageValue(age: number): number {
+  const a = Math.max(19, Math.min(39, Math.round(age)));
+  return AGE_VALUE[a];
+}
+
+/**
+ * Multiplier on a player's current market value `k` seasons out, from aging.
+ * Scales by the age curve's ratio; the modest youth upside is capped so a very
+ * young player isn't wildly inflated over a long projection.
+ */
+export function ageFactor(currentAge: number, yearsOut: number): number {
+  if (!currentAge) return 1; // unknown age -> no adjustment
+  const f = ageValue(currentAge + yearsOut) / ageValue(currentAge);
+  return Math.min(1.25, f);
+}
+
 export interface ContractTerm {
   /** Last season the team controls (salary > 0, not UFA/RFA); null if none. */
   through: number | null;
@@ -80,7 +105,10 @@ export function controlledSurplus(player: Player, from: number, value: number): 
   for (const cy of futureYears(player, from)) {
     if (CONTROL_ENDS(cy.option) || cy.salary <= 0) break;
     const k = cy.season - from;
-    const seasonSurplus = value - cy.salary / 1_000_000;
+    // Age the player's market value into each future season before comparing to
+    // that year's salary — an aging star's value erodes while his salary climbs.
+    const seasonValue = value * ageFactor(player.age, k);
+    const seasonSurplus = seasonValue - cy.salary / 1_000_000;
     const w = Math.pow(DISCOUNT, k);
     if (cy.option === 'team') {
       total += w * Math.max(seasonSurplus, 0);
