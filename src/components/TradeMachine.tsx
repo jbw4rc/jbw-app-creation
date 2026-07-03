@@ -16,7 +16,7 @@ import {
   type TradeException,
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
-import { gradeTrade, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
+import { gradeTrade, type AssetValue, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
 import { USING_TANKATHON } from '../lib/draftValue';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
@@ -195,6 +195,15 @@ export function TradeMachine() {
 const netM = (n: number) => `${n >= 0 ? '+' : '−'}$${Math.abs(n).toFixed(1)}M`;
 const absM = (n: number) => `$${n.toFixed(1)}M`;
 
+// Tooltip explaining a player's surplus as value − cap hit.
+function assetTitle(a: AssetValue): string {
+  if (a.kind === 'player') {
+    if (a.grossValue == null) return 'No DARKO value — treated as neutral';
+    return `DARKO value ${absM(a.grossValue)} − cap hit ${absM(a.salary ?? 0)} = ${netM(a.value)} surplus`;
+  }
+  return a.note ?? '';
+}
+
 function gradeClass(grade: string): string {
   const g = grade[0];
   if (g === 'A') return 'grade-a';
@@ -204,15 +213,15 @@ function gradeClass(grade: string): string {
   return 'grade-f';
 }
 
-// Per-side trade grade: values every asset in one currency (DARKO market value
-// for players, projected value for picks) and scores each team's net haul.
+// Per-side trade grade: values every asset as SURPLUS (DARKO value − cap hit for
+// players, projected value for picks) and scores each team's net haul.
 function TradeGradePanel({ grade }: { grade: TradeGrade }) {
   return (
     <div className="trade-grade">
       <div className="tg-head">
         <span className="tg-title">Trade Grade</span>
         <span className="tg-basis">
-          DARKO market value + projected pick value ·{' '}
+          Surplus = DARKO value − cap hit ·{' '}
           {USING_TANKATHON ? 'picks via Tankathon projected order' : 'picks via DARKO team strength'}
         </span>
       </div>
@@ -221,6 +230,19 @@ function TradeGradePanel({ grade }: { grade: TradeGrade }) {
           <SideGradeCard key={s.teamAbbr} side={s} />
         ))}
       </div>
+    </div>
+  );
+}
+
+// One asset line: name + its signed surplus (value − cap hit for players).
+function AssetRow({ a }: { a: AssetValue }) {
+  return (
+    <div className="tg-asset" title={assetTitle(a)}>
+      <span className="tg-asset-name">
+        {a.label}
+        {a.unmatched && <span className="tg-flag" title="No DARKO value — treated as neutral"> ~</span>}
+      </span>
+      <span className={`tg-asset-val ${a.value >= 0 ? 'tg-pos' : 'tg-neg'}`}>{netM(a.value)}</span>
     </div>
   );
 }
@@ -236,7 +258,7 @@ function SideGradeCard({ side }: { side: SideGrade }) {
         <span className={side.netValue >= 0 ? 'tg-pos' : 'tg-neg'}>
           {netM(side.netValue)}
         </span>
-        <span className="tg-net-label">net value</span>
+        <span className="tg-net-label">net surplus</span>
         <span className={`tg-dpm ${side.netDpm >= 0 ? 'tg-pos' : 'tg-neg'}`}>
           {side.netDpm >= 0 ? '+' : '−'}
           {Math.abs(side.netDpm).toFixed(1)} DPM
@@ -244,40 +266,24 @@ function SideGradeCard({ side }: { side: SideGrade }) {
       </div>
       <div className="tg-ledger">
         <div className="tg-col tg-in">
-          <span className="tg-col-head">Gets · {absM(side.valueIn)}</span>
+          <span className="tg-col-head">Gets · {netM(side.valueIn)}</span>
           {side.assetsIn.length ? (
-            side.assetsIn.map((a, i) => (
-              <div key={i} className="tg-asset" title={a.note ?? ''}>
-                <span className="tg-asset-name">
-                  {a.label}
-                  {a.unmatched && <span className="tg-flag" title="No DARKO value — approx."> ~</span>}
-                </span>
-                <span className="tg-asset-val">{absM(a.value)}</span>
-              </div>
-            ))
+            side.assetsIn.map((a, i) => <AssetRow key={i} a={a} />)
           ) : (
             <div className="tg-asset tg-empty">—</div>
           )}
         </div>
         <div className="tg-col tg-out">
-          <span className="tg-col-head">Sends · {absM(side.valueOut)}</span>
+          <span className="tg-col-head">Sends · {netM(side.valueOut)}</span>
           {side.assetsOut.length ? (
-            side.assetsOut.map((a, i) => (
-              <div key={i} className="tg-asset" title={a.note ?? ''}>
-                <span className="tg-asset-name">
-                  {a.label}
-                  {a.unmatched && <span className="tg-flag" title="No DARKO value — approx."> ~</span>}
-                </span>
-                <span className="tg-asset-val">{absM(a.value)}</span>
-              </div>
-            ))
+            side.assetsOut.map((a, i) => <AssetRow key={i} a={a} />)
           ) : (
             <div className="tg-asset tg-empty">—</div>
           )}
         </div>
       </div>
       {side.approximate && (
-        <div className="tg-note">~ = player without a DARKO value; grade is approximate.</div>
+        <div className="tg-note">~ = player without a DARKO value; treated as neutral.</div>
       )}
     </div>
   );

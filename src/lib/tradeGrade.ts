@@ -1,28 +1,37 @@
 import type { DraftPick, Player } from '../types';
 import type { TeamTradeResult } from './trade';
+import { CURRENT_SEASON } from '../data/leagueConstants';
+import { playerSalaryForSeason } from './apron';
 import { darkoFor } from './darko';
 import { valuePick } from './draftValue';
 
 // ---------------------------------------------------------------------------
 // Trade grading.
 //
-// Scores each side of a trade in one currency: DARKO market value ($M). Players
-// contribute their DARKO value; picks contribute their projected value (see
-// draftValue.ts); cash counts at face. A side's net = value in - value out.
-// DPM swing is carried alongside as a talent-quality read.
+// Scores each side of a trade in one currency: SURPLUS value ($M). A player is
+// worth his DARKO market value MINUS his cap hit — a $20M-value player on a
+// $50M deal is a -$30M asset, the same value on a $5M deal is +$15M. Picks
+// contribute their projected value (already a surplus over the rookie deal);
+// cash counts at face against the sender. A side's net = surplus in - out.
 //
-// Grades are per-team and roughly zero-sum: a lopsided deal grades one side up
-// and the other down. "Fair" deals land near C for both.
+// Because a salary-matched trade nets ~0 in salary, this reduces to a value
+// comparison for even deals but also correctly rewards uneven ones (dumping a
+// bad contract, absorbing salary into cap space / a TPE). DPM swing is carried
+// alongside as a talent-quality read. Grades are per-team.
 // ---------------------------------------------------------------------------
 
 export interface AssetValue {
   label: string;
-  /** $M. */
+  /** Net surplus contribution, $M (DARKO value - cap hit for players). */
   value: number;
   kind: 'player' | 'pick' | 'cash';
+  /** DARKO market value, $M (players only). */
+  grossValue?: number;
+  /** Cap hit / actual salary, $M (players only). */
+  salary?: number;
   /** DARKO DPM for players (undefined otherwise / if unmatched). */
   dpm?: number;
-  /** True when a player has no DARKO match, so value is a floor. */
+  /** True when a player has no DARKO match, so surplus is unknown (treated 0). */
   unmatched?: boolean;
   note?: string;
 }
@@ -50,12 +59,19 @@ export interface TradeGrade {
 
 function playerAsset(p: Player): AssetValue {
   const d = darkoFor(p.name);
+  const salary = playerSalaryForSeason(p, CURRENT_SEASON) / 1_000_000;
+  const gross = d?.value ?? null;
+  // Surplus = market value - cap hit. Unknown value -> neutral 0 (flagged),
+  // rather than tanking the player by his full salary on missing data.
+  const surplus = gross == null ? 0 : gross - salary;
   return {
     label: p.name,
-    value: d?.value ?? 0,
+    value: surplus,
     kind: 'player',
+    grossValue: gross ?? undefined,
+    salary,
     dpm: d?.dpm ?? undefined,
-    unmatched: d?.value == null,
+    unmatched: gross == null,
   };
 }
 
@@ -70,8 +86,8 @@ function pickAsset(pk: DraftPick, ownerAbbr: string): AssetValue {
   };
 }
 
-// Letter grade from a side's net value ($M). Symmetric around an even band so a
-// clearly one-sided deal reads A/F while a balanced one reads B-/C+.
+// Letter grade from a side's net surplus ($M). Symmetric around an even band so
+// a clearly one-sided deal reads A/F while a balanced one reads B-/C+.
 function letter(net: number): string {
   if (net >= 15) return 'A+';
   if (net >= 9) return 'A';
