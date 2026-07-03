@@ -1,0 +1,33 @@
+# THROWAWAY probe: discover a reachable NBA "expected finish" source (win-total
+# futures / championship odds / projected standings) and commit the findings.
+# Delete this workflow + scripts/probe-futures.mjs once a source is chosen.
+name: Probe futures
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/probe-futures.mjs'
+      - '.github/workflows/probe-futures.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe sources
+        run: node scripts/probe-futures.mjs || true
+      - name: Commit findings
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f probe-futures-out.txt
+          git commit -m "probe futures output" || echo "no changes"
+          git push
