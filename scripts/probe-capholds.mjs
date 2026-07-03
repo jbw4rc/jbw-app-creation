@@ -1,8 +1,8 @@
-// THROWAWAY PROBE. Inspects a SalarySwish team page for the cap-holds / free
-// agent section: dumps table ids, headers, and a couple rows so we can write a
-// parser. Writes probe-capholds-out.txt. Delete after use.
+// THROWAWAY PROBE. Discovers real team slugs from the SalarySwish homepage, then
+// dumps a team page's table structure to find the cap-holds / free-agent section.
 import { writeFileSync } from 'fs';
 
+const BASE = 'https://salaryswish.com';
 const H = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
@@ -11,43 +11,39 @@ const H = {
 const out = [];
 const log = (...a) => out.push(a.join(' '));
 const strip = (s) => s.replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
-
-async function get(u) {
+const get = async (u) => {
   const r = await fetch(u, { headers: H });
   return { status: r.status, t: await r.text() };
-}
+};
 
-// A couple teams likely to carry FA cap holds this offseason.
-for (const slug of ['denver-nuggets', 'los-angeles-lakers']) {
-  const { status, t: html } = await get(`https://salaryswish.com/teams/${slug}`);
+const { t: home } = await get(BASE + '/');
+const slugs = [...new Set([...home.matchAll(/\/teams\/([a-z0-9-]+)/gi)].map((m) => m[1]))];
+log(`slugs found (${slugs.length}): ${slugs.slice(0, 8).join(', ')}`);
+
+for (const slug of slugs.slice(0, 2)) {
+  const { status, t: html } = await get(`${BASE}/teams/${slug}`);
   log(`\n\n######## ${slug} -> ${status} (${html.length}b)`);
-
-  // Signal words.
-  for (const w of ['cap hold', 'caphold', 'hold', 'bird', 'free agent', 'renounce', 'incomplete', 'dead']) {
+  for (const w of ['cap hold', 'hold', 'bird', 'free agent', 'renounce', 'incomplete', 'dead', 'two-way']) {
     const i = html.toLowerCase().indexOf(w);
     log(`  "${w}": ${i >= 0 ? 'yes @' + i : 'no'}`);
   }
-
-  // All tables: id + header row.
   const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
   log(`  tables: ${tables.length}`);
   tables.forEach((tbl, idx) => {
     const id = (tbl.match(/<table[^>]*id="([^"]+)"/i) || [])[1] || '(no id)';
     const cls = (tbl.match(/<table[^>]*class="([^"]+)"/i) || [])[1] || '';
-    const firstRow = (tbl.match(/<tr[\s\S]*?<\/tr>/i) || [''])[0];
-    log(`   [${idx}] id=${id} class="${cls}" hdr: ${strip(firstRow).slice(0, 160)}`);
+    const rows = tbl.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+    log(`   [${idx}] id=${id} class="${cls}" rows=${rows.length} hdr: ${strip(rows[0] || '').slice(0, 150)}`);
   });
-
-  // If a table mentions hold/bird, dump its first 3 data rows raw-ish.
-  const capTbl = tables.find((tbl) => /hold|bird|free.?agent|renounce/i.test(tbl));
-  if (capTbl) {
-    log(`  --- cap-hold-ish table rows ---`);
-    const trs = capTbl.match(/<tr[\s\S]*?<\/tr>/gi) || [];
-    trs.slice(0, 5).forEach((tr) => log('    ' + strip(tr).slice(0, 220)));
-    log(`  --- raw first data row (900 chars) ---`);
-    log('    ' + (trs[1] || '').slice(0, 900));
+  // Dump any table whose text mentions hold/bird/free agent.
+  const cap = tables.find((tbl) => /hold|bird|free.?agent|renounce/i.test(strip(tbl)));
+  if (cap) {
+    const rows = cap.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+    log(`  --- cap-ish table (${rows.length} rows), first 6 stripped ---`);
+    rows.slice(0, 6).forEach((r) => log('    ' + strip(r).slice(0, 240)));
+    log(`  --- raw data row (1000 chars) ---`);
+    log('    ' + (rows[1] || rows[0] || '').replace(/\s+/g, ' ').slice(0, 1000));
   }
 }
-
 writeFileSync('probe-capholds-out.txt', out.join('\n'));
 log('\nWROTE');
