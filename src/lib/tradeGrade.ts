@@ -68,9 +68,9 @@ function playerAsset(p: Player): AssetValue {
   const salary = playerSalaryForSeason(p, CURRENT_SEASON) / 1_000_000;
   const gross = d?.value ?? null;
   const term = contractTerm(p, CURRENT_SEASON);
-  // Multi-year surplus over the years the team controls the player. Unknown
-  // value -> neutral 0 (flagged), rather than tanking on missing data.
-  const value = gross == null ? 0 : controlledSurplus(p, CURRENT_SEASON, gross);
+  // Multi-year surplus over the years the team controls the player, aged by
+  // DARKO's own per-player curve. Unknown value -> neutral 0 (flagged).
+  const value = gross == null ? 0 : controlledSurplus(p, CURRENT_SEASON, gross, d?.decline);
   return {
     label: p.name,
     value,

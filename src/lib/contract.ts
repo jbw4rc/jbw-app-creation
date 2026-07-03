@@ -64,6 +64,21 @@ export function ageFactor(currentAge: number, yearsOut: number): number {
   return Math.min(1.25, f);
 }
 
+/**
+ * Fraction of current value a player retains `yearsOut` seasons from now. Uses
+ * DARKO's own per-player retention curve (s1..s15) when supplied — real
+ * player-specific aging — and falls back to the generic age curve otherwise.
+ */
+export function retentionFactor(
+  currentAge: number,
+  yearsOut: number,
+  darkoDecline?: (number | null)[] | null
+): number {
+  const v = darkoDecline?.[yearsOut];
+  if (v != null && Number.isFinite(v)) return v;
+  return ageFactor(currentAge, yearsOut);
+}
+
 export interface ContractTerm {
   /** Last season the team controls (salary > 0, not UFA/RFA); null if none. */
   through: number | null;
@@ -124,15 +139,21 @@ export function contractTerm(player: Player, from: number): ContractTerm {
  * holds them: team options keep only positive years, player options leave the
  * team only the negative ones (the player opts out of the good ones).
  */
-export function controlledSurplus(player: Player, from: number, value: number): number {
+export function controlledSurplus(
+  player: Player,
+  from: number,
+  value: number,
+  darkoDecline?: (number | null)[] | null
+): number {
   let total = 0;
   for (const cy of futureYears(player, from)) {
     if (CONTROL_ENDS(cy.option) || cy.salary <= 0) break;
     const k = cy.season - from;
     // Age the player's market value into each future season (value erodes as he
-    // ages) and deflate that year's salary by cap growth (a flat salary is a
-    // shrinking share of a rising cap), keeping both in present-day dollars.
-    const seasonValue = value * ageFactor(player.age, k);
+    // ages, per DARKO's own curve when available) and deflate that year's salary
+    // by cap growth (a flat salary is a shrinking share of a rising cap),
+    // keeping both in present-day dollars.
+    const seasonValue = value * retentionFactor(player.age, k, darkoDecline);
     const realSalary = cy.salary / 1_000_000 / capGrowth(cy.season);
     const seasonSurplus = seasonValue - realSalary;
     const w = Math.pow(NPV_DISCOUNT, k); // NPV: discount future years to present
