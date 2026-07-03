@@ -9,6 +9,7 @@ import { DraftCapital } from './DraftCapital';
 import { TradeExceptions } from './TradeExceptions';
 import { RosterTable } from './RosterTable';
 import { RosterProjection } from './RosterProjection';
+import { CapHolds } from './CapHolds';
 
 // Read-only analysis of a single team: where its salary sits now and across the
 // horizon, what apron restrictions apply, its picks, and the full roster.
@@ -67,6 +68,11 @@ export function TeamExplorer() {
 
         <section className="panel span-2">
           <TradeExceptions team={team} />
+        </section>
+
+        {/* Cap holds: unsigned charges on the cap, by type, with an explainer. */}
+        <section className="panel span-4">
+          <CapHolds team={team} />
         </section>
 
         {/* Apron rules in effect and the free-agent tool set. */}

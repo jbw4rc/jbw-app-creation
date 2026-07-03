@@ -874,3 +874,38 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .rp-empty { text-align: center; color: var(--ink-faint); font-style: italic; padding: 16px; }
 .rp-foot { margin: 10px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
 .rp-table .opt-tag { margin-left: 5px; }
+
+/* --- Cap holds ------------------------------------------------------------ */
+.ch-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.ch-title { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 2px 0 0; }
+.ch-filter { display: flex; flex-direction: column; gap: 3px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.ch-filter select { font-family: var(--sans); font-size: 13px; padding: 5px 8px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--card); color: var(--ink); }
+.ch-explain { margin-bottom: 12px; }
+.ch-what { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
+.ch-typeblurb { margin: 8px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink); background: var(--card-2); border-left: 3px solid var(--coral); padding: 8px 12px; border-radius: 2px; }
+.ch-totalbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 12px; }
+.ch-total { display: flex; align-items: baseline; gap: 8px; }
+.ch-total-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+.ch-total-val { font-family: var(--serif); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ch-roomnote { font-size: 11.5px; color: var(--ink-faint); font-style: italic; }
+.ch-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; margin-bottom: 14px; }
+.ch-table th, .ch-table td { padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.ch-table th { color: var(--ink-soft); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--rule-strong); }
+.ch-table .ch-name { font-weight: 600; font-family: var(--serif); }
+.ch-table td.ch-name { font-weight: 500; font-family: var(--sans); }
+.ch-table .ch-amt { text-align: right; font-weight: 600; }
+.ch-terms { color: var(--ink-soft); }
+.ch-tag { display: inline-block; font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.03em; color: #fff; }
+.ch-veteran { background: var(--orange); }
+.ch-rfa { background: var(--blue); }
+.ch-draftPick { background: var(--teal); }
+.ch-empty { color: var(--ink-faint); font-style: italic; }
+.ch-none { padding: 14px 0; }
+.ch-impacts { margin-top: 6px; border-top: 2px solid var(--ink); padding-top: 12px; }
+.ch-impacts-head { display: block; font-family: var(--serif); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--coral); margin-bottom: 10px; }
+.ch-impacts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (max-width: 640px) { .ch-impacts-grid { grid-template-columns: 1fr; } }
+.ch-impact { background: var(--card-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 10px 12px; }
+.ch-impact-head { display: block; font-family: var(--serif); font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+.ch-impact-body { font-size: 11.5px; line-height: 1.5; color: var(--ink-soft); }
+.ch-foot { margin: 12px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }

@@ -139,6 +139,51 @@ function normalizeName(name) {
   return m ? `${m[2].trim()} ${m[1].trim()}` : name.trim();
 }
 
+// --- Parse cap holds ---------------------------------------------------------
+// SalarySwish lists a team's unsigned holds in three roster sections. The hold
+// amount is the cap_hit in the current-season (2026-27) column; rows with no
+// 2026-27 amount are future/renounced and excluded.
+const HOLD_SECTIONS = [
+  { re: /^FA Cap Hold\b/i, type: 'veteran' },
+  { re: /^RFAs\b/i, type: 'rfa' },
+  { re: /^1st Rd Picks\b/i, type: 'draftPick' },
+];
+
+function parseCapHolds(html) {
+  const tables =
+    html.match(/<table[^>]*class="[^"]*sw_teamProfileRosterSection__table[^"]*"[\s\S]*?<\/table>/gi) || [];
+  const holds = [];
+  for (const tbl of tables) {
+    const rows = tbl.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+    if (!rows.length) continue;
+    const headerCells = (rows[0].match(/<t[hd][^>]*>[\s\S]*?<\/t[hd]>/gi) || []).map(strip);
+    const match = HOLD_SECTIONS.find((s) => s.re.test(headerCells[0] || ''));
+    if (!match) continue;
+    const idx2026 = headerCells.findIndex((h) => /^2026-27/.test(h));
+    if (idx2026 < 0) continue;
+    for (let ri = 1; ri < rows.length; ri++) {
+      const cells = rows[ri].match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) || [];
+      if (!cells.length) continue;
+      const rawName = strip(cells[0] || '').replace(/\(.*?\)/g, '').replace(/\s+/g, ' ').trim();
+      if (/^total\b/i.test(rawName) || !/[a-z]/.test(rawName)) continue;
+      const m = (cells[idx2026] || '').match(/class="cap_hit[^"]*"[^>]*>\s*\$?([\d,]+)/i);
+      if (!m) continue;
+      const amount = dollars(m[1]);
+      if (amount <= 0) continue;
+      const status = strip(cells[1] || '');
+      const age = parseInt(strip(cells[3] || '').replace(/[^\d]/g, ''), 10);
+      holds.push({
+        player: normalizeName(rawName),
+        amount,
+        type: match.type,
+        ...(status ? { terms: status } : {}),
+        ...(Number.isFinite(age) ? { age } : {}),
+      });
+    }
+  }
+  return holds;
+}
+
 // --- Parse the draft-pick table ----------------------------------------------
 const NICK2ABBR = {
   Hawks: 'ATL', Celtics: 'BOS', Nets: 'BKN', Hornets: 'CHA', Bulls: 'CHI', Cavaliers: 'CLE',
@@ -333,6 +378,7 @@ if (teams.length !== 30) throw new Error(`expected 30 teams, got ${teams.length}
 
 const rosters = {};
 const picks = {};
+const capHolds = {};
 const tpeLines = ['Team\tPlayer\tException\tUsed\tRemaining\tStart Date\tEnd Date'];
 let tpeCount = 0;
 const report = [];
@@ -359,6 +405,7 @@ async function worker() {
       }
       rosters[t.abbr] = players;
       picks[t.abbr] = parseDraft(html);
+      capHolds[t.abbr] = parseCapHolds(html);
       // Checksum against the Active total excludes two-way (non-cap) salaries.
       const sum2026 = players
         .filter((p) => !p.twoWay)
@@ -429,6 +476,29 @@ writeFileSync(
     `// Regenerate: node scripts/build-salaries.mjs\n` +
     `import type { Player } from '../types';\n\n` +
     `export const SEEDED_ROSTERS: Record<string, Player[]> = ${JSON.stringify(rosters, null, 2)};\n`
+);
+const totalHolds = Object.values(capHolds).reduce((s, hs) => s + hs.length, 0);
+console.log(`Cap holds: ${totalHolds} across ${Object.keys(capHolds).length} teams`);
+writeFileSync(
+  'src/data/seededCapHolds.ts',
+  `// AUTO-GENERATED cap holds from SalarySwish team pages.\n` +
+    `// Regenerate: node scripts/build-salaries.mjs\n` +
+    `//\n` +
+    `// A cap hold is a placeholder charge that counts against a team's SALARY CAP\n` +
+    `// (but not the tax/aprons) for an unsigned free agent or draft pick the team\n` +
+    `// still controls. Split into veteran FA, restricted FA, and rookie-scale holds.\n\n` +
+    `export type CapHoldType = 'veteran' | 'rfa' | 'draftPick';\n\n` +
+    `export interface CapHold {\n` +
+    `  player: string;\n` +
+    `  /** Hold amount charged to the cap this season, in dollars. */\n` +
+    `  amount: number;\n` +
+    `  type: CapHoldType;\n` +
+    `  /** SalarySwish "Terms"/status note (e.g. Bird, RFA, 120% RSC Hold). */\n` +
+    `  terms?: string;\n` +
+    `  age?: number;\n` +
+    `}\n\n` +
+    `// Keyed by team abbreviation.\n` +
+    `export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = ${JSON.stringify(capHolds, null, 2)};\n`
 );
 writeFileSync(
   'src/data/teamMeta.ts',
