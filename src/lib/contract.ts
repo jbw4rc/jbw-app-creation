@@ -1,4 +1,5 @@
 import type { ContractOption, Player } from '../types';
+import { CURRENT_SEASON, SEASON_CAPS } from '../data/leagueConstants';
 
 // ---------------------------------------------------------------------------
 // Contract term + cost-control valuation.
@@ -6,14 +7,37 @@ import type { ContractOption, Player } from '../types';
 // Trade value isn't just this season: teams covet long, cost-controlled assets
 // and shun long bad money. This module reads a player's multi-year contract to
 // (a) describe its remaining term/option and (b) value the surplus a team keeps
-// over the years it actually controls the player.
+// over the years it controls the player, in PRESENT-DAY dollars:
+//   - future salaries are deflated by cap growth (a flat salary is a shrinking
+//     share of a rising cap, so it gets relatively cheaper each year), and
+//   - the whole surplus is NPV-discounted (teams value this year over future).
 // ---------------------------------------------------------------------------
 
 const CONTROL_ENDS = (o: ContractOption) => o === 'ufa' || o === 'rfa';
 
-// Per-year discount on future surplus (time value + projection uncertainty).
-const DISCOUNT = 0.8;
+/** Net-present-value discount per year out (time preference). Shared with picks. */
+export const NPV_DISCOUNT = 0.9;
 const HORIZON = 8;
+
+// Salary-cap by season (for deflating future salaries to present-cap dollars),
+// extrapolated past the known table at the CBA's ~10%/yr ceiling.
+const CAP_GROWTH_BEYOND = 1.1;
+const capBySeason = new Map(SEASON_CAPS.map((c) => [c.season, c.salaryCap]));
+const KNOWN = SEASON_CAPS.map((c) => c.season);
+const LAST_KNOWN = Math.max(...KNOWN);
+
+function salaryCapFor(season: number): number {
+  const known = capBySeason.get(season);
+  if (known) return known;
+  // Extrapolate forward from the last known cap.
+  const base = capBySeason.get(LAST_KNOWN)!;
+  return base * Math.pow(CAP_GROWTH_BEYOND, season - LAST_KNOWN);
+}
+
+/** How much the cap has grown by `season` relative to the current season (≥1). */
+export function capGrowth(season: number): number {
+  return salaryCapFor(season) / salaryCapFor(CURRENT_SEASON);
+}
 
 // Value-by-age curve (fraction of peak), modeled on public NBA aging research
 // and DARKO's aging prior: value peaks ~26-27, declines gently to 30, then
@@ -105,11 +129,13 @@ export function controlledSurplus(player: Player, from: number, value: number): 
   for (const cy of futureYears(player, from)) {
     if (CONTROL_ENDS(cy.option) || cy.salary <= 0) break;
     const k = cy.season - from;
-    // Age the player's market value into each future season before comparing to
-    // that year's salary — an aging star's value erodes while his salary climbs.
+    // Age the player's market value into each future season (value erodes as he
+    // ages) and deflate that year's salary by cap growth (a flat salary is a
+    // shrinking share of a rising cap), keeping both in present-day dollars.
     const seasonValue = value * ageFactor(player.age, k);
-    const seasonSurplus = seasonValue - cy.salary / 1_000_000;
-    const w = Math.pow(DISCOUNT, k);
+    const realSalary = cy.salary / 1_000_000 / capGrowth(cy.season);
+    const seasonSurplus = seasonValue - realSalary;
+    const w = Math.pow(NPV_DISCOUNT, k); // NPV: discount future years to present
     if (cy.option === 'team') {
       total += w * Math.max(seasonSurplus, 0);
     } else if (cy.option === 'player' && k > 0) {

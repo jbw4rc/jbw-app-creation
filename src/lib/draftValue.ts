@@ -2,6 +2,7 @@ import type { DraftPick } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { TEAMS } from '../data/teams';
 import { SEEDED_DRAFT_ORDER } from '../data/seededDraftOrder';
+import { NPV_DISCOUNT } from './contract';
 import { darkoFor } from './darko';
 
 // ---------------------------------------------------------------------------
@@ -159,11 +160,13 @@ export function valuePick(pick: DraftPick): PickValuation {
     slot = weight * base + (1 - weight) * NEUTRAL_SLOT;
   }
 
-  let value = slotValue(slot);
+  // Slot value, then NPV-discount for the wait: a 2031 pick is worth less than a
+  // 2027 pick at the same projected slot because it lands further in the future.
+  let value = slotValue(slot) * Math.pow(NPV_DISCOUNT, yearsOut);
   let note =
     yearsOut === 0
       ? `Projected ~#${Math.round(slot)} (${pick.originalTeam})`
-      : `~#${Math.round(slot)} (${pick.originalTeam}, ${yearsOut}y out)`;
+      : `~#${Math.round(slot)} (${pick.originalTeam}, ${yearsOut}y out, NPV-disc.)`;
 
   // Conditional picks: uncertain conveyance, terms not exposed by the source.
   const conditional =

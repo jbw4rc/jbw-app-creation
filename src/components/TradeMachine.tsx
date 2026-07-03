@@ -229,7 +229,7 @@ function TradeGradePanel({ grade }: { grade: TradeGrade }) {
       <div className="tg-head">
         <span className="tg-title">Trade Grade</span>
         <span className="tg-basis">
-          Surplus = age-adjusted value − cap hit over years controlled ·{' '}
+          NPV of age-adjusted value − cap-adjusted salary, over years controlled ·{' '}
           {USING_TANKATHON ? 'picks via Tankathon projected order' : 'picks via DARKO team strength'}
         </span>
       </div>

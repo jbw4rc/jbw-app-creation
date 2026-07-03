@@ -99,14 +99,14 @@ function pickAsset(pk: DraftPick, ownerAbbr: string): AssetValue {
 // Letter grade from a side's net surplus ($M). Symmetric around an even band so
 // a clearly one-sided deal reads A/F while a balanced one reads B-/C+.
 function letter(net: number): string {
-  if (net >= 20) return 'A+';
-  if (net >= 12) return 'A';
-  if (net >= 6) return 'B+';
-  if (net >= 2) return 'B';
-  if (net > -2) return 'C';
-  if (net > -6) return 'C-';
-  if (net > -12) return 'D';
-  if (net > -20) return 'D-';
+  if (net >= 25) return 'A+';
+  if (net >= 15) return 'A';
+  if (net >= 8) return 'B+';
+  if (net >= 3) return 'B';
+  if (net > -3) return 'C';
+  if (net > -8) return 'C-';
+  if (net > -15) return 'D';
+  if (net > -25) return 'D-';
   return 'F';
 }
 
