@@ -1,0 +1,42 @@
+
+### ESPN core futures index
+URL https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/futures?limit=100
+status 404 
+bytes 52
+snippet:
+{"error":{"message":"application error","code":404}}
+
+### ESPN BPI standings
+URL https://site.api.espn.com/apis/v2/sports/basketball/nba/standings?level=3
+status 200 application/json;charset=UTF-8
+bytes 170756
+snippet:
+{"uid":"s:40~l:46~g:7","id":"7","name":"National Basketball Association","abbreviation":"NBA","shortName":"NBA","children":[{"uid":"s:40~l:46~g:5","id":"5","name":"Eastern Conference","abbreviation":"East","children":[{"uid":"s:40~l:46~g:1","id":"1","name":"Atlantic","abbreviation":"AT","isConference":false,"standings":{"id":"0","name":"overall","displayName":"Standings","links":[{"language":"en-US","rel":["standings","desktop"],"href":"https://www.espn.com/nba/standings/_/group/1","text":"Table","shortText":"Standings","isExternal":false,"isPremium":false}],"season":2026,"seasonType":2,"seasonDisplayName":"2025-26","entries":[{"team":{"id":"2","uid":"s:40~l:46~t:2","location":"Boston","name":"Celtics","abbreviation":"BOS","displayName":"Boston Celtics","shortDisplayName":"Celtics","isActive":true,"logos":[{"href":"https://a.espncdn.com/i/teamlogos/nba/500/bos.png","width":500,"height":5
+
+### ESPN scoreboard (season probe)
+URL https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard
+status 200 application/json;charset=UTF-8
+bytes 29653
+snippet:
+{"leagues":[{"id":"46","uid":"s:40~l:46","name":"National Basketball Association","abbreviation":"NBA","slug":"nba","season":{"year":2026,"startDate":"2025-10-01T07:00Z","endDate":"2026-06-27T06:59Z","displayName":"2025-26","type":{"id":"2","type":2,"name":"Regular Season","abbreviation":"reg"}},"logos":[{"href":"https://a.espncdn.com/i/teamlogos/leagues/500/nba.png","width":500,"height":500,"alt":"","rel":["full","default"],"lastUpdated":"2018-06-05T12:07Z"},{"href":"https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500-dark/nba.png&w=500&h=500&transparent=true","width":500,"height":500,"alt":"","rel":["full","dark"],"lastUpdated":"2026-07-02T15:03Z"}],"calendarType":"day","calendarIsWhitelist":true,"calendarStartDate":"2025-10-01T07:00Z","calendarEndDate":"2026-06-27T06:59Z","calendar":["2025-10-02T07:00Z","2025-10-03T07:00Z","2025-10-04T07:00Z","2025-10-05T07:00Z","2025-10-06T
+
+### Tankathon standings
+URL https://www.tankathon.com/
+status 200 text/html; charset=utf-8
+bytes 90536
+snippet:
+<!DOCTYPE html><html lang="en"><head> <script type="text/javascript">window.NREUM||(NREUM={});NREUM.info={"beacon":"bam.nr-data.net","errorBeacon":"bam.nr-data.net","licenseKey":"05ac3bf583","applicationID":"549018598","transactionName":"JltYTRYJCl9WFx8MAwxaGVAKAgNL","queueTime":2,"applicationTime":16,"agent":""}</script> <script type="text/javascript">(window.NREUM||(NREUM={})).init={ajax:{deny_list:["bam.nr-data.net"]},feature_flags:["soft_nav"]};(window.NREUM||(NREUM={})).loader_config={licenseKey:"05ac3bf583",applicationID:"549018598",browserID:"594392649"};;/*! For license information ple
+
+### BBRef 2027 preview
+URL https://www.basketball-reference.com/leagues/NBA_2027.html
+status 404 text/html
+bytes 91094
+snippet:
+<!DOCTYPE html> <html data-version="klecko-" data-root="/home/bbr/build" lang="en" class="no-js" > <head id="suppress_all_ads"> <meta charset="utf-8"> <meta http-equiv="x-ua-compatible" content="ie=edge"> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0" /> <link rel="dns-prefetch" href="https://cdn.ssref.net/req/202507141" /> <script> /* htt
+
+### the-odds-api sports list
+URL https://api.the-odds-api.com/v4/sports/?apiKey=demo
+status 401 application/json; charset=utf-8
+bytes 198
+snippet:
+{"message":"API key is not valid. Get an API key at https://the-odds-api.com","error_code":"INVALID_KEY","details_url":"https://the-odds-api.com/liveapi/guides/v4/api-error-codes.html#invalid-key"}
