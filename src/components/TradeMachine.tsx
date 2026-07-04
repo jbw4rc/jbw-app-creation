@@ -22,6 +22,7 @@ import {
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
 import { contractTerm } from '../lib/contract';
+import { AGING_PEAK_AGE } from '../data/agingCurve';
 import { buildSignedPlayer, signableHolds, stId } from '../lib/signAndTrade';
 import { gradeTrade, type AssetValue, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
 import { moveImpact, type MoveImpact } from '../lib/moveImpact';
@@ -428,6 +429,11 @@ function AssetMath({ a }: { a: AssetValue }) {
             </tr>
           </tbody>
         </table>
+      </div>
+      <div className="tg-math-note">
+        Aging × is the empirical DARKO curve (peak age {AGING_PEAK_AGE}): &gt;1 =
+        projected development for a pre-peak player, &lt;1 = decline. Cap growth ×
+        deflates future salaries to today's dollars; NPV × discounts future years.
       </div>
     </div>
   );

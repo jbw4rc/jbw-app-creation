@@ -70,11 +70,12 @@ function playerAsset(p: Player): AssetValue {
   const salary = playerSalaryForSeason(p, CURRENT_SEASON) / 1_000_000;
   const gross = d?.value ?? null;
   const term = contractTerm(p, CURRENT_SEASON);
-  // Multi-year surplus over the years the team controls the player, aged by
-  // DARKO's own per-player curve. Unknown value -> neutral 0 (flagged).
-  const value = gross == null ? 0 : controlledSurplus(p, CURRENT_SEASON, gross, d?.decline);
+  // Multi-year surplus over the years the team controls the player, aged by the
+  // empirical curve (young players appreciate) / DARKO's per-player decline.
+  // Unknown value -> neutral 0 (flagged).
+  const value = gross == null ? 0 : controlledSurplus(p, CURRENT_SEASON, gross, d?.decline, d?.dpm);
   const breakdown =
-    gross == null ? undefined : surplusBreakdown(p, CURRENT_SEASON, gross, d?.decline);
+    gross == null ? undefined : surplusBreakdown(p, CURRENT_SEASON, gross, d?.decline, d?.dpm);
   return {
     label: p.name,
     value,

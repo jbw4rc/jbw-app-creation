@@ -1,5 +1,6 @@
 import type { ContractOption, Player } from '../types';
 import { CURRENT_SEASON, SEASON_CAPS } from '../data/leagueConstants';
+import { AGING_CURVE, AGING_PEAK_AGE } from '../data/agingCurve';
 
 // ---------------------------------------------------------------------------
 // Contract term + cost-control valuation.
@@ -39,9 +40,10 @@ export function capGrowth(season: number): number {
   return salaryCapFor(season) / salaryCapFor(CURRENT_SEASON);
 }
 
-// Value-by-age curve (fraction of peak), modeled on public NBA aging research
-// and DARKO's aging prior: value peaks ~26-27, declines gently to 30, then
-// accelerates. Future-season value is scaled by the ratio of these factors.
+// Fallback value-by-age curve (fraction of peak) for when age/DPM are unknown.
+// Modeled on public NBA aging research: value peaks ~26-27, declines gently to
+// 30, then accelerates. Superseded by the empirical DARKO curve below whenever
+// we have the player's age + current DPM.
 const AGE_VALUE: Record<number, number> = {
   19: 0.55, 20: 0.65, 21: 0.74, 22: 0.82, 23: 0.89, 24: 0.94, 25: 0.98,
   26: 1.0, 27: 1.0, 28: 0.97, 29: 0.93, 30: 0.88, 31: 0.81, 32: 0.73,
@@ -64,18 +66,72 @@ export function ageFactor(currentAge: number, yearsOut: number): number {
   return Math.min(1.25, f);
 }
 
+// --- Empirical aging curve (delta method on DARKO DPM career histories) -------
+// The curve is in DPM units: rel(age) = expected DPM at that age vs peak (<=0).
+// Value scales roughly linearly with DPM above replacement, so a DPM shift of Δ
+// changes value by Δ / (level above replacement). Pre-peak players sit below
+// their peak, so Δ is positive and their value RETENTION can exceed 1 — real
+// development, which DARKO's own s-curve (capped at 1.0) can't express.
+const REPLACEMENT_DPM = -2.0;   // DARKO replacement level (~pts/100 poss)
+const MIN_LEVEL = 2.5;          // denom floor so fringe players don't swing wildly
+const RETENTION_CAP = 1.5;      // max youth appreciation (talent-bucketing is TODO)
+const RETENTION_FLOOR = 0.05;
+
+const REL_BY_AGE = new Map(AGING_CURVE.map((p) => [p.age, p.rel]));
+const AGE_LO = AGING_CURVE[0].age;
+const AGE_HI = AGING_CURVE[AGING_CURVE.length - 1].age;
+
+/** Expected DPM at `age` relative to peak (<=0); linearly interpolated/clamped. */
+function relDpm(age: number): number {
+  const a = Math.max(AGE_LO, Math.min(AGE_HI, age));
+  const lo = Math.floor(a);
+  const hi = Math.ceil(a);
+  const rl = REL_BY_AGE.get(lo) ?? 0;
+  const rh = REL_BY_AGE.get(hi) ?? rl;
+  return lo === hi ? rl : rl + (rh - rl) * (a - lo);
+}
+
 /**
- * Fraction of current value a player retains `yearsOut` seasons from now. Uses
- * DARKO's own per-player retention curve (s1..s15) when supplied — real
- * player-specific aging — and falls back to the generic age curve otherwise.
+ * Additive DPM shift from aging: how much a player's DPM is expected to move
+ * from `currentAge` to `currentAge + yearsOut`, per the empirical curve.
+ * Positive for pre-peak (improving) players, negative past peak.
+ */
+export function agingDpmDelta(currentAge: number, yearsOut: number): number {
+  if (!currentAge) return 0;
+  return relDpm(currentAge + yearsOut) - relDpm(currentAge);
+}
+
+/**
+ * Fraction of current value a player retains `yearsOut` seasons from now.
+ *
+ * Pre-peak players are projected on the empirical curve (value can appreciate),
+ * taking the more optimistic of that and DARKO's own retention. Peak/post-peak
+ * players keep DARKO's player-specific decline curve (s1..s15) when supplied —
+ * real per-player aging — and fall back to the generic age curve otherwise.
  */
 export function retentionFactor(
   currentAge: number,
   yearsOut: number,
-  darkoDecline?: (number | null)[] | null
+  darkoDecline?: (number | null)[] | null,
+  dpm?: number | null
 ): number {
-  const v = darkoDecline?.[yearsOut];
-  if (v != null && Number.isFinite(v)) return v;
+  if (yearsOut <= 0) return 1;
+  const dk = darkoDecline?.[yearsOut];
+  const dkOk = dk != null && Number.isFinite(dk);
+  if (currentAge && dpm != null && Number.isFinite(dpm)) {
+    const level = Math.max(dpm - REPLACEMENT_DPM, MIN_LEVEL);
+    const emp = Math.max(
+      RETENTION_FLOOR,
+      Math.min(RETENTION_CAP, 1 + agingDpmDelta(currentAge, yearsOut) / level)
+    );
+    // Pre-peak: take the more optimistic of empirical development and DARKO
+    // (DARKO's s-curve caps at 1.0 and misses youth appreciation). Post-peak:
+    // prefer DARKO's player-specific decline when supplied, else the empirical.
+    if (currentAge < AGING_PEAK_AGE) return dkOk ? Math.max(emp, dk) : emp;
+    return dkOk ? dk : emp;
+  }
+  // Age or DPM unknown: DARKO's decline curve, then the generic age curve.
+  if (dkOk) return dk;
   return ageFactor(currentAge, yearsOut);
 }
 
@@ -168,17 +224,18 @@ export function surplusBreakdown(
   player: Player,
   from: number,
   value: number,
-  darkoDecline?: (number | null)[] | null
+  darkoDecline?: (number | null)[] | null,
+  dpm?: number | null
 ): SurplusYear[] {
   const rows: SurplusYear[] = [];
   for (const cy of futureYears(player, from)) {
     if (CONTROL_ENDS(cy.option) || cy.salary <= 0) break;
     const k = cy.season - from;
-    // Age the player's market value into each future season (value erodes as he
-    // ages, per DARKO's own curve when available) and deflate that year's salary
-    // by cap growth (a flat salary is a shrinking share of a rising cap),
-    // keeping both in present-day dollars.
-    const retention = retentionFactor(player.age, k, darkoDecline);
+    // Age the player's market value into each future season (young players may
+    // appreciate on the empirical curve; veterans erode per DARKO's own curve)
+    // and deflate that year's salary by cap growth (a flat salary is a shrinking
+    // share of a rising cap), keeping both in present-day dollars.
+    const retention = retentionFactor(player.age, k, darkoDecline, dpm);
     const agedValue = value * retention;
     const salaryNominal = cy.salary / 1_000_000;
     const cg = capGrowth(cy.season);
@@ -210,9 +267,10 @@ export function controlledSurplus(
   player: Player,
   from: number,
   value: number,
-  darkoDecline?: (number | null)[] | null
+  darkoDecline?: (number | null)[] | null,
+  dpm?: number | null
 ): number {
-  return surplusBreakdown(player, from, value, darkoDecline).reduce(
+  return surplusBreakdown(player, from, value, darkoDecline, dpm).reduce(
     (s, r) => s + r.contribution,
     0
   );

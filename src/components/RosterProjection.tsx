@@ -52,7 +52,7 @@ function buildRows(team: Team, season: number): ProjRow[] {
     if (p.twoWay) continue; // two-way deals don't count toward the roster
     const d = darkoFor(p.name);
     const baseAge = d?.age ?? p.age;
-    const ret = retentionFactor(baseAge, k, d?.decline);
+    const ret = retentionFactor(baseAge, k, d?.decline, d?.dpm);
     const value = d?.value != null ? d.value * ret * cg : null;
     rows.push({
       player: p,
@@ -211,7 +211,7 @@ export function RosterProjection({ team }: { team: Team }) {
       <p className="rp-foot">
         {k === 0
           ? 'Current season — DARKO live values.'
-          : `Projected ${k} year${k > 1 ? 's' : ''} out: value aged by DARKO's per-player curve and grown with the cap; DPM aged by the same curve. Salary is the contracted figure.`}
+          : `Projected ${k} year${k > 1 ? 's' : ''} out: value aged by the empirical DARKO curve (pre-peak players can appreciate, veterans decline) and grown with the cap; DPM aged the same way. Salary is the contracted figure.`}
       </p>
     </div>
   );

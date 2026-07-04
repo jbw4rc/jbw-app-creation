@@ -869,6 +869,7 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   border: 1px solid var(--rule); border-radius: var(--radius-sm);
 }
 .tg-math-head { font-size: 11px; color: var(--ink-soft); margin-bottom: 6px; }
+.tg-math-note { font-size: 10px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
 .tg-math-scroll { overflow-x: auto; }
 .tg-math-table { border-collapse: collapse; width: 100%; font-size: 11px; font-variant-numeric: tabular-nums; }
 .tg-math-table th, .tg-math-table td {
