@@ -10,6 +10,7 @@ import { TradeExceptions } from './TradeExceptions';
 import { RosterTable } from './RosterTable';
 import { RosterProjection } from './RosterProjection';
 import { CapHolds } from './CapHolds';
+import { TeamTalent } from './TeamTalent';
 
 // Read-only analysis of a single team: where its salary sits now and across the
 // horizon, what apron restrictions apply, its picks, and the full roster.
@@ -46,6 +47,11 @@ export function TeamExplorer() {
         {/* Headline: where the team's salary sits relative to the aprons. */}
         <section className="panel span-4">
           <CapSummary team={team} />
+        </section>
+
+        {/* Talent level: DARKO net rating, league/conference rank, tier. */}
+        <section className="panel span-4">
+          <TeamTalent team={team} />
         </section>
 
         {/* The roster itself — who makes up that salary (leads the detail).
