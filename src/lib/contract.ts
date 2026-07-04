@@ -1,6 +1,6 @@
 import type { ContractOption, Player } from '../types';
 import { CURRENT_SEASON, SEASON_CAPS } from '../data/leagueConstants';
-import { AGING_CURVE, AGING_PEAK_AGE } from '../data/agingCurve';
+import { AGING_COEFFS, AGING_PEAK_AGE } from '../data/agingCurve';
 
 // ---------------------------------------------------------------------------
 // Contract term + cost-control valuation.
@@ -66,48 +66,55 @@ export function ageFactor(currentAge: number, yearsOut: number): number {
   return Math.min(1.25, f);
 }
 
-// --- Empirical aging curve (delta method on DARKO DPM career histories) -------
-// The curve is in DPM units: rel(age) = expected DPM at that age vs peak (<=0).
-// Value scales roughly linearly with DPM above replacement, so a DPM shift of Δ
-// changes value by Δ / (level above replacement). Pre-peak players sit below
-// their peak, so Δ is positive and their value RETENTION can exceed 1 — real
-// development, which DARKO's own s-curve (capped at 1.0) can't express.
+// --- Talent-aware aging curve (DARKO DPM career histories) --------------------
+// For each age we fit  Δdpm = alpha(age) + beta(age)*dpm  by weighted least
+// squares over consecutive-season pairs (see scripts/build-aging-curve.mjs).
+// alpha = a typical player's yearly change at that age; beta = the talent slope
+// (extra change per point of current DPM). We project a player forward by
+// iterating that recursion with HIS OWN current DPM — so a high-talent young
+// player develops more than a fringe one, and stars mean-revert, straight from
+// the data (no hand-set tiers). Value then scales ~linearly with DPM above
+// replacement, so the projected DPM converts to a value-retention multiplier.
 const REPLACEMENT_DPM = -2.0;   // DARKO replacement level (~pts/100 poss)
 const MIN_LEVEL = 2.5;          // denom floor so fringe players don't swing wildly
-const RETENTION_CAP = 1.5;      // max youth appreciation (talent-bucketing is TODO)
+const RETENTION_CAP = 1.6;      // safety clamp on youth appreciation
 const RETENTION_FLOOR = 0.05;
+const DPM_CLAMP = [-4, 12];     // keep the forward recursion in a sane range
 
-const REL_BY_AGE = new Map(AGING_CURVE.map((p) => [p.age, p.rel]));
-const AGE_LO = AGING_CURVE[0].age;
-const AGE_HI = AGING_CURVE[AGING_CURVE.length - 1].age;
+const COEFF_LO = AGING_COEFFS[0].age;
+const COEFF_HI = AGING_COEFFS[AGING_COEFFS.length - 1].age;
+const COEFF_BY_AGE = new Map(AGING_COEFFS.map((c) => [c.age, c]));
 
-/** Expected DPM at `age` relative to peak (<=0); linearly interpolated/clamped. */
-function relDpm(age: number): number {
-  const a = Math.max(AGE_LO, Math.min(AGE_HI, age));
-  const lo = Math.floor(a);
-  const hi = Math.ceil(a);
-  const rl = REL_BY_AGE.get(lo) ?? 0;
-  const rh = REL_BY_AGE.get(hi) ?? rl;
-  return lo === hi ? rl : rl + (rh - rl) * (a - lo);
+/** Project a player's DPM `years` seasons forward from (age, dpm) via the recursion. */
+function projectDpm(startAge: number, startDpm: number, years: number): number {
+  let d = startDpm;
+  const a0 = Math.round(startAge);
+  for (let a = a0; a < a0 + years; a++) {
+    const c = COEFF_BY_AGE.get(Math.max(COEFF_LO, Math.min(COEFF_HI, a)));
+    d += (c?.alpha ?? 0) + (c?.beta ?? 0) * d;
+    d = Math.max(DPM_CLAMP[0], Math.min(DPM_CLAMP[1], d));
+  }
+  return d;
 }
 
 /**
- * Additive DPM shift from aging: how much a player's DPM is expected to move
- * from `currentAge` to `currentAge + yearsOut`, per the empirical curve.
- * Positive for pre-peak (improving) players, negative past peak.
+ * Talent-aware DPM shift from aging: how much a player's DPM is expected to move
+ * from now to `yearsOut` seasons out, given his current DPM. Positive for
+ * developing (usually young, high-talent) players, negative for decline.
  */
-export function agingDpmDelta(currentAge: number, yearsOut: number): number {
-  if (!currentAge) return 0;
-  return relDpm(currentAge + yearsOut) - relDpm(currentAge);
+export function agingDpmDelta(currentAge: number, yearsOut: number, dpm = 0): number {
+  if (!currentAge || yearsOut <= 0) return 0;
+  return projectDpm(currentAge, dpm, yearsOut) - dpm;
 }
 
 /**
  * Fraction of current value a player retains `yearsOut` seasons from now.
  *
- * Pre-peak players are projected on the empirical curve (value can appreciate),
- * taking the more optimistic of that and DARKO's own retention. Peak/post-peak
- * players keep DARKO's player-specific decline curve (s1..s15) when supplied —
- * real per-player aging — and fall back to the generic age curve otherwise.
+ * With age + DPM we project the player forward on the talent-aware curve and
+ * convert the DPM change to a value multiplier (retention can exceed 1 for a
+ * developing player). Pre-peak players take the more optimistic of that and
+ * DARKO's own retention; peak/post-peak players keep DARKO's player-specific
+ * decline curve (s1..s15) when supplied, else the projection, else the age curve.
  */
 export function retentionFactor(
   currentAge: number,
@@ -119,14 +126,16 @@ export function retentionFactor(
   const dk = darkoDecline?.[yearsOut];
   const dkOk = dk != null && Number.isFinite(dk);
   if (currentAge && dpm != null && Number.isFinite(dpm)) {
-    const level = Math.max(dpm - REPLACEMENT_DPM, MIN_LEVEL);
-    const emp = Math.max(
-      RETENTION_FLOOR,
-      Math.min(RETENTION_CAP, 1 + agingDpmDelta(currentAge, yearsOut) / level)
-    );
-    // Pre-peak: take the more optimistic of empirical development and DARKO
-    // (DARKO's s-curve caps at 1.0 and misses youth appreciation). Post-peak:
-    // prefer DARKO's player-specific decline when supplied, else the empirical.
+    // Value scales ~linearly with DPM above replacement, floored so fringe
+    // players (near-zero value above replacement) don't swing wildly. Floor both
+    // ends so the ratio stays monotonic in projected DPM.
+    const projected = projectDpm(currentAge, dpm, yearsOut);
+    const vNow = Math.max(dpm - REPLACEMENT_DPM, MIN_LEVEL);
+    const vThen = Math.max(projected - REPLACEMENT_DPM, MIN_LEVEL);
+    const emp = Math.max(RETENTION_FLOOR, Math.min(RETENTION_CAP, vThen / vNow));
+    // Pre-peak: take the more optimistic of the projection and DARKO (DARKO's
+    // s-curve caps at 1.0 and misses youth appreciation). Post-peak: prefer
+    // DARKO's player-specific decline when supplied, else the projection.
     if (currentAge < AGING_PEAK_AGE) return dkOk ? Math.max(emp, dk) : emp;
     return dkOk ? dk : emp;
   }
