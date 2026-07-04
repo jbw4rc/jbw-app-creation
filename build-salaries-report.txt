@@ -1,5 +1,5 @@
 Pulling rosters from SalarySwish…
-homepage bytes: 356,753
+homepage bytes: 356,743
 Discovered 30 teams: DEN:nuggets OKC:thunder ORL:magic PHX:suns SAC:kings MIN:timberwolves NYK:knicks IND:pacers MIA:heat PHI:sixers TOR:raptors BKN:nets BOS:celtics LAC:clippers DET:pistons HOU:rockets LAL:lakers ATL:hawks NOP:pelicans POR:trailblazers WAS:wizards SAS:spurs CHI:bulls GSW:warriors CLE:cavaliers CHA:hornets MIL:bucks UTA:jazz DAL:mavericks MEM:grizzlies
 
 Team   players  sum2026-27        checksum(exact?)
@@ -19,7 +19,7 @@ Team   players  sum2026-27        checksum(exact?)
   LAL   14   $   188,691,232   $   188,691,232 exact
   MEM   20   $   141,319,533   $   141,319,533 exact
   MIA   13   $   201,021,803   $     1,357,763 
-  MIL   16   $   131,012,467   $     2,038,748 
+  MIL   17   $   131,012,467   $     2,717,630 
   MIN   15   $   214,086,862   $             0 
   NOP   14   $   190,671,399   $   190,671,399 exact
   NYK   11   $   213,088,180   $   214,018,007 
@@ -37,7 +37,7 @@ Team   players  sum2026-27        checksum(exact?)
 Signings: 50 parsed · 7 MLE/BAE tracked
 BAE: 30 teams · 15 with room available
 Tax: bracket $6,064,000 · 10 standard rates · 7 repeaters · bill checksum mismatches: 0/12
-Total players: 437 · picks: 454 · TPEs: 58 · exact checksum matches: 13/30
+Total players: 438 · picks: 454 · TPEs: 58 · exact checksum matches: 13/30
 
 !! BUILD FAILED: Error: only 13/30 exact checksum matches — parse likely off
     at run (file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:466:23)
