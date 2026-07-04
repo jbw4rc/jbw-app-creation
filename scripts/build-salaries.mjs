@@ -88,11 +88,13 @@ function parseRosterTable(tableHtml) {
     const name = strip(nameCell);
     // Section subtotal / "TOTAL" row: capture as a checksum, don't treat as a player.
     if (/^total\b/i.test(name)) {
-      // A section can have several "total" rows (e.g. a grand total plus a
-      // dead-money subtotal). The grand total is the largest, so keep the max.
+      // The total row's 2026 cell leads with the 2026 grand total, then repeats
+      // later-season totals (e.g. "$213,088,180 $214,018,007 …"). Take the FIRST
+      // figure — the 2026 total — not the max (a later season can be larger). A
+      // section may have several total rows; keep the largest first-figure.
       const c = idx2026 != null ? cells[idx2026] || '' : '';
-      const nums = [...c.matchAll(/([\d,]{6,})/g)].map((x) => dollars(x[1]));
-      if (nums.length) checksum2026 = Math.max(checksum2026, ...nums);
+      const first = (c.match(/([\d,]{6,})/) || [])[1];
+      if (first) checksum2026 = Math.max(checksum2026, dollars(first));
       continue;
     }
     // Skip blanks and all-caps labels (real names carry lowercase letters).
@@ -395,7 +397,9 @@ async function worker() {
       let checksum = 0;
       for (const tbl of rosterTables) {
         const { section, players: ps, checksum2026 } = parseRosterTable(tbl);
-        if (/active/i.test(section)) checksum = checksum2026;
+        // Anchor to the start so "Active" matches but "Inactive" does not (an
+        // Inactive/dead section total would otherwise clobber the real checksum).
+        if (/^active\b/i.test(section)) checksum = checksum2026;
         const isCount = COUNT_SECTION.test(section);
         for (const p of ps) {
           // Cap-counting sections contribute all players; other sections
