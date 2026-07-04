@@ -1,0 +1,40 @@
+# Build the empirical aging curve from DARKO career histories. Heavy pull
+# (one request per player), so weekly + manual only — the curve is structural
+# and changes slowly.
+name: Build aging curve
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1' # Mondays 09:00 UTC
+  push:
+    branches: [claude/nba-roster-apron-analyzer-u6oonq]
+    paths:
+      - 'scripts/build-aging-curve.mjs'
+      - '.github/workflows/build-aging-curve.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build aging curve
+        run: node scripts/build-aging-curve.mjs
+      - name: Commit seed if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/agingCurve.ts
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update empirical aging curve from DARKO histories"
+            git pull --rebase && git push
+          fi
