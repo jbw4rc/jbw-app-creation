@@ -98,7 +98,10 @@ function seasonRows(hist) {
 
 // 3) Delta method. Accumulate minutes-weighted DPM deltas by rounded age.
 const MIN_SECS = 500 * 60; // ~500 minutes in a season to count it
-const bucket = new Map(); // age -> {wsum, wdsum, n}
+// Per-age weighted-regression accumulators for  Δdpm = α(age) + β(age)·dpm.
+// α = how much a typical player changes at that age; β = how much extra a
+// higher-talent (higher current DPM) player gains — the "talent slope".
+const acc = new Map(); // age -> {w, wx, wxx, wy, wxy, n}
 let players = 0, playerSeasons = 0, deltas = 0;
 
 let done = 0;
@@ -119,10 +122,11 @@ for (const id of ids) {
       const age = Math.round(a.age);
       if (age < 18 || age > 40) continue;
       const w = Math.min(a.secs, b.secs);            // weight by the smaller sample
-      const d = b.dpm - a.dpm;
-      const e = bucket.get(age) || { wsum: 0, wdsum: 0, n: 0 };
-      e.wsum += w; e.wdsum += w * d; e.n += 1;
-      bucket.set(age, e);
+      const x = a.dpm;                                // starting talent
+      const y = b.dpm - a.dpm;                        // one-year change
+      const e = acc.get(age) || { w: 0, wx: 0, wxx: 0, wy: 0, wxy: 0, n: 0 };
+      e.w += w; e.wx += w * x; e.wxx += w * x * x; e.wy += w * y; e.wxy += w * x * y; e.n += 1;
+      acc.set(age, e);
       deltas++;
     }
   }
@@ -131,56 +135,98 @@ for (const id of ids) {
 }
 console.log(`  players ${players}, player-seasons ${playerSeasons}, deltas ${deltas}`);
 
-// 4) Per-age mean delta, then smooth (3-age moving average) for stability.
+// 4) Per-age weighted least squares for (α, β). Shrink β toward 0 when the age
+// cell is thin (β·n/(n+N0)) and clamp so the forward recursion stays stable.
 const AGES = [];
 for (let a = 19; a <= 38; a++) AGES.push(a);
-const rawDelta = new Map();
-for (const a of AGES) {
-  const e = bucket.get(a);
-  rawDelta.set(a, e && e.wsum > 0 ? e.wdsum / e.wsum : null);
+const N0 = 40;                 // shrinkage strength (samples worth of "no slope")
+const BETA_CLAMP = [-0.6, 0.4];
+function fitAge(a) {
+  const e = acc.get(a);
+  if (!e || e.w <= 0 || e.n < 3) return null;
+  const mx = e.wx / e.w;
+  const sxx = e.wxx - e.w * mx * mx;             // weighted variance of x
+  const sxy = e.wxy - e.wx * (e.wy / e.w);       // weighted covariance
+  let beta = sxx > 1e-6 ? sxy / sxx : 0;
+  beta *= e.n / (e.n + N0);                       // shrink toward 0 on small n
+  beta = Math.max(BETA_CLAMP[0], Math.min(BETA_CLAMP[1], beta));
+  const alpha = (e.wy - beta * e.wx) / e.w;       // intercept given (shrunk) slope
+  return { alpha, beta, n: e.n };
 }
-const smooth = new Map();
-for (const a of AGES) {
-  let s = 0, w = 0;
-  for (const k of [a - 1, a, a + 1]) {
-    const v = rawDelta.get(k);
-    if (v != null) { const weight = k === a ? 2 : 1; s += weight * v; w += weight; }
-  }
-  smooth.set(a, w > 0 ? s / w : 0);
-}
+const rawFit = new Map(AGES.map((a) => [a, fitAge(a)]));
 
-// 5) Chain deltas into a cumulative DPM curve; normalize so the peak age = 0.
-// cum[a] = expected DPM at age a relative to cum at age 19 baseline.
-const cum = new Map();
-let acc = 0;
-cum.set(19, 0);
-for (let a = 20; a <= 38; a++) { acc += smooth.get(a - 1) ?? 0; cum.set(a, acc); }
-let peakAge = 19, peakVal = -Infinity;
-for (const a of AGES) { const v = cum.get(a); if (v > peakVal) { peakVal = v; peakAge = a; } }
-// Re-center so peak = 0 (curve is <= 0 everywhere; how much DPM you gain
-// reaching peak, or lose past it).
-const curve = AGES.map((a) => ({
+// Smooth α and β across adjacent ages (weighted 3-age window) for stability.
+function smoothField(pick) {
+  const out = new Map();
+  for (const a of AGES) {
+    let s = 0, w = 0;
+    for (const k of [a - 1, a, a + 1]) {
+      const f = rawFit.get(k);
+      if (f) { const wt = (k === a ? 2 : 1) * f.n; s += wt * pick(f); w += wt; }
+    }
+    out.set(a, w > 0 ? s / w : 0);
+  }
+  return out;
+}
+const alphaBy = smoothField((f) => f.alpha);
+const betaBy = smoothField((f) => f.beta);
+
+const coeffs = AGES.map((a) => ({
   age: a,
-  delta: Math.round((smooth.get(a) ?? 0) * 1000) / 1000,       // yr-over-yr change entering next age
-  rel: Math.round((cum.get(a) - peakVal) * 1000) / 1000,       // DPM vs peak (<=0)
-  n: bucket.get(a)?.n ?? 0,
+  alpha: Math.round(alphaBy.get(a) * 1000) / 1000,
+  beta: Math.round(betaBy.get(a) * 1000) / 1000,
+  n: rawFit.get(a)?.n ?? 0,
 }));
 
-console.log('\n  age  yoyΔ    vsPeak   n');
-for (const p of curve) console.log(`  ${p.age}  ${p.delta.toFixed(2).padStart(6)}  ${p.rel.toFixed(2).padStart(6)}  ${p.n}`);
-console.log(`  peak age ${peakAge}`);
+// 5) Forward recursion: project a starting (age, dpm) along the curve.
+function project(startAge, startDpm, years) {
+  let d = startDpm;
+  for (let a = Math.round(startAge); a < Math.round(startAge) + years; a++) {
+    const c = coeffs.find((x) => x.age === Math.max(19, Math.min(38, a)));
+    d += (c?.alpha ?? 0) + (c?.beta ?? 0) * d;
+    d = Math.max(-4, Math.min(12, d));
+  }
+  return d;
+}
+
+// Reference single curve (talent-blind, dpm=0 trajectory) for legends/peak.
+const zero = AGES.map((a) => ({ age: a, dpm: project(19, 0, a - 19) }));
+let peakAge = 19, peakVal = -Infinity;
+for (const p of zero) if (p.dpm > peakVal) { peakVal = p.dpm; peakAge = p.age; }
+const curve = zero.map((p) => ({
+  age: p.age,
+  rel: Math.round((p.dpm - peakVal) * 1000) / 1000,
+  n: rawFit.get(p.age)?.n ?? 0,
+}));
+
+// Diagnostics: α, β by age + three tier trajectories from age 20.
+console.log('\n  age   alpha   beta    n');
+for (const c of coeffs) console.log(`  ${c.age}  ${c.alpha.toFixed(3).padStart(6)}  ${c.beta.toFixed(3).padStart(6)}  ${c.n}`);
+console.log(`  reference peak age ${peakAge}`);
+console.log('\n  tier trajectories from age 20 (proj DPM at +1..+6 yrs):');
+for (const [name, d0] of [['low  (-1.5)', -1.5], ['mid  (+0.5)', 0.5], ['high (+3.0)', 3.0]]) {
+  const path = [1, 2, 3, 4, 5, 6].map((k) => project(20, d0, k).toFixed(2));
+  console.log(`  ${name}: ${path.join('  ')}`);
+}
 
 writeFileSync(
   'src/data/agingCurve.ts',
-  `// AUTO-GENERATED empirical NBA aging curve (delta method on DARKO DPM history).\n` +
+  `// AUTO-GENERATED talent-aware NBA aging curve (DARKO DPM career histories).\n` +
     `// Regenerate: node scripts/build-aging-curve.mjs\n` +
-    `// Units: DARKO DPM (pts/100 poss). 'rel' = expected DPM at that age vs peak (<=0).\n` +
-    `// 'delta' = year-over-year DPM change entering the next age.\n` +
-    `// CAVEAT: survivor-biased sample (current DARKO players' careers). v1 = single\n` +
-    `// talent-blind curve; talent-bucketing is a planned follow-up.\n` +
-    `export interface AgingPoint { age: number; delta: number; rel: number; n: number; }\n` +
+    `//\n` +
+    `// Model: for each age we fit  Δdpm = alpha(age) + beta(age)*dpm  by weighted\n` +
+    `// least squares over consecutive-season pairs. alpha = a typical player's\n` +
+    `// yearly change at that age; beta = the talent slope (extra change per point\n` +
+    `// of current DPM). Project a player forward by iterating the recursion with\n` +
+    `// HIS OWN current DPM, so higher-talent young players develop more (and stars\n` +
+    `// mean-revert) straight from the data — no hand-set tiers.\n` +
+    `// CAVEAT: survivor-biased sample (current DARKO players' careers).\n` +
+    `export interface AgingCoeff { age: number; alpha: number; beta: number; n: number; }\n` +
+    `export interface AgingPoint { age: number; rel: number; n: number; }\n` +
     `export const AGING_PEAK_AGE = ${peakAge};\n` +
-    `export const AGING_META = ${JSON.stringify({ players, playerSeasons, deltas, source: 'darko.app career histories', survivorBias: true })};\n` +
+    `export const AGING_META = ${JSON.stringify({ players, playerSeasons, deltas, source: 'darko.app career histories', survivorBias: true, model: 'per-age WLS delta = alpha + beta*dpm' })};\n` +
+    `export const AGING_COEFFS: AgingCoeff[] = ${JSON.stringify(coeffs)};\n` +
+    `// Reference talent-blind trajectory (dpm=0), for legends only.\n` +
     `export const AGING_CURVE: AgingPoint[] = ${JSON.stringify(curve)};\n`
 );
 console.log('\nWrote src/data/agingCurve.ts');
