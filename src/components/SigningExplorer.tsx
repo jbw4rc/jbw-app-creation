@@ -13,7 +13,10 @@ import {
 } from '../lib/apron';
 import { money } from '../lib/format';
 import { projectedContract, CONTRACT_MODEL_INFO } from '../lib/contractModel';
+import { buildSignedPlayer } from '../lib/signAndTrade';
+import { moveImpact } from '../lib/moveImpact';
 import { FreeAgentQuiver } from './FreeAgentQuiver';
+import { MoveImpactView } from './MoveImpactView';
 
 // Signing Explorer: browse the remaining free agents (with DARKO-projected
 // salaries), pick a team, and model what signing a player would take — via the
@@ -152,6 +155,16 @@ export function SigningExplorer({
     ` = ${money(roomBefore.capNumber)} vs ${money(cap.salaryCap)} cap · ${TIER_INFO[tier].label}`;
 
   const fa = FA_POOL.find((f) => f.key === selectedFA) ?? null;
+
+  // Win-now impact of signing the selected FA at his projected contract.
+  const signImpact = useMemo(() => {
+    if (!fa) return null;
+    const signed = buildSignedPlayer(fa.name);
+    const after = signed ? [...team.players, signed] : team.players;
+    const pre = room.salary;
+    return moveImpact(abbr, pre, pre + fa.projected * 1_000_000, after);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fa, abbr, team]);
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return FA_POOL.filter(
@@ -275,6 +288,7 @@ export function SigningExplorer({
               cap={cap}
               holds={holds}
               renounced={renounced}
+              impact={signImpact}
               onSignAndTrade={onSignAndTrade}
               onToggleRenounce={(name) =>
                 setRenounced((prev) => {
@@ -306,6 +320,7 @@ function SigningAnalysis({
   cap,
   holds,
   renounced,
+  impact,
   onToggleRenounce,
   onSignAndTrade,
 }: {
@@ -317,6 +332,7 @@ function SigningAnalysis({
   cap: ReturnType<typeof getSeasonCap>;
   holds: { player: string; amount: number; type: string }[];
   renounced: Set<string>;
+  impact: import('../lib/moveImpact').MoveImpact | null;
   onToggleRenounce: (name: string) => void;
   onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
 }) {
@@ -440,6 +456,8 @@ function SigningAnalysis({
           </div>
         ))}
       </div>
+
+      {impact && <MoveImpactView impact={impact} />}
 
       {!ownRights && capSpaceTeam && holds.length > 0 && (
         <div className="se-renounce">

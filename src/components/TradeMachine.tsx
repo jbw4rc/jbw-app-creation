@@ -24,7 +24,9 @@ import { darkoFor } from '../lib/darko';
 import { contractTerm } from '../lib/contract';
 import { buildSignedPlayer, signableHolds, stId } from '../lib/signAndTrade';
 import { gradeTrade, type AssetValue, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
+import { moveImpact, type MoveImpact } from '../lib/moveImpact';
 import { USING_TANKATHON } from '../lib/draftValue';
+import { MoveImpactView } from './MoveImpactView';
 import { money } from '../lib/format';
 import { ApronMeter } from './ApronMeter';
 
@@ -139,6 +141,19 @@ export function TradeMachine({
 
   const grade = useMemo(() => gradeTrade(evaluation.teams), [evaluation]);
 
+  // Per-team win-now impact: talent/rank shift, status flip, true cost.
+  const impacts = useMemo(
+    () =>
+      evaluation.teams.map((r, i) => {
+        const base = teamOf(slots[i].abbr);
+        const outIds = new Set(r.outgoingPlayers.map((p) => p.id));
+        const after = [...base.players.filter((p) => !outIds.has(p.id)), ...r.incomingPlayers];
+        return moveImpact(slots[i].abbr, r.preSalary, r.postSalary, after);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [evaluation]
+  );
+
   const setSlot = (i: number, patch: Partial<Slot>) =>
     setSlots((prev) => prev.map((s, j) => (j === i ? { ...s, ...patch } : s)));
 
@@ -224,7 +239,7 @@ export function TradeMachine({
         )}
       </div>
 
-      {hasAssets && <TradeGradePanel grade={grade} />}
+      {hasAssets && <TradeGradePanel grade={grade} impacts={impacts} />}
 
       <div className={`trade-sides cols-${slots.length}`}>
         {slots.map((s, i) => (
@@ -286,7 +301,7 @@ function gradeClass(grade: string): string {
 
 // Per-side trade grade: values every asset as SURPLUS (DARKO value − cap hit for
 // players, projected value for picks) and scores each team's net haul.
-function TradeGradePanel({ grade }: { grade: TradeGrade }) {
+function TradeGradePanel({ grade, impacts }: { grade: TradeGrade; impacts: MoveImpact[] }) {
   return (
     <div className="trade-grade">
       <div className="tg-head">
@@ -297,8 +312,8 @@ function TradeGradePanel({ grade }: { grade: TradeGrade }) {
         </span>
       </div>
       <div className="tg-cards">
-        {grade.sides.map((s) => (
-          <SideGradeCard key={s.teamAbbr} side={s} />
+        {grade.sides.map((s, i) => (
+          <SideGradeCard key={s.teamAbbr} side={s} impact={impacts[i]} />
         ))}
       </div>
     </div>
@@ -418,7 +433,7 @@ function AssetMath({ a }: { a: AssetValue }) {
   );
 }
 
-function SideGradeCard({ side }: { side: SideGrade }) {
+function SideGradeCard({ side, impact }: { side: SideGrade; impact?: MoveImpact }) {
   const [open, setOpen] = useState<string | null>(null);
   const canExpand = (a: AssetValue) => a.kind === 'player' && (a.breakdown?.length ?? 0) > 0;
   const openAsset = [...side.assetsIn, ...side.assetsOut].find(
@@ -467,6 +482,7 @@ function SideGradeCard({ side }: { side: SideGrade }) {
         {renderCol(side.assetsOut, 'Sends', side.valueOut)}
       </div>
       {openAsset && <AssetMath a={openAsset} />}
+      {impact && <MoveImpactView impact={impact} />}
       <div className="tg-note tg-hint">Click a player to show the year-by-year math.</div>
       {side.approximate && (
         <div className="tg-note">~ = player without a DARKO value; treated as neutral.</div>

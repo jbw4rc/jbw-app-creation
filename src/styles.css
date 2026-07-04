@@ -1075,3 +1075,22 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .tt-rank-num { font-family: var(--serif); font-size: 26px; font-weight: 700; line-height: 1; }
 .tt-rank-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin-top: 3px; }
 .tt-foot { margin: 14px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
+
+/* --- Move impact (trade + signing) --------------------------------------- */
+.mi { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 4px; }
+.mi-row { display: grid; grid-template-columns: 62px 1fr; gap: 8px; align-items: baseline; font-size: 11.5px; }
+.mi-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.mi-val { font-variant-numeric: tabular-nums; color: var(--ink); }
+.mi-val strong { font-weight: 700; }
+.mi-delta { font-weight: 700; font-size: 10.5px; }
+.mi-up { color: var(--green); }
+.mi-down { color: var(--red); }
+.mi-sep { margin: 0 7px; color: var(--ink-faint); }
+.mi-apron { font-weight: 600; }
+.mi-flip { margin-left: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 1px 6px; border-radius: 2px; }
+.mi-flip-worse { color: #fff; background: var(--red); }
+.mi-flip-better { color: #fff; background: var(--green); }
+.mi-cost { border-top: 1px dashed var(--rule); padding-top: 6px; margin-top: 2px; }
+.mi-cost-pos { color: var(--red); }
+.mi-cost-neg { color: var(--green); }
+.mi .tier-chip { vertical-align: middle; }
