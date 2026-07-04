@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Team } from '../types';
+import type { TradeSetup } from '../App';
 import { useTeams } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import {
@@ -21,6 +22,7 @@ import {
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
 import { contractTerm } from '../lib/contract';
+import { buildSignedPlayer, signableHolds, stId } from '../lib/signAndTrade';
 import { gradeTrade, type AssetValue, type SideGrade, type TradeGrade } from '../lib/tradeGrade';
 import { USING_TANKATHON } from '../lib/draftValue';
 import { money } from '../lib/format';
@@ -55,8 +57,9 @@ const MAX_TEAMS = 4;
 
 interface Slot {
   abbr: string;
-  players: string[]; // outgoing player ids
-  playerDest: Record<string, string>; // id -> destination abbr (3+ teams)
+  players: string[]; // outgoing roster player ids
+  st: string[]; // free agents (by name) signed-and-traded from this team's holds
+  playerDest: Record<string, string>; // player/S&T id -> destination abbr (3+ teams)
   picks: number[]; // draftCapital indices
   pickDest: Record<number, string>;
   tpe: number | null;
@@ -65,16 +68,40 @@ interface Slot {
 const emptySlot = (abbr: string): Slot => ({
   abbr,
   players: [],
+  st: [],
   playerDest: {},
   picks: [],
   pickDest: {},
   tpe: null,
 });
 
-export function TradeMachine() {
+// A team augmented with the synthetic players it is signing-and-trading, so the
+// engine can resolve them as outgoing assets and count their salary.
+function effectiveTeam(slot: Slot, team: Team): Team {
+  if (!slot.st.length) return team;
+  const signed = slot.st.map(buildSignedPlayer).filter((p): p is Player => p != null);
+  return { ...team, players: [...team.players, ...signed] };
+}
+
+export function TradeMachine({
+  setup,
+  onConsumeSetup,
+}: {
+  setup?: TradeSetup | null;
+  onConsumeSetup?: () => void;
+} = {}) {
   const [slots, setSlots] = useState<Slot[]>([emptySlot('PHX'), emptySlot('UTA')]);
   const teams = useTeams();
   useTradeExceptions(); // re-render when the imported TPE set changes
+
+  // A sign-and-trade launched from the Signings tab: acquiring team + the rights
+  // team signing-and-trading the free agent to it.
+  useEffect(() => {
+    if (!setup) return;
+    setSlots([emptySlot(setup.acquiring), { ...emptySlot(setup.rights), st: [setup.faName] }]);
+    onConsumeSetup?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setup]);
 
   const teamOf = (abbr: string): Team => teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const multi = slots.length > 2;
@@ -90,15 +117,16 @@ export function TradeMachine() {
 
   const evaluation = useMemo(() => {
     const sides = slots.map((s, i) => {
-      const team = teamOf(s.abbr);
+      const team = effectiveTeam(s, teamOf(s.abbr));
       const outgoingPicks = s.picks.map((idx) => team.draftCapital[idx]).filter(Boolean);
       const pickDest = s.picks.map((idx) => effPickDest(i, idx));
+      const outgoingPlayerIds = [...s.players, ...s.st.map(stId)];
       const playerDest: Record<string, string> = {};
-      s.players.forEach((id) => (playerDest[id] = effPlayerDest(i, id)));
+      outgoingPlayerIds.forEach((id) => (playerDest[id] = effPlayerDest(i, id)));
       const te = s.tpe != null ? tradeExceptionsFor(s.abbr)[s.tpe] : undefined;
       return {
         team,
-        outgoingPlayerIds: s.players,
+        outgoingPlayerIds,
         outgoingPicks,
         pickDest,
         playerDest,
@@ -135,13 +163,21 @@ export function TradeMachine() {
           : { ...s, picks: s.picks.includes(idx) ? s.picks.filter((x) => x !== idx) : [...s.picks, idx] }
       )
     );
+  const toggleST = (i: number, name: string) =>
+    setSlots((prev) =>
+      prev.map((s, j) =>
+        j !== i
+          ? s
+          : { ...s, st: s.st.includes(name) ? s.st.filter((x) => x !== name) : [...s.st, name] }
+      )
+    );
   const toggleTpe = (i: number, idx: number) => setSlot(i, { tpe: slots[i].tpe === idx ? null : idx });
   const setPlayerDest = (i: number, id: string, d: string) =>
     setSlot(i, { playerDest: { ...slots[i].playerDest, [id]: d } });
   const setPickDest = (i: number, idx: number, d: string) =>
     setSlot(i, { pickDest: { ...slots[i].pickDest, [idx]: d } });
   const changeTeam = (i: number, abbr: string) =>
-    setSlot(i, { abbr, players: [], playerDest: {}, picks: [], pickDest: {}, tpe: null });
+    setSlot(i, { abbr, players: [], st: [], playerDest: {}, picks: [], pickDest: {}, tpe: null });
 
   const addTeam = () =>
     setSlots((prev) => {
@@ -153,8 +189,10 @@ export function TradeMachine() {
   const removeTeam = (i: number) =>
     setSlots((prev) => (prev.length <= 2 ? prev : prev.filter((_, j) => j !== i)));
 
-  const hasSelection = slots.some((s) => s.players.length || s.picks.length || s.tpe != null);
-  const hasAssets = slots.some((s) => s.players.length || s.picks.length);
+  const hasSelection = slots.some(
+    (s) => s.players.length || s.st.length || s.picks.length || s.tpe != null
+  );
+  const hasAssets = slots.some((s) => s.players.length || s.st.length || s.picks.length);
 
   return (
     <div className="trade-machine">
@@ -195,11 +233,13 @@ export function TradeMachine() {
             team={teamOf(s.abbr)}
             multi={multi}
             selected={new Set(s.players)}
+            selectedST={new Set(s.st)}
             selectedPicks={new Set(s.picks)}
             selectedTpe={s.tpe}
             playerDestOf={(id) => effPlayerDest(i, id)}
             pickDestOf={(idx) => effPickDest(i, idx)}
             onToggle={(id) => togglePlayer(i, id)}
+            onToggleST={(name) => toggleST(i, name)}
             onTogglePick={(idx) => togglePick(i, idx)}
             onToggleTpe={(idx) => toggleTpe(i, idx)}
             onTeamChange={(abbr) => changeTeam(i, abbr)}
@@ -439,11 +479,13 @@ interface ColumnProps {
   team: Team;
   multi: boolean;
   selected: Set<string>;
+  selectedST: Set<string>;
   selectedPicks: Set<number>;
   selectedTpe: number | null;
   playerDestOf: (id: string) => string;
   pickDestOf: (index: number) => string;
   onToggle: (id: string) => void;
+  onToggleST: (name: string) => void;
   onTogglePick: (index: number) => void;
   onToggleTpe: (index: number) => void;
   onTeamChange: (abbr: string) => void;
@@ -459,11 +501,13 @@ function TradeColumn({
   team,
   multi,
   selected,
+  selectedST,
   selectedPicks,
   selectedTpe,
   playerDestOf,
   pickDestOf,
   onToggle,
+  onToggleST,
   onTogglePick,
   onToggleTpe,
   onTeamChange,
@@ -474,6 +518,7 @@ function TradeColumn({
   result,
 }: ColumnProps) {
   const teams = useTeams();
+  const signable = signableHolds(team.abbreviation);
   const preSummary = summarizeSeason(result.preSalary, CURRENT_SEASON);
   const postSummary = summarizeSeason(result.postSalary, CURRENT_SEASON);
 
@@ -614,7 +659,28 @@ function TradeColumn({
         </div>
       )}
 
-      {multi && (selected.size > 0 || selectedPicks.size > 0) && (
+      {signable.length > 0 && (
+        <div className="trade-st">
+          <span className="trade-st-head">Sign &amp; Trade · from FA holds (projected deal)</span>
+          <div className="trade-st-list">
+            {signable.map((fa) => (
+              <button
+                key={fa.name}
+                className={`trade-st-item${selectedST.has(fa.name) ? ' selected' : ''}`}
+                onClick={() => onToggleST(fa.name)}
+                title={`Sign ${fa.name} to a projected ${money(fa.projected * 1_000_000)}/yr deal and trade him`}
+              >
+                <span className="tp-check">{selectedST.has(fa.name) ? '✓' : ''}</span>
+                <span className="st-name">{fa.name}</span>
+                {fa.pos && <span className="st-pos">{fa.pos}</span>}
+                <span className="st-cost">{money(fa.projected * 1_000_000)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {multi && (selected.size > 0 || selectedST.size > 0 || selectedPicks.size > 0) && (
         <div className="trade-routing">
           <span className="trade-routing-head">Send to</span>
           {[...selected].map((id) => {
@@ -631,6 +697,22 @@ function TradeColumn({
               </div>
             );
           })}
+          {[...selectedST].map((name) => (
+            <div key={`st-${name}`} className="route-row">
+              <span className="route-name">
+                {name} <span className="st-tag">S&amp;T</span>
+              </span>
+              <span className="route-arrow">→</span>
+              <select
+                value={playerDestOf(stId(name))}
+                onChange={(e) => onPlayerDest(stId(name), e.target.value)}
+              >
+                {usedAbbrs.map((a) => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+            </div>
+          ))}
           {[...selectedPicks].map((idx) => {
             const pk = team.draftCapital[idx];
             if (!pk) return null;

@@ -316,6 +316,23 @@ function computeTeamResult(
       });
     }
 
+    // Acquiring a player via sign-and-trade hard-caps the team at the first
+    // apron — it may not sit above the first apron after the deal.
+    const receivesSignAndTrade = incomingPlayers.some((p) => p.signedUsing === 'Sign-and-Trade');
+    if (receivesSignAndTrade) {
+      hardCappedAt = 'firstApron';
+      if (postSalary > cap.firstApron) {
+        violations.push({
+          code: 'st-hardcap',
+          severity: 'block',
+          title: 'Sign-and-trade hard-caps at the first apron',
+          detail: `Taking in a sign-and-trade hard-caps the team at the first apron (${fmt(
+            cap.firstApron
+          )}); post-trade salary of ${fmt(postSalary)} exceeds it.`,
+        });
+      }
+    }
+
     return {
       teamAbbr: self.team.abbreviation,
       teamName: self.team.name,

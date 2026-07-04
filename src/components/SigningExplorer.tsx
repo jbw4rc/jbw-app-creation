@@ -90,7 +90,11 @@ function posGroup(fa: FA): 'G' | 'F' | 'C' | null {
 const MIN_SALARY = 2_296_274; // 2026-27 minimum (approx, vet)
 const ROSTER_MIN_FOR_CAP = 12; // cap-space teams charge empty slots up to 12
 
-export function SigningExplorer() {
+export function SigningExplorer({
+  onSignAndTrade,
+}: {
+  onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
+} = {}) {
   const teams = useTeams();
   const [abbr, setAbbr] = useState('BKN');
   const [selectedFA, setSelectedFA] = useState<string | null>(null);
@@ -271,6 +275,7 @@ export function SigningExplorer() {
               cap={cap}
               holds={holds}
               renounced={renounced}
+              onSignAndTrade={onSignAndTrade}
               onToggleRenounce={(name) =>
                 setRenounced((prev) => {
                   const next = new Set(prev);
@@ -302,6 +307,7 @@ function SigningAnalysis({
   holds,
   renounced,
   onToggleRenounce,
+  onSignAndTrade,
 }: {
   fa: FA;
   abbr: string;
@@ -312,6 +318,7 @@ function SigningAnalysis({
   holds: { player: string; amount: number; type: string }[];
   renounced: Set<string>;
   onToggleRenounce: (name: string) => void;
+  onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
 }) {
   const target = fa.projected * 1_000_000; // projected contract (cost) in $
   const surplus = fa.value - fa.projected; // DARKO value − projected pay
@@ -416,6 +423,13 @@ function SigningAnalysis({
       <div className={`se-verdict ${ownRights || best || room >= target ? 'se-verdict-ok' : 'se-verdict-no'}`}>
         {verdict}
       </div>
+
+      {!ownRights && !best && room < target && fa.rights && fa.rights !== abbr && onSignAndTrade && (
+        <button className="se-st-link" onClick={() => onSignAndTrade(abbr, fa.rights!, fa.name)}>
+          Can’t sign outright — <strong>sign &amp; trade</strong> with {fa.rights} (holds his rights)
+          to land {fa.name} →
+        </button>
+      )}
 
       <div className="se-routes">
         {routes.map((r) => (

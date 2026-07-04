@@ -14,8 +14,20 @@ const TABS: { id: Tab; label: string; blurb: string }[] = [
   { id: 'signings', label: 'Signings', blurb: 'Free agents & signing a player against the cap' },
 ];
 
+export interface TradeSetup {
+  acquiring: string;
+  rights: string;
+  faName: string;
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>('explorer');
+  const [tradeSetup, setTradeSetup] = useState<TradeSetup | null>(null);
+
+  const signAndTrade = (acquiring: string, rights: string, faName: string) => {
+    setTradeSetup({ acquiring, rights, faName });
+    setTab('trade');
+  };
 
   return (
     <div className="app">
@@ -46,8 +58,10 @@ export default function App() {
       <main className="app-main">
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'stats' && <StatsExplorer />}
-        {tab === 'trade' && <TradeMachine />}
-        {tab === 'signings' && <SigningExplorer />}
+        {tab === 'trade' && (
+          <TradeMachine setup={tradeSetup} onConsumeSetup={() => setTradeSetup(null)} />
+        )}
+        {tab === 'signings' && <SigningExplorer onSignAndTrade={signAndTrade} />}
       </main>
 
       <footer className="app-footer">
