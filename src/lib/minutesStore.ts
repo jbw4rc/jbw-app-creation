@@ -51,13 +51,33 @@ export function rotationPlayers(players: Player[]): Player[] {
   });
 }
 
-/** DARKO minutes for the given players, scaled so they total 240 (the seed). */
+/**
+ * DARKO minutes for the given players, scaled so they total 240 (the seed).
+ * Rounded to whole minutes via largest-remainder so the integers still sum to
+ * exactly 240 (easier to read/adjust, especially on mobile).
+ */
 export function seedMinutes(players: Player[]): Record<string, number> {
   const raw = players.map((p) => ({ id: p.id, min: darkoFor(p.name)?.min ?? 0 }));
   const sum = raw.reduce((s, r) => s + r.min, 0);
-  const scale = sum > 0 ? TOTAL_ROTATION_MINUTES / sum : 0;
   const out: Record<string, number> = {};
-  for (const r of raw) out[r.id] = Math.round(r.min * scale * 10) / 10;
+  if (sum <= 0) {
+    for (const r of raw) out[r.id] = 0;
+    return out;
+  }
+  const scale = TOTAL_ROTATION_MINUTES / sum;
+  const fracs: { id: string; frac: number }[] = [];
+  let floored = 0;
+  for (const r of raw) {
+    const exact = r.min * scale;
+    const f = Math.floor(exact);
+    out[r.id] = f;
+    floored += f;
+    fracs.push({ id: r.id, frac: exact - f });
+  }
+  // Hand out the leftover minutes to the largest fractional parts.
+  let rem = TOTAL_ROTATION_MINUTES - floored;
+  fracs.sort((a, b) => b.frac - a.frac);
+  for (let i = 0; i < fracs.length && rem > 0; i++, rem--) out[fracs[i].id]++;
   return out;
 }
 
@@ -75,8 +95,8 @@ export function allocation(abbr: string, players: Player[]): Record<string, numb
 }
 
 export function setMinutes(abbr: string, playerId: string, min: number): void {
-  const clamped = Math.max(0, Math.min(48, Number.isFinite(min) ? min : 0));
-  data = { ...data, [abbr]: { ...(data[abbr] || {}), [playerId]: Math.round(clamped * 10) / 10 } };
+  const clamped = Math.max(0, Math.min(48, Math.round(Number.isFinite(min) ? min : 0)));
+  data = { ...data, [abbr]: { ...(data[abbr] || {}), [playerId]: clamped } };
   commit();
 }
 

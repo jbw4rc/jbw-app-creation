@@ -920,11 +920,21 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   background: transparent; color: var(--ink-soft);
 }
 .rp-reset:hover { color: var(--ink); border-color: var(--ink-soft); }
-.rp-min-input {
-  width: 52px; text-align: right; font-family: var(--sans); font-size: 12.5px;
-  font-variant-numeric: tabular-nums; padding: 2px 5px; border: 1px solid var(--rule);
-  border-radius: 4px; background: var(--bg); color: var(--ink);
+.rp-stepper { display: inline-flex; align-items: stretch; gap: 4px; justify-content: flex-end; }
+.rp-step {
+  width: 26px; min-height: 26px; flex: none; cursor: pointer; padding: 0;
+  font-size: 15px; line-height: 1; font-weight: 600; color: var(--ink-soft);
+  border: 1px solid var(--rule-strong); border-radius: 5px; background: var(--card);
 }
+.rp-step:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-soft); }
+.rp-step:disabled { opacity: 0.35; cursor: default; }
+.rp-min-input {
+  width: 40px; text-align: center; font-family: var(--sans); font-size: 13px;
+  font-variant-numeric: tabular-nums; padding: 2px; border: 1px solid var(--rule);
+  border-radius: 4px; background: var(--bg); color: var(--ink); -moz-appearance: textfield;
+}
+.rp-min-input::-webkit-inner-spin-button,
+.rp-min-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .rp-min-input:focus { outline: none; border-color: var(--coral); }
 .rp-table tfoot td { border-top: 2px solid var(--rule-strong); border-bottom: none; font-weight: 700; padding-top: 7px; }
 .rp-empty { text-align: center; color: var(--ink-faint); font-style: italic; padding: 16px; }

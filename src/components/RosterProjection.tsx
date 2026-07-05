@@ -272,16 +272,37 @@ export function RosterProjection({ team }: { team: Team }) {
                   <td>{r.age ?? '—'}</td>
                   {isCurrent && (
                     <td className="rp-min">
-                      <input
-                        className="rp-min-input"
-                        type="number"
-                        min={0}
-                        max={48}
-                        step={0.5}
-                        value={r.min ?? 0}
-                        onChange={(e) => setMinutes(abbr, r.player.id, parseFloat(e.target.value))}
-                        aria-label={`Minutes for ${r.player.name}`}
-                      />
+                      <div className="rp-stepper">
+                        <button
+                          type="button"
+                          className="rp-step"
+                          onClick={() => setMinutes(abbr, r.player.id, (r.min ?? 0) - 1)}
+                          disabled={(r.min ?? 0) <= 0}
+                          aria-label={`Decrease minutes for ${r.player.name}`}
+                        >
+                          −
+                        </button>
+                        <input
+                          className="rp-min-input"
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          max={48}
+                          step={1}
+                          value={r.min ?? 0}
+                          onChange={(e) => setMinutes(abbr, r.player.id, parseInt(e.target.value, 10))}
+                          aria-label={`Minutes for ${r.player.name}`}
+                        />
+                        <button
+                          type="button"
+                          className="rp-step"
+                          onClick={() => setMinutes(abbr, r.player.id, (r.min ?? 0) + 1)}
+                          disabled={(r.min ?? 0) >= 48}
+                          aria-label={`Increase minutes for ${r.player.name}`}
+                        >
+                          +
+                        </button>
+                      </div>
                     </td>
                   )}
                   <td>{money(r.salary)}</td>
