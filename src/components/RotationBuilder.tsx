@@ -15,6 +15,7 @@ import {
 } from '../lib/minutesStore';
 import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
 import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
+import { archetype } from '../lib/archetype';
 
 // ---------------------------------------------------------------------------
 // Rotation Builder: hand out a team's 240 game-minutes (current season) and see
@@ -29,6 +30,7 @@ interface Row {
   id: string;
   name: string;
   pos: string;
+  arch: string | null;
   dpm: number | null;
   min: number;
   contrib: number; // dpm × min/48 — this player's share of team net rating
@@ -54,7 +56,7 @@ export function RotationBuilder() {
   const rows: Row[] = rotation.map((p) => {
     const d = darkoFor(p.name);
     const min = mins[p.id] ?? 0;
-    return { id: p.id, name: p.name, pos: p.position || '—', dpm: d?.dpm ?? null, min, contrib: (d?.dpm ?? 0) * (min / 48) };
+    return { id: p.id, name: p.name, pos: p.position || '—', arch: archetype(d), dpm: d?.dpm ?? null, min, contrib: (d?.dpm ?? 0) * (min / 48) };
   });
   const rowById = new Map(rows.map((r) => [r.id, r]));
 
@@ -224,7 +226,10 @@ export function RotationBuilder() {
         {orderedRows.map((r) => (
           <div className="rb-row" key={r.id}>
             <div className="rb-player">
-              <span className="rb-name">{r.name}</span>
+              <span className="rb-nameline">
+                <span className="rb-name">{r.name}</span>
+                {r.arch && <span className="rb-arch">{r.arch}</span>}
+              </span>
               <span className="rb-meta">
                 {r.pos}
                 {r.dpm != null && (
