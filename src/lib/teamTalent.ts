@@ -7,23 +7,37 @@ import { darkoFor } from './darko';
 //
 // A lineup's net rating is roughly the sum of its five on-court players' DPM, so
 // a team's expected net rating is the minutes-weighted sum of its rotation's
-// DPM. We approximate minutes with a fixed rotation template (five starters at
-// ~35 mpg, a four-man bench) whose weights sum to 5 (five players on court).
-// This ranks teams and sorts them into contender / playoff / fringe / cellar.
+// DPM. A game has only 240 player-minutes to hand out (five on-court slots ×
+// 48), so we allocate that finite budget by each player's DARKO-projected
+// minutes (x_minutes): the rotation gets minutes in order of projected playing
+// time, and once the 240 are spent the deep bench gets zero — a scrub who won't
+// play has no effect on team value, exactly as in reality. Each player's weight
+// is his on-court fraction (minutes / 48), so the weights sum to at most 5.
 // ---------------------------------------------------------------------------
 
-// Weights sum to 5.0 (five on-court slots): starters ~0.72 (≈34.6 mpg), bench ~0.35.
-const ROTATION_WEIGHTS = [0.72, 0.72, 0.72, 0.72, 0.72, 0.35, 0.35, 0.35, 0.35];
+const TEAM_MINUTES = 240; // five on-court slots × 48 minutes
+const MAX_MPG = 38; // cap a single player's share (tames small-sample outliers)
 
-/** Expected net rating (DARKO) for any set of players. */
+/** Expected net rating (DARKO), minutes-weighted by DARKO's projected minutes. */
 export function rosterDpm(players: Player[]): number {
-  const dpms = players
-    .map((p) => (p.twoWay ? undefined : darkoFor(p.name)?.dpm))
-    .filter((d): d is number => d != null)
-    .sort((a, b) => b - a);
+  const rows = players
+    .filter((p) => !p.twoWay)
+    .map((p) => {
+      const d = darkoFor(p.name);
+      return d?.dpm != null ? { dpm: d.dpm, min: Math.min(d.min ?? 0, MAX_MPG) } : null;
+    })
+    .filter((r): r is { dpm: number; min: number } => r != null && r.min > 0);
+
+  // Projected minutes usually over-subscribe the 240-minute game (DARKO gives
+  // everyone a full-role projection). Scale them down proportionally to fit the
+  // budget so each player keeps his relative role rather than the marginal
+  // rotation player being zeroed out. A thin/short roster stays under 240 (no
+  // scale-up), so its weights sum to < 5 — a genuinely shallow team.
+  const totalMin = rows.reduce((s, r) => s + r.min, 0);
+  const scale = totalMin > TEAM_MINUTES ? TEAM_MINUTES / totalMin : 1;
   let total = 0;
-  for (let i = 0; i < dpms.length && i < ROTATION_WEIGHTS.length; i++) {
-    total += dpms[i] * ROTATION_WEIGHTS[i];
+  for (const r of rows) {
+    total += r.dpm * ((r.min * scale) / 48); // on-court fraction of the game
   }
   return total;
 }
