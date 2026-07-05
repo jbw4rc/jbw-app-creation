@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CURRENT_SEASON, getSeasonCap } from '../data/leagueConstants';
 import { SEEDED_DARKO } from '../data/seededDarko';
 import { SEEDED_CAP_HOLDS } from '../data/seededCapHolds';
@@ -62,7 +62,7 @@ const FA_POOL: FA[] = Object.entries(SEEDED_DARKO)
   .map(([key, d]) => {
     const value = d.value ?? 0;
     const age = d.age ?? 27;
-    const projected = projectedContract(value, age, d.dpm ?? 0).salary;
+    const projected = Math.round(projectedContract(value, age, d.dpm ?? 0).salary * 10) / 10;
     return {
       name: d.name,
       key,
@@ -98,6 +98,8 @@ export function SigningExplorer({
   const [renounced, setRenounced] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [posFilter, setPosFilter] = useState<PosFilter>('all');
+  // Forced contract value ($M/yr); null = use the projected market contract.
+  const [customSalary, setCustomSalary] = useState<number | null>(null);
 
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const cap = getSeasonCap(CURRENT_SEASON);
@@ -151,15 +153,22 @@ export function SigningExplorer({
 
   const fa = FA_POOL.find((f) => f.key === selectedFA) ?? null;
 
-  // Win-now impact of signing the selected FA at his projected contract.
+  // The contract we're modeling: the user's forced value, or the projected market.
+  const effSalary = customSalary ?? fa?.projected ?? 0;
+  // Reset the forced value to the market projection whenever a new FA is picked.
+  useEffect(() => {
+    setCustomSalary(fa ? fa.projected : null);
+  }, [selectedFA]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Win-now impact of signing the selected FA at the modeled contract.
   const signImpact = useMemo(() => {
     if (!fa) return null;
-    const signed = buildSignedPlayer(fa.name);
+    const signed = buildSignedPlayer(fa.name, effSalary);
     const after = signed ? [...team.players, signed] : team.players;
     const pre = room.salary;
-    return moveImpact(abbr, pre, pre + fa.projected * 1_000_000, after);
+    return moveImpact(abbr, pre, pre + effSalary * 1_000_000, after);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fa, abbr, team]);
+  }, [fa, abbr, team, effSalary]);
 
   // Players already on a roster right now (session-aware) drop out of the pool.
   const rosteredNow = useMemo(() => {
@@ -177,16 +186,16 @@ export function SigningExplorer({
     ).slice(0, 60);
   }, [query, posFilter, rosteredNow]);
 
-  // Commit the signing to the GM session: add the signed player to the roster.
+  // Commit the signing to the GM session at the modeled contract value.
   const commitSigning = () => {
     if (!fa) return;
-    const signed = buildSignedPlayer(fa.name);
+    const signed = buildSignedPlayer(fa.name, effSalary);
     if (!signed) return;
     const roster = getTeam(abbr).players;
     if (roster.some((p) => p.id === signed.id)) return; // already on the roster
     commitSessionMove(
       { [abbr]: [...roster, signed] },
-      { kind: 'signing', summary: `Signed ${fa.name} — ${money(fa.projected * 1_000_000)}/yr`, teams: [abbr] },
+      { kind: 'signing', summary: `Signed ${fa.name} — ${money(effSalary * 1_000_000)}/yr`, teams: [abbr] },
       abbr
     );
     setSelectedFA(null);
@@ -307,6 +316,8 @@ export function SigningExplorer({
               holds={holds}
               renounced={renounced}
               impact={signImpact}
+              salary={effSalary}
+              onSalaryChange={setCustomSalary}
               onSignAndTrade={onSignAndTrade}
               onCommit={commitSigning}
               onToggleRenounce={(name) =>
@@ -340,6 +351,8 @@ function SigningAnalysis({
   holds,
   renounced,
   impact,
+  salary,
+  onSalaryChange,
   onToggleRenounce,
   onSignAndTrade,
   onCommit,
@@ -353,14 +366,27 @@ function SigningAnalysis({
   holds: { player: string; amount: number; type: string }[];
   renounced: Set<string>;
   impact: import('../lib/moveImpact').MoveImpact | null;
+  salary: number; // modeled contract, $M/yr (may be user-forced)
+  onSalaryChange: (v: number) => void;
   onToggleRenounce: (name: string) => void;
   onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
   onCommit?: () => void;
 }) {
-  const target = fa.projected * 1_000_000; // projected contract (cost) in $
-  const surplus = fa.value - fa.projected; // DARKO value − projected pay
+  const target = salary * 1_000_000; // modeled contract (cost) in $
+  const surplus = fa.value - salary; // DARKO value − what you'd pay
   const qualLabel = surplus > 4 ? 'Bargain' : surplus < -4 ? 'Overpay' : 'Fair value';
   const ownRights = fa.rights === abbr;
+
+  // Realism vs the open market (projected). Forcing LeBron to a minimum is
+  // allowed, but flagged as fantasy.
+  const gapBelow = fa.projected - salary;
+  const gapAbove = salary - fa.projected;
+  const realism =
+    gapBelow > 3 && salary < fa.projected * 0.7
+      ? { cls: 'se-real-low', msg: `Unrealistic — ${fa.name} projects ~$${fa.projected.toFixed(1)}M/yr on the open market; few stars leave that much on the table.` }
+      : gapAbove > 3 && salary > fa.projected * 1.4
+        ? { cls: 'se-real-high', msg: `Well above market — projects ~$${fa.projected.toFixed(1)}M/yr; you're overpaying to get it done.` }
+        : null;
 
   // Cap-space teams sign with room (no MLE/BAE); over-cap teams use exceptions.
   const mleAmount =
@@ -430,10 +456,31 @@ function SigningAnalysis({
           </span>
         </div>
         <div className="se-fa-sal">
-          <span className="se-fa-sal-val">${fa.projected.toFixed(1)}M</span>
-          <span className="se-fa-sal-label">projected contract / yr</span>
+          <div className="se-sal-edit">
+            <span className="se-sal-dollar">$</span>
+            <input
+              className="se-sal-input"
+              type="number"
+              min={0}
+              step={0.5}
+              value={salary}
+              onChange={(e) => onSalaryChange(Math.max(0, parseFloat(e.target.value) || 0))}
+              aria-label="Contract value per year in millions"
+            />
+            <span className="se-sal-m">M/yr</span>
+          </div>
+          <span className="se-fa-sal-label">
+            contract · market ~${fa.projected.toFixed(1)}M
+            {Math.abs(salary - fa.projected) > 0.05 && (
+              <button className="se-sal-reset" onClick={() => onSalaryChange(fa.projected)}>
+                reset
+              </button>
+            )}
+          </span>
         </div>
       </div>
+
+      {realism && <div className={`se-realism ${realism.cls}`}>⚠ {realism.msg}</div>}
 
       <div className="se-quality">
         <div className="se-quality-fig">
@@ -442,8 +489,8 @@ function SigningAnalysis({
         </div>
         <span className="se-q-op">−</span>
         <div className="se-quality-fig">
-          <span className="se-q-label">Proj contract</span>
-          <span className="se-q-val">${fa.projected.toFixed(1)}M</span>
+          <span className="se-q-label">You pay</span>
+          <span className="se-q-val">${salary.toFixed(1)}M</span>
         </div>
         <span className="se-q-op">=</span>
         <div className="se-quality-fig">

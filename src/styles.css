@@ -1054,6 +1054,28 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 }
 .se-commit:hover, .tg-commit:hover { filter: brightness(1.05); }
 .tg-commit:disabled { opacity: 0.4; cursor: default; filter: none; }
+/* Forced-contract editor + realism flag */
+.se-sal-edit { display: inline-flex; align-items: baseline; gap: 1px; justify-content: flex-end; }
+.se-sal-dollar { font-size: 15px; font-weight: 700; color: var(--ink); }
+.se-sal-input {
+  width: 64px; text-align: right; font-family: var(--sans); font-size: 20px; font-weight: 700;
+  font-variant-numeric: tabular-nums; padding: 0 2px; border: none; border-bottom: 1px dashed var(--rule-strong);
+  background: transparent; color: var(--ink); -moz-appearance: textfield;
+}
+.se-sal-input::-webkit-inner-spin-button, .se-sal-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.se-sal-input:focus { outline: none; border-bottom-color: var(--coral); }
+.se-sal-m { font-size: 12px; color: var(--ink-soft); }
+.se-sal-reset {
+  margin-left: 6px; font-size: 10px; padding: 1px 6px; cursor: pointer; color: var(--ink-soft);
+  border: 1px solid var(--rule); border-radius: 999px; background: transparent;
+}
+.se-sal-reset:hover { color: var(--ink); border-color: var(--ink-soft); }
+.se-realism {
+  font-size: 12px; line-height: 1.4; padding: 8px 12px; border-radius: var(--radius-sm);
+  border: 1px solid; margin-top: 2px;
+}
+.se-real-low { color: var(--orange); border-color: var(--orange); background: color-mix(in srgb, var(--orange) 8%, transparent); }
+.se-real-high { color: var(--red); border-color: var(--red); background: color-mix(in srgb, var(--red) 8%, transparent); }
 
 /* --- Cap holds ------------------------------------------------------------ */
 .ch-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }

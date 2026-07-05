@@ -49,12 +49,22 @@ export function signableHolds(abbr: string): SignableFA[] {
   return out.sort((a, b) => b.projected - a.projected);
 }
 
-/** Build a synthetic signed Player (projected contract) for a sign-and-trade. */
-export function buildSignedPlayer(name: string): Player | null {
+/**
+ * Build a synthetic signed Player. Uses the projected market contract by
+ * default, or an explicit `salaryM` (annual, $M) when the user forces a value.
+ */
+export function buildSignedPlayer(name: string, salaryM?: number): Player | null {
   const d = darkoFor(name);
-  if (!d || d.value == null) return null;
+  if (!d) return null;
   const age = d.age ?? 27;
-  const salary = Math.round(projectedContract(d.value, age, d.dpm ?? 0).salary * 1_000_000);
+  const annual =
+    salaryM != null
+      ? salaryM
+      : d.value != null
+        ? projectedContract(d.value, age, d.dpm ?? 0).salary
+        : null;
+  if (annual == null) return null;
+  const salary = Math.round(annual * 1_000_000);
   const contract = [];
   for (let k = 0; k < ST_YEARS; k++) {
     contract.push({ season: CURRENT_SEASON + k, salary, option: 'guaranteed' as const });
