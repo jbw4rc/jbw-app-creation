@@ -19,20 +19,90 @@ export interface CapHold {
 
 // Keyed by team abbreviation.
 export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
-  "ORL": [
+  "DEN": [
     {
-      "player": "Jett Howard",
-      "amount": 41240250,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 22
+      "player": "Peyton Watson",
+      "amount": 13069428,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 23
     },
     {
-      "player": "Cory Joseph",
+      "player": "Spencer Jones",
+      "amount": 2449421,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 25
+    },
+    {
+      "player": "Curtis Jones",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 24
+    },
+    {
+      "player": "David Roddy",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 25
+    },
+    {
+      "player": "Bruce Brown Jr.",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 29
+    },
+    {
+      "player": "Justin Holiday",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 37
+    },
+    {
+      "player": "Vlatko Cancar",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 29
+    },
+    {
+      "player": "Troy Daniels",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 34
+    },
+    {
+      "player": "DeMarcus Cousins",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 35
+    },
+    {
+      "player": "Richard Jefferson",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 46
+    },
+    {
+      "player": "Jalen Pickett",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 26
+    },
+    {
+      "player": "Markus Howard",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 27
     }
   ],
   "OKC": [
@@ -151,6 +221,22 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 31
     }
   ],
+  "ORL": [
+    {
+      "player": "Jett Howard",
+      "amount": 41240250,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 22
+    },
+    {
+      "player": "Cory Joseph",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 34
+    }
+  ],
   "SAC": [
     {
       "player": "Patrick Baldwin Jr",
@@ -216,90 +302,92 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 28
     }
   ],
-  "DEN": [
+  "NYK": [
     {
-      "player": "Peyton Watson",
-      "amount": 13069428,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 23
+      "player": "Petteri Koponen",
+      "amount": 2926800,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 38
     },
     {
-      "player": "Spencer Jones",
-      "amount": 2449421,
+      "player": "Mohamed Diawara",
+      "amount": 2185116,
       "type": "rfa",
       "terms": "RFA",
-      "age": 25
+      "age": 21
     },
     {
-      "player": "Curtis Jones",
+      "player": "Trey Jemison",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 26
+    },
+    {
+      "player": "Dillon Jones",
       "amount": 2185116,
       "type": "rfa",
       "terms": "RFA",
       "age": 24
     },
     {
-      "player": "David Roddy",
+      "player": "Kevin McCullar Jr.",
       "amount": 2185116,
       "type": "rfa",
       "terms": "RFA",
       "age": 25
     },
     {
-      "player": "Bruce Brown Jr.",
+      "player": "P.J. Tucker",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 29
+      "age": 41
     },
     {
-      "player": "Justin Holiday",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 37
-    },
-    {
-      "player": "Vlatko Cancar",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 29
-    },
-    {
-      "player": "Troy Daniels",
+      "player": "Jordan Clarkson",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 34
     },
     {
-      "player": "DeMarcus Cousins",
+      "player": "Jeremy Sochan",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 35
+      "age": 23
+    }
+  ],
+  "IND": [
+    {
+      "player": "Jalen Slawson",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 26
     },
     {
-      "player": "Richard Jefferson",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 46
-    },
-    {
-      "player": "Jalen Pickett",
-      "amount": 2449421,
+      "player": "Kobe Brown",
+      "amount": 41240250,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 26
     },
     {
-      "player": "Markus Howard",
+      "player": "James Johnson",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 39
+    },
+    {
+      "player": "Gabe York",
       "amount": 2185116,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 27
+      "age": 32
     }
   ],
   "MIN": [
@@ -404,94 +492,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 25
     }
   ],
-  "NYK": [
-    {
-      "player": "Petteri Koponen",
-      "amount": 2926800,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 38
-    },
-    {
-      "player": "Mohamed Diawara",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 21
-    },
-    {
-      "player": "Trey Jemison",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 26
-    },
-    {
-      "player": "Dillon Jones",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 24
-    },
-    {
-      "player": "Kevin McCullar Jr.",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 25
-    },
-    {
-      "player": "P.J. Tucker",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 41
-    },
-    {
-      "player": "Jordan Clarkson",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 34
-    },
-    {
-      "player": "Jeremy Sochan",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 23
-    }
-  ],
-  "IND": [
-    {
-      "player": "Jalen Slawson",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 26
-    },
-    {
-      "player": "Kobe Brown",
-      "amount": 41240250,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 26
-    },
-    {
-      "player": "James Johnson",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 39
-    },
-    {
-      "player": "Gabe York",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 32
-    }
-  ],
   "TOR": [
     {
       "player": "Jordan Nwora",
@@ -566,6 +566,57 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 23
     }
   ],
+  "BKN": [
+    {
+      "player": "Mikel Brown Jr.",
+      "amount": 8787000,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 20
+    },
+    {
+      "player": "Joshua Jefferson",
+      "amount": 2969520,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 22
+    },
+    {
+      "player": "Ochai Agbaji",
+      "amount": 19150575,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 26
+    },
+    {
+      "player": "Jalen Wilson",
+      "amount": 2449421,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 25
+    },
+    {
+      "player": "E.J. Liddell",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 25
+    },
+    {
+      "player": "Ziaire Williams",
+      "amount": 11875000,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 24
+    },
+    {
+      "player": "Tyson Etienne",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 26
+    }
+  ],
   "BOS": [
     {
       "player": "Chris Cenac Jr.",
@@ -608,6 +659,106 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 24
+    }
+  ],
+  "LAL": [
+    {
+      "player": "Cameron Carr",
+      "amount": 3315360,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 21
+    },
+    {
+      "player": "Chris Manon",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 24
+    },
+    {
+      "player": "Drew Timme",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 25
+    },
+    {
+      "player": "LeBron James",
+      "amount": 57736350,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 41
+    },
+    {
+      "player": "Rui Hachimura",
+      "amount": 27388889,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 28
+    },
+    {
+      "player": "Maxi Kleber",
+      "amount": 20900000,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 34
+    },
+    {
+      "player": "Wayne Ellington",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 38
+    },
+    {
+      "player": "Avery Bradley",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 35
+    },
+    {
+      "player": "Jared Dudley",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 40
+    },
+    {
+      "player": "Dwight Howard",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 40
+    },
+    {
+      "player": "Markieff Morris",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 36
+    },
+    {
+      "player": "Dion Waiters",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 34
+    },
+    {
+      "player": "Carmelo Anthony",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 42
+    },
+    {
+      "player": "Nick Smith Jr.",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 22
     }
   ],
   "LAC": [
@@ -756,155 +907,62 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 29
     }
   ],
-  "BKN": [
+  "ATL": [
     {
-      "player": "Mikel Brown Jr.",
-      "amount": 8787000,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 20
-    },
-    {
-      "player": "Joshua Jefferson",
-      "amount": 2969520,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 22
-    },
-    {
-      "player": "Ochai Agbaji",
-      "amount": 19150575,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 26
-    },
-    {
-      "player": "Jalen Wilson",
+      "player": "Keaton Wallace",
       "amount": 2449421,
       "type": "rfa",
       "terms": "RFA",
-      "age": 25
+      "age": 27
     },
     {
-      "player": "E.J. Liddell",
+      "player": "Christian Koloko",
       "amount": 2185116,
       "type": "rfa",
       "terms": "RFA",
-      "age": 25
-    },
-    {
-      "player": "Ziaire Williams",
-      "amount": 11875000,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 24
-    },
-    {
-      "player": "Tyson Etienne",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
       "age": 26
-    }
-  ],
-  "LAL": [
-    {
-      "player": "Cameron Carr",
-      "amount": 3315360,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 21
     },
     {
-      "player": "Chris Manon",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 24
-    },
-    {
-      "player": "Drew Timme",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 25
-    },
-    {
-      "player": "LeBron James",
-      "amount": 57736350,
+      "player": "Jonathan Kuminga",
+      "amount": 33750000,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 41
+      "age": 23
     },
     {
-      "player": "Rui Hachimura",
-      "amount": 27388889,
+      "player": "Gabe Vincent",
+      "amount": 21850000,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 30
+    },
+    {
+      "player": "Wesley Matthews",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 39
+    },
+    {
+      "player": "Tony Bradley",
+      "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 28
     },
     {
-      "player": "Maxi Kleber",
-      "amount": 20900000,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 34
-    },
-    {
-      "player": "Wayne Ellington",
+      "player": "Trent Forrest",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 38
+      "age": 28
     },
     {
-      "player": "Avery Bradley",
-      "amount": 2449421,
+      "player": "Dylan Windler",
+      "amount": 2185116,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 35
-    },
-    {
-      "player": "Jared Dudley",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 40
-    },
-    {
-      "player": "Dwight Howard",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 40
-    },
-    {
-      "player": "Markieff Morris",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 36
-    },
-    {
-      "player": "Dion Waiters",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 34
-    },
-    {
-      "player": "Carmelo Anthony",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 42
-    },
-    {
-      "player": "Nick Smith Jr.",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 22
+      "age": 29
     }
   ],
   "NOP": [
@@ -979,62 +1037,69 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 35
     }
   ],
-  "ATL": [
+  "SAS": [
     {
-      "player": "Keaton Wallace",
-      "amount": 2449421,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 27
+      "player": "Jayden Quaintance",
+      "amount": 3902760,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 18
     },
     {
-      "player": "Christian Koloko",
+      "player": "Tarris Reed Jr.",
+      "amount": 3076920,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 22
+    },
+    {
+      "player": "Harrison Ingram",
       "amount": 2185116,
       "type": "rfa",
       "terms": "RFA",
-      "age": 26
-    },
-    {
-      "player": "Jonathan Kuminga",
-      "amount": 33750000,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
       "age": 23
     },
     {
-      "player": "Gabe Vincent",
-      "amount": 21850000,
+      "player": "David Jones",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 24
+    },
+    {
+      "player": "Kelly Olynyk",
+      "amount": 25545732,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 35
+    },
+    {
+      "player": "Bismack Biyombo",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 33
+    },
+    {
+      "player": "Mason Plumlee",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 36
+    },
+    {
+      "player": "Jordan McLaughlin",
+      "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 30
     },
     {
-      "player": "Wesley Matthews",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 39
-    },
-    {
-      "player": "Tony Bradley",
+      "player": "Lindy Waters III",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 28
-    },
-    {
-      "player": "Trent Forrest",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 28
-    },
-    {
-      "player": "Dylan Windler",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 29
     }
   ],
   "POR": [
@@ -1155,71 +1220,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
     {
       "player": "Cassius Winston",
       "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 28
-    }
-  ],
-  "SAS": [
-    {
-      "player": "Jayden Quaintance",
-      "amount": 3902760,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 18
-    },
-    {
-      "player": "Tarris Reed Jr.",
-      "amount": 3076920,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 22
-    },
-    {
-      "player": "Harrison Ingram",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 23
-    },
-    {
-      "player": "David Jones",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 24
-    },
-    {
-      "player": "Kelly Olynyk",
-      "amount": 25545732,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 35
-    },
-    {
-      "player": "Bismack Biyombo",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 33
-    },
-    {
-      "player": "Mason Plumlee",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 36
-    },
-    {
-      "player": "Jordan McLaughlin",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 30
-    },
-    {
-      "player": "Lindy Waters III",
-      "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 28
@@ -1411,6 +1411,50 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 24
     }
   ],
+  "MIL": [
+    {
+      "player": "Brayden Burries",
+      "amount": 6417360,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 20
+    },
+    {
+      "player": "Nate Ament",
+      "amount": 5502000,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 19
+    },
+    {
+      "player": "Alex Antetokounmpo",
+      "amount": 2185116,
+      "type": "rfa",
+      "terms": "RFA",
+      "age": 24
+    },
+    {
+      "player": "Gary Trent Jr.",
+      "amount": 4806238,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 27
+    },
+    {
+      "player": "Thanasis Antetokounmpo",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 33
+    },
+    {
+      "player": "Andre Jackson Jr.",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 24
+    }
+  ],
   "CLE": [
     {
       "player": "Olivier Sarr",
@@ -1564,48 +1608,20 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 24
     }
   ],
-  "MIL": [
+  "MEM": [
     {
-      "player": "Brayden Burries",
-      "amount": 6417360,
+      "player": "Cameron Boozer",
+      "amount": 11849760,
       "type": "draftPick",
       "terms": "120% RSC Hold",
-      "age": 20
+      "age": 18
     },
     {
-      "player": "Nate Ament",
-      "amount": 5502000,
+      "player": "Karim Lopez",
+      "amount": 3746760,
       "type": "draftPick",
       "terms": "120% RSC Hold",
       "age": 19
-    },
-    {
-      "player": "Alex Antetokounmpo",
-      "amount": 2185116,
-      "type": "rfa",
-      "terms": "RFA",
-      "age": 24
-    },
-    {
-      "player": "Gary Trent Jr.",
-      "amount": 4806238,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 27
-    },
-    {
-      "player": "Thanasis Antetokounmpo",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 33
-    },
-    {
-      "player": "Andre Jackson Jr.",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 24
     }
   ],
   "DAL": [
@@ -1692,22 +1708,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 27
-    }
-  ],
-  "MEM": [
-    {
-      "player": "Cameron Boozer",
-      "amount": 11849760,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 18
-    },
-    {
-      "player": "Karim Lopez",
-      "amount": 3746760,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 19
     }
   ]
 };
