@@ -431,18 +431,38 @@ function SigningAnalysis({
   }
   routes.push({
     label: 'Minimum',
-    ok: true,
-    detail: `Always available; a minimum deal (~${money(MIN_SALARY)}) if he'll take it.`,
+    ok: target <= MIN_SALARY + 1,
+    detail:
+      target <= MIN_SALARY + 1
+        ? `A minimum deal (~${money(MIN_SALARY)}).`
+        : `The minimum only covers ${money(MIN_SALARY)} — this contract needs cap room or an exception.`,
   });
 
   const best = routes.find((r) => r.ok && r.label !== 'Minimum');
-  const verdict = ownRights
-    ? `Re-sign ${fa.name} using his Bird rights.`
-    : best
-      ? `Can sign via ${best.label}.`
-      : room >= target
-        ? 'Can sign with cap space.'
-        : `No exception covers ${money(target)} — open cap room (renounce holds) or sign for less.`;
+
+  // The most this team can legally pay to sign him, by route. The cap/aprons are
+  // hard rules: a forced contract above this is illegal and can't be committed.
+  const BIRD_MAX_PCT = 0.35; // ≈ a max contract, the Bird re-sign ceiling
+  const options: { label: string; max: number }[] = [{ label: 'a minimum deal', max: MIN_SALARY }];
+  if (ownRights) options.push({ label: 'Bird rights', max: BIRD_MAX_PCT * cap.salaryCap });
+  if (capSpaceTeam) options.push({ label: 'cap space', max: Math.max(room, 0) });
+  else {
+    if (mleAmount > 0) options.push({ label: 'the MLE', max: mleAmount });
+    if (baeAvail) options.push({ label: 'the bi-annual exception', max: cap.biAnnualException });
+  }
+  const bestRoute = options.reduce((a, b) => (b.max > a.max ? b : a));
+  const maxSignable = bestRoute.max;
+  const legal = target <= maxSignable + 1;
+
+  const verdict = !legal
+    ? `Over the cap — the most ${abbr} can pay ${fa.name} is ${money(maxSignable)} (via ${bestRoute.label})${capSpaceTeam ? '. Renounce holds to open more room.' : '.'}`
+    : ownRights
+      ? `Re-sign ${fa.name} using his Bird rights.`
+      : best
+        ? `Can sign via ${best.label}.`
+        : room >= target
+          ? 'Can sign with cap space.'
+          : `Sign for ${money(target)}.`;
 
   return (
     <div className="se-analysisbox">
@@ -504,7 +524,7 @@ function SigningAnalysis({
         </span>
       </div>
 
-      <div className={`se-verdict ${ownRights || best || room >= target ? 'se-verdict-ok' : 'se-verdict-no'}`}>
+      <div className={`se-verdict ${legal ? 'se-verdict-ok' : 'se-verdict-no'}`}>
         {verdict}
       </div>
 
@@ -527,11 +547,20 @@ function SigningAnalysis({
 
       {impact && <MoveImpactView impact={impact} />}
 
-      {onCommit && (
-        <button className="se-commit" onClick={onCommit}>
-          + Commit signing to My Team session
-        </button>
-      )}
+      {onCommit &&
+        (legal ? (
+          <button className="se-commit" onClick={onCommit}>
+            + Commit signing to My Team session
+          </button>
+        ) : (
+          <div className="se-blocked">
+            ⛔ Can’t commit — ${salary.toFixed(1)}M would break {abbr}’s cap. Max legal offer is{' '}
+            {money(maxSignable)} (via {bestRoute.label}).{' '}
+            <button className="se-sal-reset" onClick={() => onSalaryChange(maxSignable / 1_000_000)}>
+              set to max
+            </button>
+          </div>
+        ))}
 
       {!ownRights && capSpaceTeam && holds.length > 0 && (
         <div className="se-renounce">
