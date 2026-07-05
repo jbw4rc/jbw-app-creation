@@ -37,7 +37,10 @@ jobs:
             echo "No changes."
           else
             git commit -m "Update rosters/salaries/TPEs from SalarySwish"
-            git push
+            # Rebase onto any concurrent commits (probe/other builders) before
+            # pushing so we don't lose to a race, then retry once.
+            git pull --rebase --autostash || true
+            git push || (git pull --rebase --autostash && git push)
           fi
       - name: Commit diagnostics + fail (on failure)
         if: steps.pull.outcome == 'failure'
