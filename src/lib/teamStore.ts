@@ -110,3 +110,51 @@ function subscribe(fn: () => void): () => void {
 export function useTeams(): Team[] {
   return useSyncExternalStore(subscribe, getTeams, getTeams);
 }
+
+// ---------------------------------------------------------------------------
+// Currently-selected team, shared across tabs. Picking a team in Team Explorer
+// carries over as the default team in the Trade Machine and Signings. Persisted
+// so the choice survives reloads.
+// ---------------------------------------------------------------------------
+
+const SELECTED_KEY = 'apronRoom.selectedTeam.v1';
+const selectedListeners = new Set<() => void>();
+
+function loadSelected(): string {
+  try {
+    const raw = localStorage.getItem(SELECTED_KEY);
+    if (raw && BASE_TEAMS.some((t) => t.abbreviation === raw)) return raw;
+  } catch {
+    /* ignore */
+  }
+  return BASE_TEAMS[0].abbreviation;
+}
+
+let selectedTeam = loadSelected();
+
+export function getSelectedTeam(): string {
+  return selectedTeam;
+}
+
+export function setSelectedTeam(abbr: string): void {
+  if (abbr === selectedTeam) return;
+  selectedTeam = abbr;
+  try {
+    localStorage.setItem(SELECTED_KEY, abbr);
+  } catch {
+    /* ignore */
+  }
+  selectedListeners.forEach((l) => l());
+}
+
+function subscribeSelected(fn: () => void): () => void {
+  selectedListeners.add(fn);
+  return () => {
+    selectedListeners.delete(fn);
+  };
+}
+
+/** React hook: the currently-selected team abbreviation, shared across tabs. */
+export function useSelectedTeam(): string {
+  return useSyncExternalStore(subscribeSelected, getSelectedTeam, getSelectedTeam);
+}

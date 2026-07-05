@@ -3,7 +3,7 @@ import { CURRENT_SEASON, getSeasonCap } from '../data/leagueConstants';
 import { SEEDED_DARKO } from '../data/seededDarko';
 import { SEEDED_CAP_HOLDS } from '../data/seededCapHolds';
 import { TEAMS } from '../data/teams';
-import { useTeams } from '../lib/teamStore';
+import { useTeams, getSelectedTeam, setSelectedTeam } from '../lib/teamStore';
 import {
   MIN_FILL_SALARY,
   rosteredCount,
@@ -99,7 +99,9 @@ export function SigningExplorer({
   onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
 } = {}) {
   const teams = useTeams();
-  const [abbr, setAbbr] = useState('BKN');
+  // Default to the team last selected in Team Explorer; keep the shared
+  // selection in sync when the user picks a different team here.
+  const [abbr, setAbbr] = useState(getSelectedTeam);
   const [selectedFA, setSelectedFA] = useState<string | null>(null);
   const [renounced, setRenounced] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
@@ -111,6 +113,7 @@ export function SigningExplorer({
 
   const changeTeam = (a: string) => {
     setAbbr(a);
+    setSelectedTeam(a);
     setRenounced(new Set());
     setSelectedFA(null);
   };

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { getRosterStatus, useTeams } from '../lib/teamStore';
+import { getRosterStatus, useTeams, useSelectedTeam, setSelectedTeam } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
 import { CapSummary } from './CapSummary';
@@ -17,7 +16,9 @@ import { TeamTalent } from './TeamTalent';
 
 export function TeamExplorer() {
   const teams = useTeams();
-  const [abbr, setAbbr] = useState(teams[0].abbreviation);
+  // Selection is shared across tabs: the last team picked here becomes the
+  // default in the Trade Machine and Signings.
+  const abbr = useSelectedTeam();
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const summary = summarizeTeamSeason(team, CURRENT_SEASON);
 
@@ -32,7 +33,7 @@ export function TeamExplorer() {
               className={`team-chip tier-border-${s.tier}${
                 t.abbreviation === abbr ? ' active' : ''
               }`}
-              onClick={() => setAbbr(t.abbreviation)}
+              onClick={() => setSelectedTeam(t.abbreviation)}
             >
               <span className="chip-abbr">{t.abbreviation}</span>
               {getRosterStatus(t.abbreviation).imported && (

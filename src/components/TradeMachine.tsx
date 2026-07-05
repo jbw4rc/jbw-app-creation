@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Team } from '../types';
 import type { TradeSetup } from '../App';
-import { useTeams } from '../lib/teamStore';
+import { useTeams, getTeams, getSelectedTeam } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import {
   frozenPickYear,
@@ -93,7 +93,13 @@ export function TradeMachine({
   setup?: TradeSetup | null;
   onConsumeSetup?: () => void;
 } = {}) {
-  const [slots, setSlots] = useState<Slot[]>([emptySlot('PHX'), emptySlot('UTA')]);
+  // First slot defaults to the team last selected in Team Explorer; the second
+  // to any other team so the machine doesn't open with a team trading itself.
+  const [slots, setSlots] = useState<Slot[]>(() => {
+    const first = getSelectedTeam();
+    const second = getTeams().find((t) => t.abbreviation !== first)?.abbreviation ?? first;
+    return [emptySlot(first), emptySlot(second)];
+  });
   const teams = useTeams();
   useTradeExceptions(); // re-render when the imported TPE set changes
 
