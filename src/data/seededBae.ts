@@ -94,9 +94,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "MIA": {
-    "initial": 5257464,
+    "initial": 3907290,
     "used": 0,
-    "space": 5257464,
+    "space": 3907290,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "MIL": {
@@ -166,9 +166,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "TOR": {
-    "initial": 3927448,
+    "initial": 0,
     "used": 0,
-    "space": 3927448,
+    "space": 0,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "UTA": {
