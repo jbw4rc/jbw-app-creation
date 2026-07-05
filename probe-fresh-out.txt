@@ -1,0 +1,20 @@
+fetched 2537890b · 582 records · now=2026-07-05T10:15:39.577Z
+
+distinct dates (date -> #players):
+  2026-06-03: 20
+  2026-05-30: 9
+  2026-05-28: 9
+  2026-05-25: 17
+  2026-05-23: 1
+  2026-05-22: 1
+  2026-05-17: 13
+  2026-05-15: 13
+
+name                 darko team_name          x_min  dpm   date
+Andre Drummond       Philadelphia 76ers       6.69562  -1.0123  2026-05-10
+Nikola Jokic         Denver Nuggets           38.4596  7.35021  2026-04-30
+LeBron James         Los Angeles Lakers       34.6843  1.53691  2026-05-11
+Chris Paul           Los Angeles Clippers     11.2389  -1.60194  2025-12-01
+Kevin Durant         Houston Rockets          28.881  3.34966  2026-04-21
+James Harden         Cleveland Cavaliers      36.9028  2.90836  2026-05-25
+Klay Thompson        Dallas Mavericks         26.0216  -1.32106  2026-04-12
