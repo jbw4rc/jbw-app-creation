@@ -1,0 +1,24 @@
+records: 582
+KEYS (71): date season team_name tm_id future_game active_roster available poss dpm o_dpm d_dpm box_dpm box_odpm box_ddpm on_off_dpm on_off_odpm on_off_ddpm age career_game_num seconds_played position position_num x_position bayes_rapm_off bayes_rapm_def bayes_rapm_total rapm_exposure x_minutes x_pace x_pts_100 x_ast_100 x_orb_100 x_drb_100 x_stl_100 x_blk_100 x_tov_100 x_fga_100 x_fg3a_100 x_fta_100 x_fg_pct x_fg3_pct x_ft_pct tr_minutes tr_starter tr_fg3_pct tr_ft_pct projected_years_remaining projected_years_remaining_cal x_retirement_age x_retirement_age_cal s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 sal_market_fixed surplus_value actual_salary player_name rookie_season _rank
+
+name                 dpm   x_min tr_min tr_st poss  secs   yrsLeft xRet bayes boxDpm onoff xPts age
+Malachi Smith        -0.984915 43.2262 43.1401 0.906183     73   2131  4.5407 30.8905006901561      — -0.909498 -2.03441 17.0405 26.3497973934947
+Toby Okani           -3.60691  41.11 40.9036 0.971501     88   2453 2.01619 26.5343198888522      — -3.58948 -3.718 18.0991 24.5181250684481
+Cody Williams        -3.25399 36.5774 36.639 0.901283     87   2354 5.71794 27.1093556258728      — -2.92443 -3.56073 20.5265 21.391413864856
+Guerschon Yabusele   -1.65623 31.2564 31.1373 0.799811     35    970 1.93495 32.2465242752174      — -1.20609 -2.38624 20.9753 30.3115759500602
+Cam Thomas           -1.51525 22.0233 21.9358 0.254298     27    937  3.6845 28.1204860829508      — -0.794406 -1.97828 30.1829 24.4359872960245
+Isaac Jones          -3.21701 4.20555 4.0161 0.0240603   18.5    573 1.54865 27.3015776995226      — -3.26531 -2.5976 19.3185 25.7529295805498
+Nigel Hayes          -1.93612 1.88086 1.7753 0.0078936    6.5    162 0.756505 31.8812452671941      — -1.75791 -4.03783 12.3707 31.124739897054
+Jordan McLaughlin    -1.48723 0.36277 0.299629 -0.0147965   15.5    446 1.88639 32.0199981246508      — -0.15431 -2.707 14.8678 30.1336107764757
+
+coverage / 582:
+  x_minutes: 582
+  tr_minutes: 582
+  tr_starter: 582
+  poss: 582
+  pyr: 582
+  x_ret: 582
+  bayes: 4
+  box_dpm: 582
+  onoff: 582
+  x_pts: 582
