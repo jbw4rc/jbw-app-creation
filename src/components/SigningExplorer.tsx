@@ -12,6 +12,7 @@ import {
   TIER_INFO,
 } from '../lib/apron';
 import { money } from '../lib/format';
+import { positionGroup } from '../lib/position';
 import { projectedContract, CONTRACT_MODEL_INFO } from '../lib/contractModel';
 import { buildSignedPlayer } from '../lib/signAndTrade';
 import { moveImpact } from '../lib/moveImpact';
@@ -76,19 +77,10 @@ const FA_POOL: FA[] = Object.entries(SEEDED_DARKO)
   })
   .sort((a, b) => b.projected - a.projected);
 
-type PosGroup = 'all' | 'G' | 'F' | 'C';
+type PosFilter = 'all' | 'G' | 'F' | 'C';
 
-// Bucket a free agent into guard / forward / center (by DARKO position number,
-// falling back to the position string).
-function posGroup(fa: FA): 'G' | 'F' | 'C' | null {
-  if (fa.posNum != null) return fa.posNum < 2.5 ? 'G' : fa.posNum < 4.3 ? 'F' : 'C';
-  const p = (fa.pos ?? '').toUpperCase();
-  if (!p) return null;
-  if (p.includes('C')) return 'C';
-  if (p.includes('F')) return 'F';
-  if (p.includes('G')) return 'G';
-  return null;
-}
+// Guard / forward / center for a free agent (position string first, DARKO num fallback).
+const posGroup = (fa: FA) => positionGroup(fa.pos, fa.posNum);
 
 const MIN_SALARY = 2_296_274; // 2026-27 minimum (approx, vet)
 const ROSTER_MIN_FOR_CAP = 12; // cap-space teams charge empty slots up to 12
@@ -105,7 +97,7 @@ export function SigningExplorer({
   const [selectedFA, setSelectedFA] = useState<string | null>(null);
   const [renounced, setRenounced] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
-  const [posFilter, setPosFilter] = useState<PosGroup>('all');
+  const [posFilter, setPosFilter] = useState<PosFilter>('all');
 
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const cap = getSeasonCap(CURRENT_SEASON);
@@ -217,7 +209,7 @@ export function SigningExplorer({
               <select
                 className="se-posfilter"
                 value={posFilter}
-                onChange={(e) => setPosFilter(e.target.value as PosGroup)}
+                onChange={(e) => setPosFilter(e.target.value as PosFilter)}
               >
                 <option value="all">All positions</option>
                 <option value="G">Guards</option>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
 import { darkoFor } from '../lib/darko';
@@ -14,6 +14,7 @@ import {
   useMinutesVersion,
 } from '../lib/minutesStore';
 import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
+import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
 
 // ---------------------------------------------------------------------------
 // Rotation Builder: hand out a team's 240 game-minutes (current season) and see
@@ -33,33 +34,57 @@ interface Row {
   contrib: number; // dpm × min/48 — this player's share of team net rating
 }
 
+type SortKey = 'min' | 'dpm' | 'name' | 'pos';
+const SORT_LABEL: Record<SortKey, string> = { min: 'Minutes', dpm: 'DPM', name: 'Name', pos: 'Position' };
+const GROUP_ORDER: Record<string, number> = { G: 0, F: 1, C: 2 };
+
 export function RotationBuilder() {
   const teams = useTeams();
   useMinutesVersion(); // re-render on edits
   const abbr = useSelectedTeam();
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
+  const [sortKey, setSortKey] = useState<SortKey>('min');
+  const [sortNonce, setSortNonce] = useState(0);
 
   const rotation = useMemo(() => rotationPlayers(team.players), [team]);
   const seed = useMemo(() => seedMinutes(rotation), [rotation]);
   const mins = allocation(abbr, rotation);
 
-  const rows: Row[] = rotation
-    .map((p) => {
-      const d = darkoFor(p.name);
-      const min = mins[p.id] ?? 0;
-      return {
-        id: p.id,
-        name: p.name,
-        pos: p.position || '—',
-        dpm: d?.dpm ?? null,
-        min,
-        contrib: (d?.dpm ?? 0) * (min / 48),
-      };
-    })
-    .sort((a, b) => b.min - a.min);
+  // Live per-player data (values update as you edit).
+  const rows: Row[] = rotation.map((p) => {
+    const d = darkoFor(p.name);
+    const min = mins[p.id] ?? 0;
+    return { id: p.id, name: p.name, pos: p.position || '—', dpm: d?.dpm ?? null, min, contrib: (d?.dpm ?? 0) * (min / 48) };
+  });
+  const rowById = new Map(rows.map((r) => [r.id, r]));
+
+  // Frozen display order: only re-sorted on an explicit sort (or team change),
+  // NOT while minutes are edited — so rows don't jump around as you adjust.
+  const order = useMemo(() => {
+    const cmp: Record<SortKey, (a: Row, b: Row) => number> = {
+      min: (a, b) => b.min - a.min,
+      dpm: (a, b) => (b.dpm ?? -99) - (a.dpm ?? -99),
+      name: (a, b) => a.name.localeCompare(b.name),
+      pos: (a, b) =>
+        (GROUP_ORDER[positionGroup(a.pos) ?? 'F'] - GROUP_ORDER[positionGroup(b.pos) ?? 'F']) ||
+        b.min - a.min,
+    };
+    return [...rows].sort(cmp[sortKey]).map((r) => r.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abbr, rotation, sortKey, sortNonce]);
+  const orderedRows = order.map((id) => rowById.get(id)).filter((r): r is Row => !!r);
 
   const allocated = rows.reduce((s, r) => s + r.min, 0);
   const remaining = TOTAL_ROTATION_MINUTES - allocated;
+
+  // Minutes by position vs the conventional 2G / 2F / 1C targets.
+  const posTotals: Record<PosGroup, number> = { G: 0, F: 0, C: 0 };
+  let posUnknown = 0;
+  for (const r of rows) {
+    const g = positionGroup(r.pos);
+    if (g) posTotals[g] += r.min;
+    else posUnknown += r.min;
+  }
 
   // Team value now vs the DARKO baseline (seed allocation), and the rank each slots into.
   const currentDpm = rows.reduce((s, r) => s + r.contrib, 0);
@@ -138,17 +163,65 @@ export function RotationBuilder() {
         </div>
       </div>
 
-      {edited && (
-        <div className="rb-toolbar">
+      {/* Minutes by position vs the conventional 2G / 2F / 1C split */}
+      <div className="rb-positions">
+        <span className="rb-pos-title">By position</span>
+        {POS_ORDER.map((g) => {
+          const a = posTotals[g];
+          const target = POSITION_TARGETS[g];
+          const diff = a - target;
+          return (
+            <span className="rb-pos" key={g}>
+              <span className="rb-pos-label">{POS_LABEL[g]}</span>
+              <span className="rb-pos-val">
+                <strong>{a}</strong> <span className="rb-of">/ {target}</span>
+              </span>
+              <span className={`rb-pos-diff ${diff > 0 ? 'rb-over' : diff < 0 ? 'rb-under' : 'rb-on'}`}>
+                {diff === 0 ? 'on target' : `${diff > 0 ? '+' : ''}${diff}`}
+              </span>
+            </span>
+          );
+        })}
+        {posUnknown > 0 && (
+          <span className="rb-pos">
+            <span className="rb-pos-label">Unlisted</span>
+            <span className="rb-pos-val">
+              <strong>{posUnknown}</strong>
+            </span>
+          </span>
+        )}
+      </div>
+
+      <div className="rb-toolbar">
+        <div className="rb-sort">
+          <label>
+            Sort by{' '}
+            <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)}>
+              {(Object.keys(SORT_LABEL) as SortKey[]).map((k) => (
+                <option key={k} value={k}>
+                  {SORT_LABEL[k]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            className="rp-reset"
+            onClick={() => setSortNonce((n) => n + 1)}
+            title="Re-apply the sort to the current minutes"
+          >
+            Re-sort
+          </button>
+        </div>
+        {edited && (
           <button className="rp-reset" onClick={() => resetTeamMinutes(abbr)}>
             Reset to DARKO baseline
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Player rows */}
+      {/* Player rows — order stays put while you edit; use Sort / Re-sort to reorder. */}
       <div className="rb-list">
-        {rows.map((r) => (
+        {orderedRows.map((r) => (
           <div className="rb-row" key={r.id}>
             <div className="rb-player">
               <span className="rb-name">{r.name}</span>
@@ -198,7 +271,7 @@ export function RotationBuilder() {
             </div>
           </div>
         ))}
-        {rows.length === 0 && <div className="rp-empty">No players on the books this season.</div>}
+        {orderedRows.length === 0 && <div className="rp-empty">No players on the books this season.</div>}
       </div>
 
       <p className="rp-foot">

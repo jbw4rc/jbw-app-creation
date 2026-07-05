@@ -3,6 +3,7 @@ import type { ContractOption, Player, Team } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { capGrowth, retentionFactor } from '../lib/contract';
 import { darkoFor } from '../lib/darko';
+import { positionGroup, type PosGroup } from '../lib/position';
 import { money, seasonLabel } from '../lib/format';
 
 // Forward-looking roster explorer (Team Financials): pick a season and see each
@@ -26,18 +27,7 @@ const OPTION_ABBR: Record<ContractOption, string> = {
 // Seasons offered in the dropdown (covers the contract horizon).
 const YEARS = Array.from({ length: 7 }, (_, i) => CURRENT_SEASON + i);
 
-type PosGroup = 'all' | 'G' | 'F' | 'C';
-
-/** Bucket a player into guard / forward / center (DARKO position, else string). */
-function posGroupOf(p: Player): 'G' | 'F' | 'C' | null {
-  const d = darkoFor(p.name);
-  if (d?.posNum != null) return d.posNum < 2.5 ? 'G' : d.posNum < 4.3 ? 'F' : 'C';
-  const s = (p.position ?? '').toUpperCase();
-  if (s.includes('C')) return 'C';
-  if (s.includes('F')) return 'F';
-  if (s.includes('G')) return 'G';
-  return null;
-}
+type PosFilter = 'all' | PosGroup;
 
 interface ProjRow {
   player: Player;
@@ -95,7 +85,7 @@ export function RosterProjection({ team }: { team: Team }) {
   const [season, setSeason] = useState(CURRENT_SEASON);
   const [sortKey, setSortKey] = useState<SortKey>('value');
   const [dir, setDir] = useState<'asc' | 'desc'>('desc');
-  const [posFilter, setPosFilter] = useState<PosGroup>('all');
+  const [posFilter, setPosFilter] = useState<PosFilter>('all');
 
   const rows = useMemo(() => {
     const list = buildRows(team, season);
@@ -112,7 +102,7 @@ export function RosterProjection({ team }: { team: Team }) {
   }, [team, season, sortKey, dir]);
 
   const shown = useMemo(
-    () => rows.filter((r) => posFilter === 'all' || posGroupOf(r.player) === posFilter),
+    () => rows.filter((r) => posFilter === 'all' || positionGroup(r.player.position) === posFilter),
     [rows, posFilter]
   );
 
@@ -145,7 +135,7 @@ export function RosterProjection({ team }: { team: Team }) {
         <div className="rp-controls">
           <label className="rp-year">
             <span>Position</span>
-            <select value={posFilter} onChange={(e) => setPosFilter(e.target.value as PosGroup)}>
+            <select value={posFilter} onChange={(e) => setPosFilter(e.target.value as PosFilter)}>
               <option value="all">All</option>
               <option value="G">Guards</option>
               <option value="F">Forwards</option>
