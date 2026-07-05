@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { TeamExplorer } from './components/TeamExplorer';
+import { RotationBuilder } from './components/RotationBuilder';
 import { TradeMachine } from './components/TradeMachine';
 import { StatsExplorer } from './components/StatsExplorer';
 import { SigningExplorer } from './components/SigningExplorer';
 import { LeagueThresholds } from './components/LeagueThresholds';
 
-type Tab = 'explorer' | 'stats' | 'trade' | 'signings';
+type Tab = 'explorer' | 'stats' | 'rotation' | 'trade' | 'signings';
 
 const TABS: { id: Tab; label: string; blurb: string }[] = [
-  { id: 'explorer', label: 'Team Explorer', blurb: 'Rosters, salary, picks, apron status & FA quiver' },
+  { id: 'explorer', label: 'Team Explorer', blurb: 'Team financials — cap, apron, picks & holds' },
   { id: 'stats', label: 'Stats', blurb: 'Advanced metrics — leaderboard & by team' },
+  { id: 'rotation', label: 'Rotation Builder', blurb: 'Allocate minutes; see team value & rank' },
   { id: 'trade', label: 'Trade Machine', blurb: 'Test a swap against the apron rules' },
   { id: 'signings', label: 'Signings', blurb: 'Free agents & signing a player against the cap' },
 ];
@@ -58,6 +60,7 @@ export default function App() {
       <main className="app-main">
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'stats' && <StatsExplorer />}
+        {tab === 'rotation' && <RotationBuilder />}
         {tab === 'trade' && (
           <TradeMachine setup={tradeSetup} onConsumeSetup={() => setTradeSetup(null)} />
         )}

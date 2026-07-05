@@ -1,0 +1,211 @@
+import { useMemo } from 'react';
+import { CURRENT_SEASON } from '../data/leagueConstants';
+import { summarizeTeamSeason } from '../lib/apron';
+import { darkoFor } from '../lib/darko';
+import { getRosterStatus, useTeams, useSelectedTeam, setSelectedTeam } from '../lib/teamStore';
+import {
+  TOTAL_ROTATION_MINUTES,
+  allocation,
+  rotationPlayers,
+  seedMinutes,
+  setMinutes,
+  resetTeamMinutes,
+  hasMinuteOverrides,
+  useMinutesVersion,
+} from '../lib/minutesStore';
+import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
+
+// ---------------------------------------------------------------------------
+// Rotation Builder: hand out a team's 240 game-minutes (current season) and see
+// exactly how the allocation moves team value (DARKO net rating) and league /
+// conference rank versus the DARKO baseline. Big steppers, minimal text.
+// ---------------------------------------------------------------------------
+
+const netFmt = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(1)}`;
+const CONF_SIZE = 15;
+
+interface Row {
+  id: string;
+  name: string;
+  pos: string;
+  dpm: number | null;
+  min: number;
+  contrib: number; // dpm × min/48 — this player's share of team net rating
+}
+
+export function RotationBuilder() {
+  const teams = useTeams();
+  useMinutesVersion(); // re-render on edits
+  const abbr = useSelectedTeam();
+  const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
+
+  const rotation = useMemo(() => rotationPlayers(team.players), [team]);
+  const seed = useMemo(() => seedMinutes(rotation), [rotation]);
+  const mins = allocation(abbr, rotation);
+
+  const rows: Row[] = rotation
+    .map((p) => {
+      const d = darkoFor(p.name);
+      const min = mins[p.id] ?? 0;
+      return {
+        id: p.id,
+        name: p.name,
+        pos: p.position || '—',
+        dpm: d?.dpm ?? null,
+        min,
+        contrib: (d?.dpm ?? 0) * (min / 48),
+      };
+    })
+    .sort((a, b) => b.min - a.min);
+
+  const allocated = rows.reduce((s, r) => s + r.min, 0);
+  const remaining = TOTAL_ROTATION_MINUTES - allocated;
+
+  // Team value now vs the DARKO baseline (seed allocation), and the rank each slots into.
+  const currentDpm = rows.reduce((s, r) => s + r.contrib, 0);
+  const baselineDpm = rotation.reduce(
+    (s, p) => s + (darkoFor(p.name)?.dpm ?? 0) * ((seed[p.id] ?? 0) / 48),
+    0
+  );
+  const cur = rankForDpm(abbr, currentDpm);
+  const base = rankForDpm(abbr, baselineDpm);
+  const tier = tierForRank(cur.overall);
+  const conf = team.conference;
+  const valDelta = currentDpm - baselineDpm;
+  const rankDelta = base.overall - cur.overall; // >0 = climbed
+  const edited = hasMinuteOverrides(abbr);
+
+  // Cap the total at 240: a player can rise only into the minutes still free.
+  const setMin = (id: string, next: number) => {
+    const curMin = mins[id] ?? 0;
+    const headroom = TOTAL_ROTATION_MINUTES - (allocated - curMin);
+    setMinutes(abbr, id, Math.max(0, Math.min(48, Math.min(next, headroom))));
+  };
+
+  return (
+    <div className="rotation-builder">
+      <div className="team-picker">
+        {teams.map((t) => {
+          const s = summarizeTeamSeason(t, CURRENT_SEASON);
+          return (
+            <button
+              key={t.abbreviation}
+              className={`team-chip tier-border-${s.tier}${t.abbreviation === abbr ? ' active' : ''}`}
+              onClick={() => setSelectedTeam(t.abbreviation)}
+            >
+              <span className="chip-abbr">{t.abbreviation}</span>
+              {getRosterStatus(t.abbreviation).imported && (
+                <span className="chip-imported" title="Imported data">✓</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Impact panel — value & rank vs the DARKO baseline */}
+      <div className="rb-impact">
+        <div className="rb-stat rb-stat-hero">
+          <span className="rb-stat-label">Team value (net rating)</span>
+          <span className="rb-stat-value">{netFmt(currentDpm)}</span>
+          <span className={`rb-stat-delta ${valDelta > 0.05 ? 'rb-up' : valDelta < -0.05 ? 'rb-down' : ''}`}>
+            baseline {netFmt(baselineDpm)} · Δ {netFmt(valDelta)}
+          </span>
+        </div>
+        <div className="rb-stat">
+          <span className="rb-stat-label">League rank</span>
+          <span className="rb-stat-value">
+            #{cur.overall} <span className="rb-of">/ 30</span>
+          </span>
+          <span className={`rb-stat-delta ${rankDelta > 0 ? 'rb-up' : rankDelta < 0 ? 'rb-down' : ''}`}>
+            {rankDelta === 0 ? `baseline #${base.overall}` : `${rankDelta > 0 ? '▲' : '▼'} ${Math.abs(rankDelta)} vs #${base.overall}`}
+          </span>
+        </div>
+        <div className="rb-stat">
+          <span className="rb-stat-label">{conf} rank</span>
+          <span className="rb-stat-value">
+            #{cur.conf} <span className="rb-of">/ {CONF_SIZE}</span>
+          </span>
+          <span className={`tier-badge tier-${TIER_META[tier].color}`}>{TIER_META[tier].label}</span>
+        </div>
+        <div className="rb-stat">
+          <span className="rb-stat-label">Minutes allocated</span>
+          <span className="rb-stat-value">
+            {allocated} <span className="rb-of">/ 240</span>
+          </span>
+          <span className={`rb-stat-delta ${remaining > 0 ? 'rb-remain' : 'rb-full'}`}>
+            {remaining > 0 ? `${remaining} left to allocate` : 'fully allocated'}
+          </span>
+        </div>
+      </div>
+
+      {edited && (
+        <div className="rb-toolbar">
+          <button className="rp-reset" onClick={() => resetTeamMinutes(abbr)}>
+            Reset to DARKO baseline
+          </button>
+        </div>
+      )}
+
+      {/* Player rows */}
+      <div className="rb-list">
+        {rows.map((r) => (
+          <div className="rb-row" key={r.id}>
+            <div className="rb-player">
+              <span className="rb-name">{r.name}</span>
+              <span className="rb-meta">
+                {r.pos}
+                {r.dpm != null && (
+                  <>
+                    {' · '}
+                    <span className={r.dpm >= 0 ? 'rp-pos' : 'rp-neg'}>{netFmt(r.dpm)} DPM</span>
+                  </>
+                )}
+              </span>
+            </div>
+            <div className="rb-control">
+              <button
+                type="button"
+                className="rb-step"
+                onClick={() => setMin(r.id, r.min - 1)}
+                disabled={r.min <= 0}
+                aria-label={`Decrease minutes for ${r.name}`}
+              >
+                −
+              </button>
+              <input
+                className="rb-min"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={48}
+                value={r.min}
+                onChange={(e) => setMin(r.id, parseInt(e.target.value, 10))}
+                aria-label={`Minutes for ${r.name}`}
+              />
+              <button
+                type="button"
+                className="rb-step"
+                onClick={() => setMin(r.id, r.min + 1)}
+                disabled={remaining <= 0}
+                aria-label={`Increase minutes for ${r.name}`}
+              >
+                +
+              </button>
+            </div>
+            <div className={`rb-contrib ${r.contrib >= 0 ? 'rp-pos' : 'rp-neg'}`}>
+              {netFmt(r.contrib)}
+              <span className="rb-contrib-label">to value</span>
+            </div>
+          </div>
+        ))}
+        {rows.length === 0 && <div className="rp-empty">No players on the books this season.</div>}
+      </div>
+
+      <p className="rp-foot">
+        A game has 240 player-minutes (5 on court × 48). Minutes are seeded from DARKO
+        (scaled to 240) and capped there; your allocation sets each player's share of team
+        value and flows into the Trade Machine and Signings. Current season only.
+      </p>
+    </div>
+  );
+}

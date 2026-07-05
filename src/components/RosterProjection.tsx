@@ -3,24 +3,16 @@ import type { ContractOption, Player, Team } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { capGrowth, retentionFactor } from '../lib/contract';
 import { darkoFor } from '../lib/darko';
-import {
-  TOTAL_ROTATION_MINUTES,
-  allocation,
-  rotationPlayers,
-  setMinutes,
-  resetTeamMinutes,
-  hasMinuteOverrides,
-  useMinutesVersion,
-} from '../lib/minutesStore';
 import { money, seasonLabel } from '../lib/format';
 
-// Forward-looking roster explorer: pick a season and see each player's projected
-// line — age, that year's salary, and DARKO value / surplus / DPM aged forward.
+// Forward-looking roster explorer (Team Financials): pick a season and see each
+// player's projected line — age, that year's salary, and DARKO value / surplus /
+// DPM aged forward. Minutes allocation lives in the Rotation Builder tab.
 //
-// Current season also shows an editable minutes allocation: the 240 game-minutes
-// are seeded from DARKO's projected minutes (scaled to 240) and can be hand-
-// adjusted; the allocation feeds team value everywhere. Minutes are a current-
-// season concept only — future rosters are too incomplete to allocate.
+// Projection basis (consistent with the Trade Machine):
+//   value_year  = DARKO value × aging retention × cap growth
+//   surplus     = value_year − that year's salary
+//   DPM/O/D     = current × aging retention
 
 const OPTION_ABBR: Record<ContractOption, string> = {
   guaranteed: '',
@@ -52,7 +44,6 @@ interface ProjRow {
   option: ContractOption;
   position: string;
   age: number | null;
-  min: number | null; // projected minutes (current season only)
   salary: number; // nominal $ that season
   value: number | null; // $M projected market value
   surplus: number | null; // $M
@@ -62,13 +53,9 @@ interface ProjRow {
   matched: boolean;
 }
 
-type SortKey = 'name' | 'age' | 'min' | 'salary' | 'value' | 'surplus' | 'dpm' | 'odpm' | 'ddpm';
+type SortKey = 'name' | 'age' | 'salary' | 'value' | 'surplus' | 'dpm' | 'odpm' | 'ddpm';
 
-function buildRows(
-  team: Team,
-  season: number,
-  minutesMap: Record<string, number> | null
-): ProjRow[] {
+function buildRows(team: Team, season: number): ProjRow[] {
   const k = season - CURRENT_SEASON;
   const cg = capGrowth(season);
   const rows: ProjRow[] = [];
@@ -86,7 +73,6 @@ function buildRows(
       option: cy.option,
       position: p.position || '—',
       age: baseAge != null ? Math.round(baseAge + k) : null,
-      min: minutesMap ? minutesMap[p.id] ?? null : null,
       salary: cy.salary,
       value,
       surplus: value != null ? value - cy.salary / 1_000_000 : null,
@@ -110,20 +96,9 @@ export function RosterProjection({ team }: { team: Team }) {
   const [sortKey, setSortKey] = useState<SortKey>('value');
   const [dir, setDir] = useState<'asc' | 'desc'>('desc');
   const [posFilter, setPosFilter] = useState<PosGroup>('all');
-  const mv = useMinutesVersion(); // re-render when the allocation is edited
-  const abbr = team.abbreviation;
-  const isCurrent = season === CURRENT_SEASON;
-
-  // Current-season minutes allocation (DARKO-scaled seed + manual overrides).
-  const rotation = useMemo(() => rotationPlayers(team.players), [team]);
-  const minutesMap = useMemo(
-    () => (isCurrent ? allocation(abbr, rotation) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [abbr, rotation, isCurrent, mv]
-  );
 
   const rows = useMemo(() => {
-    const list = buildRows(team, season, minutesMap);
+    const list = buildRows(team, season);
     const d = dir === 'asc' ? 1 : -1;
     return list.sort((a, b) => {
       if (sortKey === 'name') return a.player.name.localeCompare(b.player.name) * d;
@@ -134,7 +109,7 @@ export function RosterProjection({ team }: { team: Team }) {
       if (bv == null) return -1;
       return (av - bv) * d;
     });
-  }, [team, season, minutesMap, sortKey, dir]);
+  }, [team, season, sortKey, dir]);
 
   const shown = useMemo(
     () => rows.filter((r) => posFilter === 'all' || posGroupOf(r.player) === posFilter),
@@ -148,13 +123,6 @@ export function RosterProjection({ team }: { team: Team }) {
     return { salary, value, surplus, count: shown.length };
   }, [shown]);
 
-  // Allocation readout is team-wide (all rotation players, not the position view).
-  const allocated = useMemo(
-    () => (minutesMap ? rotation.reduce((s, p) => s + (minutesMap[p.id] ?? 0), 0) : 0),
-    [minutesMap, rotation]
-  );
-  const remaining = Math.round((TOTAL_ROTATION_MINUTES - allocated) * 10) / 10;
-
   const sortBy = (key: SortKey, higherFirst = true) => {
     if (sortKey === key) setDir((x) => (x === 'asc' ? 'desc' : 'asc'));
     else {
@@ -164,7 +132,6 @@ export function RosterProjection({ team }: { team: Team }) {
   };
 
   const k = season - CURRENT_SEASON;
-  const cols = isCurrent ? 10 : 9; // Player, Pos, Age, [Min], Salary, Value, Surplus, DPM, O, D
   const arrow = (key: SortKey) =>
     sortKey === key ? <span className="rp-arrow">{dir === 'asc' ? '▲' : '▼'}</span> : null;
 
@@ -199,29 +166,6 @@ export function RosterProjection({ team }: { team: Team }) {
         </div>
       </div>
 
-      {isCurrent && (
-        <div className="rp-alloc">
-          <span className="rp-alloc-item">
-            Allocated&nbsp;/&nbsp;Total Rotation Minutes:{' '}
-            <strong className={Math.abs(remaining) < 0.5 ? 'rp-pos' : ''}>
-              {allocated.toFixed(0)} / {TOTAL_ROTATION_MINUTES}
-            </strong>
-          </span>
-          <span className="rp-alloc-item">
-            Remaining to Allocate:{' '}
-            <strong className={remaining > 0.5 ? 'rp-under' : remaining < -0.5 ? 'rp-over' : 'rp-pos'}>
-              {remaining > 0 ? '+' : ''}
-              {remaining.toFixed(0)}
-            </strong>
-          </span>
-          {hasMinuteOverrides(abbr) && (
-            <button className="rp-reset" onClick={() => resetTeamMinutes(abbr)}>
-              Reset to DARKO
-            </button>
-          )}
-        </div>
-      )}
-
       <div className="rp-table-wrap">
         <table className="rp-table">
           <thead>
@@ -233,11 +177,6 @@ export function RosterProjection({ team }: { team: Team }) {
               <th className="sortable" onClick={() => sortBy('age')} title="Age that season">
                 Age {arrow('age')}
               </th>
-              {isCurrent && (
-                <th className="sortable" onClick={() => sortBy('min')} title="Projected minutes per game — editable; seeded from DARKO, scaled to 240">
-                  Min {arrow('min')}
-                </th>
-              )}
               <th className="sortable" onClick={() => sortBy('salary')} title="Cap hit that season">
                 Salary {arrow('salary')}
               </th>
@@ -270,41 +209,6 @@ export function RosterProjection({ team }: { team: Team }) {
                   </td>
                   <td className="rp-poscell">{r.position}</td>
                   <td>{r.age ?? '—'}</td>
-                  {isCurrent && (
-                    <td className="rp-min">
-                      <div className="rp-stepper">
-                        <button
-                          type="button"
-                          className="rp-step"
-                          onClick={() => setMinutes(abbr, r.player.id, (r.min ?? 0) - 1)}
-                          disabled={(r.min ?? 0) <= 0}
-                          aria-label={`Decrease minutes for ${r.player.name}`}
-                        >
-                          −
-                        </button>
-                        <input
-                          className="rp-min-input"
-                          type="number"
-                          inputMode="numeric"
-                          min={0}
-                          max={48}
-                          step={1}
-                          value={r.min ?? 0}
-                          onChange={(e) => setMinutes(abbr, r.player.id, parseInt(e.target.value, 10))}
-                          aria-label={`Minutes for ${r.player.name}`}
-                        />
-                        <button
-                          type="button"
-                          className="rp-step"
-                          onClick={() => setMinutes(abbr, r.player.id, (r.min ?? 0) + 1)}
-                          disabled={(r.min ?? 0) >= 48}
-                          aria-label={`Increase minutes for ${r.player.name}`}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </td>
-                  )}
                   <td>{money(r.salary)}</td>
                   <td>{mFmt(r.value)}</td>
                   <td className={r.surplus == null ? '' : r.surplus >= 0 ? 'rp-pos' : 'rp-neg'}>
@@ -318,7 +222,7 @@ export function RosterProjection({ team }: { team: Team }) {
             })}
             {shown.length === 0 && (
               <tr>
-                <td colSpan={cols} className="rp-empty">
+                <td colSpan={9} className="rp-empty">
                   {rows.length ? 'No players match this position filter.' : 'No players under contract this season.'}
                 </td>
               </tr>
@@ -330,11 +234,6 @@ export function RosterProjection({ team }: { team: Team }) {
                 <td className="rp-name">{totals.count} shown</td>
                 <td />
                 <td />
-                {isCurrent && (
-                  <td className="rp-min" title="Sum of shown players' minutes">
-                    {shown.reduce((s, r) => s + (r.min ?? 0), 0).toFixed(0)}
-                  </td>
-                )}
                 <td>{money(totals.salary)}</td>
                 <td>{mFmt(totals.value)}</td>
                 <td className={totals.surplus >= 0 ? 'rp-pos' : 'rp-neg'}>{surFmt(totals.surplus)}</td>
@@ -348,8 +247,8 @@ export function RosterProjection({ team }: { team: Team }) {
       </div>
       <p className="rp-foot">
         {k === 0
-          ? 'Current season. Min is projected minutes per game — seeded from DARKO (scaled to 240) and editable; your allocation drives team value in the Team Explorer, Trade Machine, and Signings.'
-          : `Projected ${k} year${k > 1 ? 's' : ''} out: value aged by the empirical DARKO curve (pre-peak players can appreciate, veterans decline) and grown with the cap; DPM aged the same way. Minutes are a current-season concept only. Salary is the contracted figure.`}
+          ? 'Current season — DARKO live values. Allocate minutes in the Rotation Builder tab.'
+          : `Projected ${k} year${k > 1 ? 's' : ''} out: value aged by the empirical DARKO curve (pre-peak players can appreciate, veterans decline) and grown with the cap; DPM aged the same way. Salary is the contracted figure.`}
       </p>
     </div>
   );

@@ -941,6 +941,63 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .rp-foot { margin: 10px 0 0; font-size: 10.5px; color: var(--ink-faint); font-style: italic; }
 .rp-table .opt-tag { margin-left: 5px; }
 
+/* --- Rotation Builder ----------------------------------------------------- */
+.rotation-builder { display: flex; flex-direction: column; gap: 14px; }
+/* Impact panel */
+.rb-impact {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;
+}
+.rb-stat {
+  display: flex; flex-direction: column; gap: 3px; padding: 10px 14px;
+  background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm);
+}
+.rb-stat-hero { border-color: var(--rule-strong); }
+.rb-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.rb-stat-value { font-family: var(--serif); font-size: 26px; font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rb-of { font-size: 13px; color: var(--ink-faint); font-family: var(--sans); font-weight: 500; }
+.rb-stat-delta { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.rb-stat-delta.rb-up { color: var(--green); }
+.rb-stat-delta.rb-down { color: var(--red); }
+.rb-stat-delta.rb-remain { color: var(--coral); }
+.rb-stat-delta.rb-full { color: var(--green); }
+.rb-toolbar { display: flex; justify-content: flex-end; }
+/* Player rows */
+.rb-list { display: flex; flex-direction: column; }
+.rb-row {
+  display: flex; align-items: center; gap: 12px; padding: 9px 4px;
+  border-bottom: 1px solid var(--rule);
+}
+.rb-player { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rb-name { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rb-meta { font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.rb-control { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.rb-step {
+  width: 42px; height: 42px; flex: none; cursor: pointer; padding: 0;
+  font-size: 22px; line-height: 1; font-weight: 600; color: var(--ink);
+  border: 1px solid var(--rule-strong); border-radius: 9px; background: var(--card);
+  display: inline-flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.rb-step:hover:not(:disabled) { border-color: var(--coral); color: var(--coral); }
+.rb-step:active:not(:disabled) { background: var(--coral); color: #fff; }
+.rb-step:disabled { opacity: 0.3; cursor: default; }
+.rb-min {
+  width: 46px; height: 42px; text-align: center; font-family: var(--sans); font-size: 17px;
+  font-weight: 600; font-variant-numeric: tabular-nums; padding: 0; border: 1px solid var(--rule);
+  border-radius: 8px; background: var(--bg); color: var(--ink); -moz-appearance: textfield;
+}
+.rb-min::-webkit-inner-spin-button, .rb-min::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.rb-min:focus { outline: none; border-color: var(--coral); }
+.rb-contrib {
+  flex: none; width: 70px; text-align: right; font-size: 14px; font-weight: 600;
+  font-variant-numeric: tabular-nums; display: flex; flex-direction: column; line-height: 1.2;
+}
+.rb-contrib-label { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-weight: 500; }
+@media (max-width: 520px) {
+  .rb-contrib { width: 56px; }
+  .rb-name { font-size: 13px; }
+}
+
 /* --- Cap holds ------------------------------------------------------------ */
 .ch-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .ch-title { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 2px 0 0; }
