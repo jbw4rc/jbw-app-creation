@@ -40,15 +40,17 @@ const rows = parts.map((p) => ({
   age: g(p, 'age'),
 })).filter((r) => r.name);
 
-// Sample across the minutes spectrum: sort by x_minutes.
-const withMin = rows.filter((r) => r.x_minutes != null).sort((a, b) => b.x_minutes - a.x_minutes);
-const pick = [0, 5, 50, 150, 300, withMin.length - 60, withMin.length - 20, withMin.length - 5]
-  .filter((i) => i >= 0 && i < withMin.length);
-log('\nname                 dpm   x_min tr_min tr_st poss  secs   yrsLeft xRet bayes boxDpm onoff xPts age');
-for (const i of pick) {
-  const r = withMin[i];
-  const f = (v, w = 6) => (v == null ? '—' : String(v)).padStart(w);
-  log(`${(r.name || '').slice(0, 20).padEnd(20)} ${f(r.dpm)} ${f(r.x_minutes)} ${f(r.tr_minutes)} ${f(r.tr_starter, 5)} ${f(r.poss)} ${f(r.secs)} ${f(r.pyr, 7)} ${f(r.x_ret)} ${f(r.bayes)} ${f(r.box_dpm)} ${f(r.onoff)} ${f(r.x_pts)} ${f(r.age)}`);
+// Calibrate against known players spanning the role spectrum.
+const want = ['Nikola Jokic', 'Shai Gilgeous', 'Victor Wembanyama', 'Anthony Edwards',
+  'Derrick White', 'Naz Reid', 'Payton Pritchard', 'Luke Kornet', 'Andre Drummond',
+  'Cam Thomas', 'Dalton Knecht'];
+log('\nname                 dpm    x_min tr_min tr_st  poss  secs  games yrsLeft xRet  age');
+for (const w of want) {
+  const r = rows.find((x) => (x.name || '').includes(w));
+  if (!r) { log(`${w}: (not found)`); continue; }
+  const f = (v, wd = 6) => (v == null ? '—' : (Math.round(v * 100) / 100).toString()).padStart(wd);
+  const games = g(parts.find((p) => (p.match(/player_name:"([^"]+)"/) || [])[1]?.includes(w)) || '', 'career_game_num');
+  log(`${(r.name || '').slice(0, 20).padEnd(20)} ${f(r.dpm)} ${f(r.x_minutes)} ${f(r.tr_minutes)} ${f(r.tr_starter, 5)} ${f(r.poss)} ${f(r.secs)} ${f(games, 5)} ${f(r.pyr, 7)} ${f(r.x_ret)} ${f(r.age)}`);
 }
 
 // Coverage: how many records have each interesting field populated?
