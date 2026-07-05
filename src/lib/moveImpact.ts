@@ -46,7 +46,7 @@ export function moveImpact(
 ): MoveImpact {
   const cap = getSeasonCap(CURRENT_SEASON);
   const before = teamTalent(abbr);
-  const afterDpm = rosterDpm(afterPlayers);
+  const afterDpm = rosterDpm(abbr, afterPlayers);
   const afterRank = rankForDpm(abbr, afterDpm);
   const rep = isRepeater(abbr);
   return {

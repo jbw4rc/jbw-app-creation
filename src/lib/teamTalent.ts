@@ -1,6 +1,7 @@
 import type { Player, Team } from '../types';
 import { TEAMS } from '../data/teams';
 import { darkoFor } from './darko';
+import { allocation, rotationPlayers, minutesVersion } from './minutesStore';
 
 // ---------------------------------------------------------------------------
 // Team talent = a DARKO-based expected net rating.
@@ -8,42 +9,33 @@ import { darkoFor } from './darko';
 // A lineup's net rating is roughly the sum of its five on-court players' DPM, so
 // a team's expected net rating is the minutes-weighted sum of its rotation's
 // DPM. A game has only 240 player-minutes to hand out (five on-court slots ×
-// 48), so we allocate that finite budget by each player's DARKO-projected
-// minutes (x_minutes): the rotation gets minutes in order of projected playing
-// time, and once the 240 are spent the deep bench gets zero — a scrub who won't
-// play has no effect on team value, exactly as in reality. Each player's weight
-// is his on-court fraction (minutes / 48), so the weights sum to at most 5.
+// 48). We seed each player's share from DARKO's projected minutes (scaled to
+// 240) and let the user hand-adjust it (see minutesStore); either way a player
+// counts only for the minutes he actually plays, so a deep-bench scrub has no
+// effect on team value. Each player's weight is his on-court fraction
+// (minutes / 48).
 // ---------------------------------------------------------------------------
 
-const TEAM_MINUTES = 240; // five on-court slots × 48 minutes
-const MAX_MPG = 38; // cap a single player's share (tames small-sample outliers)
-
-/** Expected net rating (DARKO), minutes-weighted by DARKO's projected minutes. */
-export function rosterDpm(players: Player[]): number {
-  const rows = players
-    .filter((p) => !p.twoWay)
-    .map((p) => {
-      const d = darkoFor(p.name);
-      return d?.dpm != null ? { dpm: d.dpm, min: Math.min(d.min ?? 0, MAX_MPG) } : null;
-    })
-    .filter((r): r is { dpm: number; min: number } => r != null && r.min > 0);
-
-  // Projected minutes usually over-subscribe the 240-minute game (DARKO gives
-  // everyone a full-role projection). Scale them down proportionally to fit the
-  // budget so each player keeps his relative role rather than the marginal
-  // rotation player being zeroed out. A thin/short roster stays under 240 (no
-  // scale-up), so its weights sum to < 5 — a genuinely shallow team.
-  const totalMin = rows.reduce((s, r) => s + r.min, 0);
-  const scale = totalMin > TEAM_MINUTES ? TEAM_MINUTES / totalMin : 1;
+/**
+ * Expected net rating (DARKO) for a team's roster, minutes-weighted by the
+ * team's allocation (manual overrides over the DARKO-scaled seed). `abbr` keys
+ * the manual overrides; pass a hypothetical roster (e.g. post-trade) as
+ * `players` and kept players keep their overrides while new ones get the seed.
+ */
+export function rosterDpm(abbr: string, players: Player[]): number {
+  const rot = rotationPlayers(players);
+  const mins = allocation(abbr, rot);
   let total = 0;
-  for (const r of rows) {
-    total += r.dpm * ((r.min * scale) / 48); // on-court fraction of the game
+  for (const p of rot) {
+    const d = darkoFor(p.name);
+    if (d?.dpm == null) continue;
+    total += d.dpm * ((mins[p.id] ?? 0) / 48); // on-court fraction of the game
   }
   return total;
 }
 
 export function teamDpm(team: Team): number {
-  return rosterDpm(team.players);
+  return rosterDpm(team.abbreviation, team.players);
 }
 
 export type TalentTier = 'contender' | 'playoff' | 'fringe' | 'cellar';
@@ -66,24 +58,28 @@ export function tierForRank(rank: number): TalentTier {
   return 'cellar';
 }
 
-// --- Precomputed league table -----------------------------------------------
+// --- League table (recomputed when the minutes allocation changes) -----------
 interface Row {
   abbr: string;
   conf: 'East' | 'West';
   dpm: number;
 }
-const LEAGUE: Row[] = TEAMS.map((t) => ({
-  abbr: t.abbreviation,
-  conf: t.conference,
-  dpm: teamDpm(t),
-})).sort((a, b) => b.dpm - a.dpm);
 
-const OVERALL_RANK: Record<string, number> = {};
-LEAGUE.forEach((r, i) => (OVERALL_RANK[r.abbr] = i + 1));
-const CONF_RANK: Record<string, number> = {};
-(['East', 'West'] as const).forEach((conf) => {
-  LEAGUE.filter((r) => r.conf === conf).forEach((r, i) => (CONF_RANK[r.abbr] = i + 1));
-});
+let leagueCache: Row[] | null = null;
+let leagueVer = -1;
+
+/** The 30 teams ranked by DPM, memoized against the minutes-store version. */
+function league(): Row[] {
+  const v = minutesVersion();
+  if (leagueCache && leagueVer === v) return leagueCache;
+  leagueCache = TEAMS.map((t) => ({
+    abbr: t.abbreviation,
+    conf: t.conference,
+    dpm: teamDpm(t),
+  })).sort((a, b) => b.dpm - a.dpm);
+  leagueVer = v;
+  return leagueCache;
+}
 
 export interface TalentInfo {
   dpm: number;
@@ -94,14 +90,17 @@ export interface TalentInfo {
 }
 
 export function teamTalent(abbr: string): TalentInfo | null {
-  const row = LEAGUE.find((r) => r.abbr === abbr);
-  if (!row) return null;
+  const L = league();
+  const idx = L.findIndex((r) => r.abbr === abbr);
+  if (idx < 0) return null;
+  const row = L[idx];
+  const confRank = L.filter((r) => r.conf === row.conf).findIndex((r) => r.abbr === abbr) + 1;
   return {
     dpm: row.dpm,
-    overallRank: OVERALL_RANK[abbr],
-    confRank: CONF_RANK[abbr],
+    overallRank: idx + 1,
+    confRank,
     conference: row.conf,
-    tier: tierForRank(OVERALL_RANK[abbr]),
+    tier: tierForRank(idx + 1),
   };
 }
 
@@ -110,8 +109,9 @@ export function teamTalent(abbr: string): TalentInfo | null {
  * inserting it against the other 29 teams. Used for trade/signing what-ifs.
  */
 export function rankForDpm(abbr: string, dpm: number): { overall: number; conf: number } {
-  const conf = LEAGUE.find((r) => r.abbr === abbr)?.conf ?? 'East';
-  const others = LEAGUE.filter((r) => r.abbr !== abbr);
+  const L = league();
+  const conf = L.find((r) => r.abbr === abbr)?.conf ?? 'East';
+  const others = L.filter((r) => r.abbr !== abbr);
   const overall = others.filter((r) => r.dpm > dpm).length + 1;
   const conf_ = others.filter((r) => r.conf === conf && r.dpm > dpm).length + 1;
   return { overall, conf: conf_ };
