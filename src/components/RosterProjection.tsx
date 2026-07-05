@@ -30,6 +30,7 @@ interface ProjRow {
   player: Player;
   option: ContractOption;
   age: number | null;
+  min: number | null; // DARKO projected minutes per game (current season only)
   salary: number; // nominal $ that season
   value: number | null; // $M projected market value
   surplus: number | null; // $M
@@ -39,7 +40,7 @@ interface ProjRow {
   matched: boolean;
 }
 
-type SortKey = 'name' | 'age' | 'salary' | 'value' | 'surplus' | 'dpm' | 'odpm' | 'ddpm';
+type SortKey = 'name' | 'age' | 'min' | 'salary' | 'value' | 'surplus' | 'dpm' | 'odpm' | 'ddpm';
 
 function buildRows(team: Team, season: number): ProjRow[] {
   const k = season - CURRENT_SEASON;
@@ -58,6 +59,9 @@ function buildRows(team: Team, season: number): ProjRow[] {
       player: p,
       option: cy.option,
       age: baseAge != null ? Math.round(baseAge + k) : null,
+      // DARKO projects a single (current-season) minutes figure; we don't
+      // forecast future-year minutes, so it's shown only for the current year.
+      min: k === 0 ? d?.min ?? null : null,
       salary: cy.salary,
       value,
       surplus: value != null ? value - cy.salary / 1_000_000 : null,
@@ -73,6 +77,7 @@ function buildRows(team: Team, season: number): ProjRow[] {
 const dpmFmt = (n: number | null) =>
   n == null ? '—' : `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(1)}`;
 const mFmt = (n: number | null) => (n == null ? '—' : `$${n.toFixed(1)}M`);
+const minFmt = (n: number | null) => (n == null ? '—' : n.toFixed(1));
 const surFmt = (n: number | null) =>
   n == null ? '—' : `${n >= 0 ? '+' : '−'}$${Math.abs(n).toFixed(1)}M`;
 
@@ -99,7 +104,8 @@ export function RosterProjection({ team }: { team: Team }) {
     const salary = rows.reduce((s, r) => s + r.salary, 0);
     const value = rows.reduce((s, r) => s + (r.value ?? 0), 0);
     const surplus = rows.reduce((s, r) => s + (r.surplus ?? 0), 0);
-    return { salary, value, surplus, count: rows.length };
+    const min = rows.reduce((s, r) => s + (r.min ?? 0), 0);
+    return { salary, value, surplus, min, count: rows.length };
   }, [rows]);
 
   const sortBy = (key: SortKey, higherFirst = true) => {
@@ -144,6 +150,9 @@ export function RosterProjection({ team }: { team: Team }) {
               <th className="sortable" onClick={() => sortBy('age')} title="Age that season">
                 Age {arrow('age')}
               </th>
+              <th className="sortable" onClick={() => sortBy('min')} title="DARKO projected minutes per game (current season)">
+                Min {arrow('min')}
+              </th>
               <th className="sortable" onClick={() => sortBy('salary')} title="Cap hit that season">
                 Salary {arrow('salary')}
               </th>
@@ -175,6 +184,7 @@ export function RosterProjection({ team }: { team: Team }) {
                     {!r.matched && <span className="rp-nomatch" title="No DARKO match"> ~</span>}
                   </td>
                   <td>{r.age ?? '—'}</td>
+                  <td>{minFmt(r.min)}</td>
                   <td>{money(r.salary)}</td>
                   <td>{mFmt(r.value)}</td>
                   <td className={r.surplus == null ? '' : r.surplus >= 0 ? 'rp-pos' : 'rp-neg'}>
@@ -188,7 +198,7 @@ export function RosterProjection({ team }: { team: Team }) {
             })}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="rp-empty">No players under contract this season.</td>
+                <td colSpan={9} className="rp-empty">No players under contract this season.</td>
               </tr>
             )}
           </tbody>
@@ -197,6 +207,9 @@ export function RosterProjection({ team }: { team: Team }) {
               <tr>
                 <td className="rp-name">{totals.count} on the books</td>
                 <td />
+                <td title={k === 0 ? 'Sum of projected minutes; a game has 240 to allocate' : undefined}>
+                  {k === 0 && totals.min > 0 ? `${totals.min.toFixed(0)}/240` : ''}
+                </td>
                 <td>{money(totals.salary)}</td>
                 <td>{mFmt(totals.value)}</td>
                 <td className={totals.surplus >= 0 ? 'rp-pos' : 'rp-neg'}>{surFmt(totals.surplus)}</td>
@@ -210,8 +223,8 @@ export function RosterProjection({ team }: { team: Team }) {
       </div>
       <p className="rp-foot">
         {k === 0
-          ? 'Current season — DARKO live values.'
-          : `Projected ${k} year${k > 1 ? 's' : ''} out: value aged by the empirical DARKO curve (pre-peak players can appreciate, veterans decline) and grown with the cap; DPM aged the same way. Salary is the contracted figure.`}
+          ? 'Current season — DARKO live values. Min is DARKO’s projected minutes per game (its current-season role; not re-forecast for offseason moves).'
+          : `Projected ${k} year${k > 1 ? 's' : ''} out: value aged by the empirical DARKO curve (pre-peak players can appreciate, veterans decline) and grown with the cap; DPM aged the same way. Minutes aren’t projected for future years. Salary is the contracted figure.`}
       </p>
     </div>
   );
