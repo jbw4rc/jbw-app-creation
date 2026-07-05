@@ -17,8 +17,9 @@ const HEADERS = {
 
 // Eastern/Western split by abbreviation (SalarySwish doesn't label conference).
 const EAST = new Set(['ATL', 'BOS', 'BKN', 'CHA', 'CHI', 'CLE', 'DET', 'IND', 'MIA', 'MIL', 'NYK', 'ORL', 'PHI', 'TOR', 'WAS']);
-// Sections whose contracts count toward the cap figure we track.
-const COUNT_SECTION = /active|inactive|dead/i;
+// Sections whose contracts count toward the cap figure we track. "Disabled"
+// holds season-ending-injury players (e.g. Haliburton) whose salary still counts.
+const COUNT_SECTION = /active|inactive|dead|disabled/i;
 
 const strip = (s) =>
   s
@@ -397,10 +398,11 @@ async function worker() {
       let checksum = 0;
       for (const tbl of rosterTables) {
         const { section, players: ps, checksum2026 } = parseRosterTable(tbl);
-        // Anchor to the start so "Active" matches but "Inactive" does not (an
-        // Inactive/dead section total would otherwise clobber the real checksum).
-        if (/^active\b/i.test(section)) checksum = checksum2026;
         const isCount = COUNT_SECTION.test(section);
+        // Sum every cap-counting section's total (Active + Inactive + Dead +
+        // Disabled) so the checksum matches the summed players — including
+        // disabled-list salaries that the Active total alone omits.
+        if (isCount) checksum += checksum2026;
         for (const p of ps) {
           // Cap-counting sections contribute all players; other sections
           // (Minors/G-League, etc.) contribute only their two-way players.
@@ -410,7 +412,7 @@ async function worker() {
       rosters[t.abbr] = players;
       picks[t.abbr] = parseDraft(html);
       capHolds[t.abbr] = parseCapHolds(html);
-      // Checksum against the Active total excludes two-way (non-cap) salaries.
+      // Checksum against the cap-counting section totals (excludes two-way).
       const sum2026 = players
         .filter((p) => !p.twoWay)
         .reduce((s, p) => s + (p.contract.find((c) => c.season === 2026)?.salary ?? 0), 0);
