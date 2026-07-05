@@ -36,26 +36,74 @@ function loadOverrides(): Overrides {
   }
 }
 
+// --- GM session (franchise mode) --------------------------------------------
+// A running set of committed trades/signings layered over the real rosters, so
+// the user can rebuild a team and watch its contention change. `rosters` holds
+// the post-move roster for each touched team; `baseline` snapshots every team's
+// roster at session start so we can compare and reset.
+export interface SessionMove {
+  id: string;
+  kind: 'trade' | 'signing';
+  summary: string;
+  teams: string[];
+  at: string; // ISO
+}
+interface SessionState {
+  myTeam: string;
+  startedAt: string;
+  moves: SessionMove[];
+  rosters: Record<string, Player[]>;
+  baseline: Record<string, Player[]>;
+}
+const SESSION_KEY = 'apronRoom.session.v1';
+
+function loadSession(): SessionState | null {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw) as SessionState;
+    if (!s || !s.myTeam || !s.baseline) return null;
+    return s;
+  } catch {
+    return null;
+  }
+}
+
 let overrides: Overrides = loadOverrides();
+let session: SessionState | null = loadSession();
+let rosterVersion = 0;
 let cache: Team[] = compute();
 const listeners = new Set<() => void>();
 
+// Effective roster for a team: GM-session roster (if the session has touched it)
+// over any CSV-imported override over the base data.
+function effectivePlayers(t: Team): Player[] {
+  return session?.rosters[t.abbreviation] ?? overrides[t.abbreviation]?.players ?? t.players;
+}
+
 function compute(): Team[] {
-  return BASE_TEAMS.map((t) =>
-    overrides[t.abbreviation]
-      ? { ...t, players: overrides[t.abbreviation].players }
-      : t
-  );
+  return BASE_TEAMS.map((t) => {
+    const players = effectivePlayers(t);
+    return players === t.players ? t : { ...t, players };
+  });
 }
 
 function commit() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
   } catch {
     /* ignore quota / private-mode errors */
   }
+  rosterVersion++;
   cache = compute();
   listeners.forEach((l) => l());
+}
+
+/** Bumped whenever the effective rosters change (imports or session moves). */
+export function rosterStoreVersion(): number {
+  return rosterVersion;
 }
 
 export function getTeams(): Team[] {
@@ -157,4 +205,82 @@ function subscribeSelected(fn: () => void): () => void {
 /** React hook: the currently-selected team abbreviation, shared across tabs. */
 export function useSelectedTeam(): string {
   return useSyncExternalStore(subscribeSelected, getSelectedTeam, getSelectedTeam);
+}
+
+// ---------------------------------------------------------------------------
+// GM session API. Committing a trade/signing writes the new rosters here, and
+// the change flows through `useTeams` to team value, rank, and the Rotation
+// Builder automatically.
+// ---------------------------------------------------------------------------
+
+export function getSession(): SessionState | null {
+  return session;
+}
+
+export function sessionActive(): boolean {
+  return session != null;
+}
+
+/** Start a session for `myTeam`, snapshotting every team's current roster. */
+export function startSession(myTeam: string): void {
+  const baseline: Record<string, Player[]> = {};
+  for (const t of cache) baseline[t.abbreviation] = t.players;
+  session = { myTeam, startedAt: new Date().toISOString(), moves: [], rosters: {}, baseline };
+  commit();
+}
+
+/** Exit the session entirely (rosters revert to real). */
+export function endSession(): void {
+  session = null;
+  commit();
+}
+
+/** Keep the session but undo all moves (rosters back to the baseline snapshot). */
+export function resetSession(): void {
+  if (!session) return;
+  session = { ...session, moves: [], rosters: {} };
+  commit();
+}
+
+/** Change which team the session is "playing as". */
+export function setSessionTeam(myTeam: string): void {
+  if (!session || session.myTeam === myTeam) return;
+  session = { ...session, myTeam };
+  commit();
+}
+
+/**
+ * Apply a committed move: new rosters for the affected teams + a log entry.
+ * Auto-starts a session (as `asTeam`) if none is running.
+ */
+export function commitSessionMove(
+  rosterChanges: Record<string, Player[]>,
+  move: Omit<SessionMove, 'id' | 'at'>,
+  asTeam?: string
+): void {
+  if (!session) startSession(asTeam ?? move.teams[0] ?? selectedTeam);
+  const s = session!;
+  const entry: SessionMove = { ...move, id: `mv-${Date.now()}`, at: new Date().toISOString() };
+  session = {
+    ...s,
+    moves: [...s.moves, entry],
+    rosters: { ...s.rosters, ...rosterChanges },
+  };
+  commit();
+}
+
+/** Undo a single logged move is not supported; use resetSession for now. */
+
+/** Teams as they were at session start (for baseline comparison); live teams if no session. */
+export function getBaselineTeams(): Team[] {
+  if (!session) return cache;
+  return BASE_TEAMS.map((t) => {
+    const players = session!.baseline[t.abbreviation] ?? t.players;
+    return players === t.players ? t : { ...t, players };
+  });
+}
+
+/** React hook: re-render on any session change (uses the shared roster version). */
+export function useSession(): SessionState | null {
+  return useSyncExternalStore(subscribe, getSession, getSession);
 }

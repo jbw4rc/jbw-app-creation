@@ -1016,6 +1016,45 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
   .rb-name { font-size: 13px; }
 }
 
+/* --- My Team (GM session) -------------------------------------------------- */
+.myteam { display: flex; flex-direction: column; gap: 14px; }
+.mt-title { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 2px 0 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mt-lede { font-size: 13px; color: var(--ink-soft); max-width: 640px; margin: 8px 0 0; line-height: 1.5; }
+.mt-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.mt-actions { display: flex; gap: 8px; flex: none; }
+.mt-start { display: flex; }
+.mt-btn-primary {
+  font-family: var(--sans); font-size: 14px; font-weight: 600; padding: 10px 18px; cursor: pointer;
+  border: 1px solid var(--coral); border-radius: var(--radius-sm); background: var(--coral); color: #fff;
+}
+.mt-btn-primary:hover { filter: brightness(1.05); }
+.mt-do { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--ink-soft); }
+.mt-do button {
+  font-family: var(--sans); font-size: 12.5px; padding: 6px 12px; cursor: pointer;
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--card); color: var(--ink);
+}
+.mt-do button:hover { border-color: var(--coral); color: var(--coral); }
+.mt-log-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); margin: 0 0 8px; }
+.mt-empty { font-size: 13px; color: var(--ink-faint); font-style: italic; margin: 0; }
+.mt-log-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.mt-move { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.mt-move-kind {
+  flex: none; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px; color: #fff;
+}
+.mt-move-kind.mt-trade { background: var(--blue); }
+.mt-move-kind.mt-signing { background: var(--green); }
+.mt-move-summary { flex: 1 1 auto; min-width: 0; color: var(--ink); }
+.mt-move-teams { flex: none; font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+/* Commit buttons (Signings / Trade Machine) */
+.se-commit, .tg-commit {
+  margin-top: 10px; width: 100%; font-family: var(--sans); font-size: 13px; font-weight: 600;
+  padding: 10px 14px; cursor: pointer; border: 1px solid var(--coral); border-radius: var(--radius-sm);
+  background: var(--coral); color: #fff;
+}
+.se-commit:hover, .tg-commit:hover { filter: brightness(1.05); }
+.tg-commit:disabled { opacity: 0.4; cursor: default; filter: none; }
+
 /* --- Cap holds ------------------------------------------------------------ */
 .ch-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .ch-title { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 2px 0 0; }

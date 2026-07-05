@@ -1,7 +1,7 @@
 import type { Player, Team } from '../types';
-import { TEAMS } from '../data/teams';
 import { darkoFor } from './darko';
 import { allocation, rotationPlayers, minutesVersion } from './minutesStore';
+import { getTeams, getBaselineTeams, rosterStoreVersion } from './teamStore';
 
 // ---------------------------------------------------------------------------
 // Team talent = a DARKO-based expected net rating.
@@ -65,20 +65,37 @@ interface Row {
   dpm: number;
 }
 
-let leagueCache: Row[] | null = null;
-let leagueVer = -1;
+function rankTeams(teams: Team[]): Row[] {
+  return teams
+    .map((t) => ({ abbr: t.abbreviation, conf: t.conference, dpm: teamDpm(t) }))
+    .sort((a, b) => b.dpm - a.dpm);
+}
 
-/** The 30 teams ranked by DPM, memoized against the minutes-store version. */
+let leagueCache: Row[] | null = null;
+let baselineCache: Row[] | null = null;
+let leagueVer = '';
+
+// Recompute the league(s) when either the minutes allocation or the rosters
+// (imports / GM-session moves) change.
+function versionKey(): string {
+  return `${minutesVersion()}:${rosterStoreVersion()}`;
+}
+
+/** The 30 teams ranked by DPM (live, session-adjusted rosters). */
 function league(): Row[] {
-  const v = minutesVersion();
+  const v = versionKey();
   if (leagueCache && leagueVer === v) return leagueCache;
-  leagueCache = TEAMS.map((t) => ({
-    abbr: t.abbreviation,
-    conf: t.conference,
-    dpm: teamDpm(t),
-  })).sort((a, b) => b.dpm - a.dpm);
+  leagueCache = rankTeams(getTeams());
+  baselineCache = null;
   leagueVer = v;
   return leagueCache;
+}
+
+/** The 30 teams ranked at session start (== live if no session). */
+function baselineLeague(): Row[] {
+  league(); // ensure leagueVer is current (and baselineCache invalidated if stale)
+  if (!baselineCache) baselineCache = rankTeams(getBaselineTeams());
+  return baselineCache;
 }
 
 export interface TalentInfo {
@@ -89,8 +106,7 @@ export interface TalentInfo {
   tier: TalentTier;
 }
 
-export function teamTalent(abbr: string): TalentInfo | null {
-  const L = league();
+function talentFrom(L: Row[], abbr: string): TalentInfo | null {
   const idx = L.findIndex((r) => r.abbr === abbr);
   if (idx < 0) return null;
   const row = L[idx];
@@ -102,6 +118,16 @@ export function teamTalent(abbr: string): TalentInfo | null {
     conference: row.conf,
     tier: tierForRank(idx + 1),
   };
+}
+
+/** Live talent/rank (session-adjusted rosters). */
+export function teamTalent(abbr: string): TalentInfo | null {
+  return talentFrom(league(), abbr);
+}
+
+/** Talent/rank as of session start — for comparing a GM session's progress. */
+export function baselineTeamTalent(abbr: string): TalentInfo | null {
+  return talentFrom(baselineLeague(), abbr);
 }
 
 /**

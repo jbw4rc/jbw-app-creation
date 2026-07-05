@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MyTeam } from './components/MyTeam';
 import { TeamExplorer } from './components/TeamExplorer';
 import { RotationBuilder } from './components/RotationBuilder';
 import { TradeMachine } from './components/TradeMachine';
@@ -6,9 +7,10 @@ import { StatsExplorer } from './components/StatsExplorer';
 import { SigningExplorer } from './components/SigningExplorer';
 import { LeagueThresholds } from './components/LeagueThresholds';
 
-type Tab = 'explorer' | 'stats' | 'rotation' | 'trade' | 'signings';
+type Tab = 'myteam' | 'explorer' | 'stats' | 'rotation' | 'trade' | 'signings';
 
 const TABS: { id: Tab; label: string; blurb: string }[] = [
+  { id: 'myteam', label: 'My Team', blurb: 'GM session — trades, signings & contention' },
   { id: 'explorer', label: 'Team Explorer', blurb: 'Team financials — cap, apron, picks & holds' },
   { id: 'stats', label: 'Stats', blurb: 'Advanced metrics — leaderboard & by team' },
   { id: 'rotation', label: 'Rotation Builder', blurb: 'Allocate minutes; see team value & rank' },
@@ -23,7 +25,7 @@ export interface TradeSetup {
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('explorer');
+  const [tab, setTab] = useState<Tab>('myteam');
   const [tradeSetup, setTradeSetup] = useState<TradeSetup | null>(null);
 
   const signAndTrade = (acquiring: string, rights: string, faName: string) => {
@@ -58,6 +60,7 @@ export default function App() {
       <LeagueThresholds />
 
       <main className="app-main">
+        {tab === 'myteam' && <MyTeam onNavigate={setTab} />}
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'stats' && <StatsExplorer />}
         {tab === 'rotation' && <RotationBuilder />}

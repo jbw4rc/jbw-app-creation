@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { DraftPick, Player, Team } from '../types';
 import type { TradeSetup } from '../App';
-import { useTeams, getTeams, getSelectedTeam } from '../lib/teamStore';
+import { useTeams, getTeams, getSelectedTeam, commitSessionMove } from '../lib/teamStore';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import {
   frozenPickYear,
@@ -161,6 +161,32 @@ export function TradeMachine({
     [evaluation]
   );
 
+  // Commit the (legal) trade to the GM session: apply each team's post-trade
+  // roster, log the move, and reset the machine for the next deal.
+  const commitTrade = () => {
+    if (!evaluation.legal || !hasAssets) return;
+    const rosterChanges: Record<string, Player[]> = {};
+    evaluation.teams.forEach((r, i) => {
+      const abbr = slots[i].abbr;
+      const outIds = new Set(r.outgoingPlayers.map((p) => p.id));
+      rosterChanges[abbr] = [
+        ...teamOf(abbr).players.filter((p) => !outIds.has(p.id)),
+        ...r.incomingPlayers,
+      ];
+    });
+    const summary = evaluation.teams
+      .map((r, i) => `${slots[i].abbr} ← ${r.incomingPlayers.map((p) => p.name).join(', ') || '—'}`)
+      .join(' · ');
+    commitSessionMove(
+      rosterChanges,
+      { kind: 'trade', summary, teams: slots.map((s) => s.abbr) },
+      getSelectedTeam()
+    );
+    const first = getSelectedTeam();
+    const second = getTeams().find((t) => t.abbreviation !== first)?.abbreviation ?? first;
+    setSlots([emptySlot(first), emptySlot(second)]);
+  };
+
   const setSlot = (i: number, patch: Partial<Slot>) =>
     setSlots((prev) => prev.map((s, j) => (j === i ? { ...s, ...patch } : s)));
 
@@ -247,6 +273,12 @@ export function TradeMachine({
       </div>
 
       {hasAssets && <TradeGradePanel grade={grade} impacts={impacts} />}
+
+      {hasAssets && evaluation.legal && (
+        <button className="tg-commit" onClick={commitTrade}>
+          + Commit trade to My Team session
+        </button>
+      )}
 
       <div className={`trade-sides cols-${slots.length}`}>
         {slots.map((s, i) => (

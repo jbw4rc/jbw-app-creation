@@ -3,7 +3,7 @@ import { CURRENT_SEASON, getSeasonCap } from '../data/leagueConstants';
 import { SEEDED_DARKO } from '../data/seededDarko';
 import { SEEDED_CAP_HOLDS } from '../data/seededCapHolds';
 import { TEAMS } from '../data/teams';
-import { useTeams, getSelectedTeam, setSelectedTeam } from '../lib/teamStore';
+import { useTeams, getSelectedTeam, setSelectedTeam, getTeam, commitSessionMove } from '../lib/teamStore';
 import {
   MIN_FILL_SALARY,
   rosteredCount,
@@ -160,14 +160,37 @@ export function SigningExplorer({
     return moveImpact(abbr, pre, pre + fa.projected * 1_000_000, after);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fa, abbr, team]);
+
+  // Players already on a roster right now (session-aware) drop out of the pool.
+  const rosteredNow = useMemo(() => {
+    const s = new Set<string>();
+    for (const t of teams) for (const p of t.players) s.add(norm(p.name));
+    return s;
+  }, [teams]);
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return FA_POOL.filter(
       (f) =>
+        !rosteredNow.has(f.key) &&
         (!q || f.name.toLowerCase().includes(q)) &&
         (posFilter === 'all' || posGroup(f) === posFilter)
     ).slice(0, 60);
-  }, [query, posFilter]);
+  }, [query, posFilter, rosteredNow]);
+
+  // Commit the signing to the GM session: add the signed player to the roster.
+  const commitSigning = () => {
+    if (!fa) return;
+    const signed = buildSignedPlayer(fa.name);
+    if (!signed) return;
+    const roster = getTeam(abbr).players;
+    if (roster.some((p) => p.id === signed.id)) return; // already on the roster
+    commitSessionMove(
+      { [abbr]: [...roster, signed] },
+      { kind: 'signing', summary: `Signed ${fa.name} — ${money(fa.projected * 1_000_000)}/yr`, teams: [abbr] },
+      abbr
+    );
+    setSelectedFA(null);
+  };
 
   return (
     <div className="signing-explorer">
@@ -285,6 +308,7 @@ export function SigningExplorer({
               renounced={renounced}
               impact={signImpact}
               onSignAndTrade={onSignAndTrade}
+              onCommit={commitSigning}
               onToggleRenounce={(name) =>
                 setRenounced((prev) => {
                   const next = new Set(prev);
@@ -318,6 +342,7 @@ function SigningAnalysis({
   impact,
   onToggleRenounce,
   onSignAndTrade,
+  onCommit,
 }: {
   fa: FA;
   abbr: string;
@@ -330,6 +355,7 @@ function SigningAnalysis({
   impact: import('../lib/moveImpact').MoveImpact | null;
   onToggleRenounce: (name: string) => void;
   onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
+  onCommit?: () => void;
 }) {
   const target = fa.projected * 1_000_000; // projected contract (cost) in $
   const surplus = fa.value - fa.projected; // DARKO value − projected pay
@@ -453,6 +479,12 @@ function SigningAnalysis({
       </div>
 
       {impact && <MoveImpactView impact={impact} />}
+
+      {onCommit && (
+        <button className="se-commit" onClick={onCommit}>
+          + Commit signing to My Team session
+        </button>
+      )}
 
       {!ownRights && capSpaceTeam && holds.length > 0 && (
         <div className="se-renounce">
