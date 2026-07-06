@@ -1127,6 +1127,74 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .mt-move-kind.mt-signing { background: var(--green); }
 .mt-move-summary { flex: 1 1 auto; min-width: 0; color: var(--ink); }
 .mt-move-teams { flex: none; font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+/* ---- My Team (GM game) ---- */
+.gm-splash { padding: 6px 0 2px; }
+.gm-splash-title { font-family: var(--serif); font-size: 30px; font-weight: 600; margin: 4px 0 0; letter-spacing: -0.01em; }
+.gm-splash-lede { font-size: 13.5px; color: var(--ink-soft); max-width: 660px; margin: 10px 0 0; line-height: 1.55; }
+.gm-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.gm-hero-main { min-width: 0; }
+.gm-goal { font-family: var(--serif); font-size: 24px; font-weight: 600; margin: 3px 0 0; line-height: 1.15; }
+.gm-hero-sub { font-size: 12.5px; color: var(--ink-soft); margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+/* Contention ladder */
+.gm-ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.gm-rung {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 58px; padding: 8px 6px; border-radius: var(--radius-sm); text-align: center;
+  border: 1px solid var(--rule); background: var(--card);
+}
+.gm-rung-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.gm-rung-you { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #fff; background: var(--ink); padding: 1px 7px; border-radius: 999px; }
+.gm-rung-start { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.gm-rung-below { opacity: 0.55; }
+.gm-rung-here.tier-green { border-color: var(--green); background: color-mix(in srgb, var(--green) 14%, var(--card)); }
+.gm-rung-here.tier-blue { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 14%, var(--card)); }
+.gm-rung-here.tier-yellow { border-color: var(--yellow); background: color-mix(in srgb, var(--yellow) 16%, var(--card)); }
+.gm-rung-here.tier-red { border-color: var(--red); background: color-mix(in srgb, var(--red) 12%, var(--card)); }
+.gm-rung-here { border-width: 2px; }
+.gm-rung-here .gm-rung-label { color: var(--ink); }
+/* Needs + arsenal columns */
+.gm-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.gm-card { padding: 13px 15px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.gm-card-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 11px; }
+.gm-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); }
+.gm-card-sub { font-size: 11px; color: var(--ink-faint); }
+.gm-none { font-size: 12.5px; color: var(--ink-soft); margin: 0; line-height: 1.45; }
+.gm-needs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.gm-need { display: flex; gap: 9px; align-items: flex-start; }
+.gm-need-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; margin-top: 4px; }
+.gm-need-critical .gm-need-dot { background: var(--red); }
+.gm-need-moderate .gm-need-dot { background: var(--yellow); }
+.gm-need-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.gm-need-label { font-size: 13px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 7px; }
+.gm-need-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; color: var(--ink-soft); border: 1px solid var(--rule); border-radius: 999px; padding: 0 6px; }
+.gm-need-critical .gm-need-tag { color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, var(--rule)); }
+.gm-need-detail { font-size: 11.5px; color: var(--ink-soft); line-height: 1.35; }
+.gm-arsenal { display: flex; flex-direction: column; gap: 11px; }
+.gm-asset { display: flex; flex-direction: column; gap: 2px; }
+.gm-asset-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
+.gm-asset-val { font-size: 14px; font-weight: 600; color: var(--ink); }
+.gm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.gm-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; }
+.gm-chip-surplus { font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.gm-chip-surplus.pos { color: var(--green); }
+.gm-chip-surplus.neg { color: var(--coral); }
+/* Make a move */
+.gm-do { display: flex; flex-direction: column; gap: 8px; }
+.gm-do-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; }
+.gm-do-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.gm-do-btn {
+  display: flex; flex-direction: column; gap: 2px; text-align: left; cursor: pointer; padding: 12px 14px;
+  border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--card);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.gm-do-btn strong { font-size: 14px; color: var(--ink); }
+.gm-do-btn span { font-size: 11.5px; color: var(--ink-soft); }
+.gm-do-btn:hover { border-color: var(--coral); }
+.gm-do-btn:hover strong { color: var(--coral); }
+.gm-switch { font-size: 12px; color: var(--ink-soft); }
+.gm-switch summary { cursor: pointer; padding: 4px 0; }
+.gm-switch summary:hover { color: var(--coral); }
+.gm-switch .team-picker { margin-top: 8px; }
 /* Commit buttons (Signings / Trade Machine) */
 .se-commit, .tg-commit {
   margin-top: 10px; width: 100%; font-family: var(--sans); font-size: 13px; font-weight: 600;

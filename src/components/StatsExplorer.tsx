@@ -4,6 +4,7 @@ import { SEEDED_DARKO } from '../data/seededDarko';
 import { STAT_COLUMNS, type PlayerStats, type StatColumn, type StatGroup } from '../data/statsTypes';
 import { TEAMS } from '../data/teams';
 import { useTeams } from '../lib/teamStore';
+import { positionGroup, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
 
 const FREE_AGENT = 'FA';
 
@@ -62,6 +63,7 @@ export function StatsExplorer() {
   const [mode, setMode] = useState<Mode>('leaderboard');
   const [group, setGroup] = useState<Group>('darko');
   const [teamAbbr, setTeamAbbr] = useState('DEN');
+  const [pos, setPos] = useState<'all' | PosGroup>('all');
   const [query, setQuery] = useState('');
   const [minGames, setMinGames] = useState(20);
   const [sortKey, setSortKey] = useState<keyof PlayerStats>('dpm');
@@ -78,6 +80,9 @@ export function StatsExplorer() {
       list = list.filter((p) => p.teams.includes(teamAbbr) || p.team === teamAbbr);
     } else {
       list = list.filter((p) => p.g >= minGames);
+    }
+    if (pos !== 'all') {
+      list = list.filter((p) => positionGroup(p.pos, undefined, SEEDED_DARKO[norm(p.name)]?.pos) === pos);
     }
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -96,7 +101,7 @@ export function StatsExplorer() {
       }
       return ((av as number) - (bv as number)) * dir;
     });
-  }, [bundle.players, mode, teamAbbr, query, minGames, sortKey, sortDir]);
+  }, [bundle.players, mode, teamAbbr, pos, query, minGames, sortKey, sortDir]);
 
   const sortBy = (key: keyof PlayerStats, higherBetter = true) => {
     if (sortKey === key) {
@@ -160,6 +165,18 @@ export function StatsExplorer() {
             </select>
           </label>
         )}
+
+        <label className="stats-field">
+          <span>Position</span>
+          <select value={pos} onChange={(e) => setPos(e.target.value as 'all' | PosGroup)}>
+            <option value="all">All</option>
+            {POS_ORDER.map((g) => (
+              <option key={g} value={g}>
+                {POS_LABEL[g]}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="stats-field">
           <span>Columns</span>
