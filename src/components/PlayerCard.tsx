@@ -3,6 +3,8 @@ import { SEEDED_STATS } from '../data/seededStats';
 import type { PlayerStats } from '../data/statsTypes';
 import { darkoFor, darkoNorm } from '../lib/darko';
 import { archetype } from '../lib/archetype';
+import { rookieInfo } from '../lib/rookies';
+import { getTeams } from '../lib/teamStore';
 import { usePlayerCard, closePlayerCard } from '../lib/playerCardStore';
 
 // ---------------------------------------------------------------------------
@@ -46,6 +48,17 @@ export function PlayerCard() {
   const d = darkoFor(name);
   const arch = archetype(d);
   const b = d?.box;
+  // For a first-year player with no DARKO, pull the rookie projection.
+  const rook = d
+    ? null
+    : (() => {
+        const key = darkoNorm(name);
+        for (const t of getTeams()) {
+          const p = t.players.find((x) => darkoNorm(x.name) === key);
+          if (p) return rookieInfo(p);
+        }
+        return null;
+      })();
 
   return (
     <div className="pc-backdrop" onClick={closePlayerCard} role="dialog" aria-modal="true">
@@ -59,18 +72,29 @@ export function PlayerCard() {
             {s?.pos ?? d?.pos ?? '—'}
             {(s?.age ?? d?.age) != null && <> · {s?.age ?? d?.age} yrs</>}
             {arch && <span className="pc-arch">{arch}</span>}
+            {rook && <span className="pc-arch">{rook.label}</span>}
           </div>
         </div>
 
         {/* Impact & role */}
         <div className="pc-tiles">
-          <Tile label="DPM" value={signed(d?.dpm)} tone={d?.dpm != null ? (d.dpm >= 0 ? 'pos' : 'neg') : undefined} />
+          <Tile
+            label={rook ? 'Exp. DPM' : 'DPM'}
+            value={signed(d?.dpm ?? rook?.dpm)}
+            tone={(d?.dpm ?? rook?.dpm) != null ? ((d?.dpm ?? rook?.dpm)! >= 0 ? 'pos' : 'neg') : undefined}
+          />
           <Tile label="O-DPM" value={signed(d?.odpm)} />
           <Tile label="D-DPM" value={signed(d?.ddpm)} />
-          <Tile label="Proj MPG" value={d?.min != null ? String(Math.round(d.min)) : '—'} />
+          <Tile label="Proj MPG" value={(d?.min ?? rook?.min) != null ? String(Math.round((d?.min ?? rook?.min)!)) : '—'} />
           <Tile label="Market value" value={money(d?.value)} />
           <Tile label="Surplus" value={signed(d?.surplus == null ? null : d.surplus)} tone={d?.surplus != null ? (d.surplus >= 0 ? 'pos' : 'neg') : undefined} />
         </div>
+
+        {rook && (
+          <div className="pc-rookie-note">
+            No NBA history yet — projected from draft slot. Value develops in later seasons.
+          </div>
+        )}
 
         {s ? (
           <>

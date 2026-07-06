@@ -3,6 +3,7 @@ import { darkoFor } from './darko';
 import { positionGroup, type PosGroup } from './position';
 import { diagnoseLineup, type LineupFlag } from './lineupDiagnostics';
 import { TOTAL_ROTATION_MINUTES } from './minutesStore';
+import { projectedDpm, projectedMinutes } from './rookies';
 
 // ---------------------------------------------------------------------------
 // Optimize Rotation — hand out the 240 minutes to maximize talent (DARKO DPM)
@@ -99,8 +100,8 @@ export function optimizeRotation(
       id: p.id,
       name: p.name,
       grp: positionGroup(p.position, d?.posNum, d?.pos) ?? 'F', // unlisted → forward
-      dpm: d?.dpm ?? -2, // no DARKO ≈ replacement level
-      cap: minuteCeiling(d?.min), // realistic ceiling from projected minutes
+      dpm: projectedDpm(p) ?? -2, // DARKO, else the rookie model, else replacement
+      cap: minuteCeiling(projectedMinutes(p)), // realistic ceiling from projected minutes
     };
   });
   const capOf = new Map(players.map((p) => [p.id, p.cap]));

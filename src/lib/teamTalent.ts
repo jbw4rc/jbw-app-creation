@@ -1,5 +1,5 @@
 import type { Player, Team } from '../types';
-import { darkoFor } from './darko';
+import { projectedDpm } from './rookies';
 import { allocation, rotationPlayers, minutesVersion } from './minutesStore';
 import { getTeams, getBaselineTeams, rosterStoreVersion } from './teamStore';
 
@@ -27,9 +27,9 @@ export function rosterDpm(abbr: string, players: Player[]): number {
   const mins = allocation(abbr, rot);
   let total = 0;
   for (const p of rot) {
-    const d = darkoFor(p.name);
-    if (d?.dpm == null) continue;
-    total += d.dpm * ((mins[p.id] ?? 0) / 48); // on-court fraction of the game
+    const dpm = projectedDpm(p); // DARKO, else the rookie model
+    if (dpm == null) continue;
+    total += dpm * ((mins[p.id] ?? 0) / 48); // on-court fraction of the game
   }
   return total;
 }

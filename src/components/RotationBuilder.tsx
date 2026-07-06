@@ -17,6 +17,7 @@ import {
 import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
 import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
 import { archetype } from '../lib/archetype';
+import { rookieInfo } from '../lib/rookies';
 import { diagnoseLineup } from '../lib/lineupDiagnostics';
 import { optimizeRotation, type OptimizeResult } from '../lib/optimizeRotation';
 import { PlayerName } from './PlayerName';
@@ -64,7 +65,18 @@ export function RotationBuilder() {
   const rows: Row[] = rotation.map((p) => {
     const d = darkoFor(p.name);
     const min = mins[p.id] ?? 0;
-    return { id: p.id, name: p.name, pos: p.position || '—', grp: positionGroup(p.position, d?.posNum, d?.pos), arch: archetype(d), dpm: d?.dpm ?? null, min, contrib: (d?.dpm ?? 0) * (min / 48) };
+    const rook = rookieInfo(p);
+    const dpm = d?.dpm ?? rook?.dpm ?? null;
+    return {
+      id: p.id,
+      name: p.name,
+      pos: p.position || '—',
+      grp: positionGroup(p.position, d?.posNum, d?.pos),
+      arch: archetype(d) ?? rook?.label ?? null,
+      dpm,
+      min,
+      contrib: (dpm ?? 0) * (min / 48),
+    };
   });
   const rowById = new Map(rows.map((r) => [r.id, r]));
 

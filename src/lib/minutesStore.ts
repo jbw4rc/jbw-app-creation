@@ -3,6 +3,7 @@ import type { Player } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { darkoFor } from './darko';
 import { positionGroup, type PosGroup } from './position';
+import { projectedMinutes, projectedDpm } from './rookies';
 
 // ---------------------------------------------------------------------------
 // Rotation-minutes store.
@@ -81,8 +82,9 @@ export function seedMinutes(players: Player[]): Record<string, number> {
     const d = darkoFor(p.name);
     return {
       id: p.id,
-      proj: d?.min ?? 0,
-      dpm: d?.dpm ?? -2, // no DARKO ≈ replacement level
+      // DARKO where available, else the rookie model (first-year players).
+      proj: projectedMinutes(p),
+      dpm: projectedDpm(p) ?? -2, // no DARKO/rookie ≈ replacement level
       grp: (positionGroup(p.position, d?.posNum, d?.pos) ?? 'F') as PosGroup,
     };
   });
