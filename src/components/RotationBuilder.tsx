@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
 import { darkoFor } from '../lib/darko';
@@ -9,6 +9,7 @@ import {
   rotationPlayers,
   seedMinutes,
   setMinutes,
+  setTeamMinutes,
   resetTeamMinutes,
   hasMinuteOverrides,
   useMinutesVersion,
@@ -17,6 +18,7 @@ import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
 import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
 import { archetype } from '../lib/archetype';
 import { diagnoseLineup } from '../lib/lineupDiagnostics';
+import { optimizeRotation, type OptimizeResult } from '../lib/optimizeRotation';
 
 // ---------------------------------------------------------------------------
 // Rotation Builder: hand out a team's 240 game-minutes (current season) and see
@@ -48,6 +50,9 @@ export function RotationBuilder() {
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const [sortKey, setSortKey] = useState<SortKey>('min');
   const [sortNonce, setSortNonce] = useState(0);
+  const [preview, setPreview] = useState<OptimizeResult | null>(null);
+  // Drop any pending optimize preview when the team changes.
+  useEffect(() => setPreview(null), [abbr]);
 
   const rotation = useMemo(() => rotationPlayers(team.players), [team]);
   const seed = useMemo(() => seedMinutes(rotation), [rotation]);
@@ -113,6 +118,28 @@ export function RotationBuilder() {
     const headroom = TOTAL_ROTATION_MINUTES - (allocated - curMin);
     setMinutes(abbr, id, Math.max(0, Math.min(48, Math.min(next, headroom))));
   };
+
+  // Optimize preview data (rank & flag/minute deltas vs the current allocation).
+  const pvBeforeRank = preview ? rankForDpm(abbr, preview.before.dpm) : null;
+  const pvAfterRank = preview ? rankForDpm(abbr, preview.after.dpm) : null;
+  const pvValDelta = preview ? preview.after.dpm - preview.before.dpm : 0;
+  const pvRankDelta = preview && pvBeforeRank && pvAfterRank ? pvBeforeRank.overall - pvAfterRank.overall : 0;
+  const pvFlagChanges = preview
+    ? preview.after.flags
+        .map((f, i) => ({ f, b: preview.before.flags[i] }))
+        .filter((x) => x.b.level !== x.f.level)
+    : [];
+  const pvMovers = preview
+    ? rotation
+        .map((p) => ({ name: p.name, delta: (preview.minutes[p.id] ?? 0) - (mins[p.id] ?? 0) }))
+        .filter((x) => x.delta !== 0)
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+    : [];
+  const applyPreview = () => {
+    if (preview) setTeamMinutes(abbr, preview.minutes);
+    setPreview(null);
+  };
+  const LEVEL_RANK: Record<string, number> = { alert: 0, watch: 1, good: 2 };
 
   return (
     <div className="rotation-builder">
@@ -220,6 +247,93 @@ export function RotationBuilder() {
           ))}
         </div>
       </div>
+
+      {/* Optimize rotation — one click to maximize team value under realistic
+          caps, keeping positions balanced and never adding a red flag. */}
+      {!preview ? (
+        <div className="rb-optimize-bar">
+          <button
+            className="rb-optimize"
+            onClick={() => setPreview(optimizeRotation(rotation, mins))}
+            disabled={rotation.length === 0}
+          >
+            ✨ Optimize rotation
+          </button>
+          <span className="rb-optimize-hint">
+            Maximizes team value with realistic minutes — never lowers value or adds a red flag.
+          </span>
+        </div>
+      ) : (
+        <div className="rb-preview">
+          <div className="rb-preview-head">
+            <span className="rb-preview-title">Optimized rotation</span>
+            {!preview.changed && <span className="rb-preview-none">Already optimal — no changes</span>}
+          </div>
+          {preview.changed && (
+            <>
+              <div className="rb-preview-stats">
+                <div className="rb-pv-stat">
+                  <span className="rb-pv-label">Team value</span>
+                  <span className="rb-pv-move">
+                    {netFmt(preview.before.dpm)} <span className="rb-pv-arrow">→</span>{' '}
+                    <strong>{netFmt(preview.after.dpm)}</strong>
+                  </span>
+                  <span className={`rb-pv-delta ${pvValDelta > 0.05 ? 'rb-up' : ''}`}>
+                    {pvValDelta > 0.05 ? `▲ ${netFmt(pvValDelta)}` : 'no change'}
+                  </span>
+                </div>
+                <div className="rb-pv-stat">
+                  <span className="rb-pv-label">League rank</span>
+                  <span className="rb-pv-move">
+                    #{pvBeforeRank?.overall} <span className="rb-pv-arrow">→</span>{' '}
+                    <strong>#{pvAfterRank?.overall}</strong>
+                  </span>
+                  <span className={`rb-pv-delta ${pvRankDelta > 0 ? 'rb-up' : ''}`}>
+                    {pvRankDelta > 0 ? `▲ ${pvRankDelta} spot${pvRankDelta > 1 ? 's' : ''}` : 'no change'}
+                  </span>
+                </div>
+              </div>
+
+              {pvFlagChanges.length > 0 && (
+                <div className="rb-preview-flags">
+                  {pvFlagChanges.map(({ f, b }) => {
+                    const better = LEVEL_RANK[f.level] > LEVEL_RANK[b.level];
+                    return (
+                      <span className={`rb-pv-flag ${better ? 'rb-up' : 'rb-down'}`} key={f.key}>
+                        {better ? '▲' : '▼'} {f.label}: {b.level} → {f.level}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              {pvMovers.length > 0 && (
+                <div className="rb-preview-movers">
+                  <span className="rb-pv-label">Minute changes</span>
+                  <div className="rb-pv-mover-list">
+                    {pvMovers.slice(0, 8).map((m) => (
+                      <span className={`rb-pv-mover ${m.delta > 0 ? 'rb-up' : 'rb-down'}`} key={m.name}>
+                        {m.delta > 0 ? '+' : '−'}
+                        {Math.abs(m.delta)} {m.name.split(' ').slice(-1)[0]}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          <div className="rb-preview-actions">
+            {preview.changed && (
+              <button className="rb-apply" onClick={applyPreview}>
+                Apply
+              </button>
+            )}
+            <button className="rp-reset" onClick={() => setPreview(null)}>
+              {preview.changed ? 'Discard' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="rb-toolbar">
         <div className="rb-sort">

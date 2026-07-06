@@ -100,6 +100,16 @@ export function setMinutes(abbr: string, playerId: string, min: number): void {
   commit();
 }
 
+/** Set a whole team's allocation at once (one commit) — used by Optimize Rotation. */
+export function setTeamMinutes(abbr: string, minutes: Record<string, number>): void {
+  const next: TeamMinutes = {};
+  for (const [id, min] of Object.entries(minutes)) {
+    next[id] = Math.max(0, Math.min(48, Math.round(Number.isFinite(min) ? min : 0)));
+  }
+  data = { ...data, [abbr]: next };
+  commit();
+}
+
 /** Drop all manual edits for a team (back to the DARKO-scaled seed). */
 export function resetTeamMinutes(abbr: string): void {
   if (!data[abbr]) return;
