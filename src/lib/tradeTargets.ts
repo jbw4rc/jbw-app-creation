@@ -6,7 +6,7 @@ import { darkoFor } from './darko';
 import type { DarkoInfo } from '../data/seededDarko';
 import { positionGroup } from './position';
 import { teamNeeds, type TeamNeed } from './teamNeeds';
-import { rosterDpm } from './teamTalent';
+import { rosterDpm, teamTalent } from './teamTalent';
 import { playerSalaryForSeason, teamSalaryForSeason, classifyTier } from './apron';
 import { evaluateMultiTeamTrade, maxIncomingFor, type MultiTeamSide } from './trade';
 import { money } from './format';
@@ -57,6 +57,21 @@ function providesNeed(key: string, d: DarkoInfo): boolean {
     default:
       return false;
   }
+}
+
+// Is a player realistically ACQUIRABLE, given the selling team's standing?
+// Sellers are the bottom half of the league; contenders don't move their good
+// players. The caliber you can pry loose scales with how bad the seller is, and
+// true stars / young cornerstones are never available regardless of record.
+function acquirable(sellerRank: number, dpm: number, age: number | null): boolean {
+  if (dpm >= 5) return false; // franchise superstar — untouchable
+  if ((age ?? 30) <= 24 && dpm >= 3) return false; // young cornerstone they build around
+  const ceiling =
+    sellerRank <= 6 ? 1.0 // contenders: only fringe/bench pieces
+      : sellerRank <= 12 ? 1.8 // solid playoff teams: role players, not starters
+        : sellerRank <= 18 ? 3.0 // bubble teams: a good starter is gettable
+          : 4.6; // lottery sellers: most of the roster is available
+  return dpm <= ceiling;
 }
 
 // Size-1 and size-2 subsets of the outgoing pool.
@@ -126,17 +141,13 @@ export function findTradeTargets(myAbbr: string): NeedTargets[] {
     const candidates: { player: Player; team: Team; dpm: number; sal: number }[] = [];
     for (const t of teams) {
       if (t.abbreviation === myAbbr) continue;
-      const tSalary = teamSalaryForSeason(t, CURRENT_SEASON);
-      const tTier = classifyTier(tSalary, cap);
-      const tRoom = cap.salaryCap - tSalary;
+      const sellerRank = teamTalent(t.abbreviation)?.overallRank ?? 30;
       for (const p of rotationPlayers(t.players)) {
         if (usedTargets.has(p.name)) continue;
         const d = darkoFor(p.name);
         if (!d || (d.dpm ?? -9) < 0.5 || !providesNeed(need.key, d)) continue;
+        if (!acquirable(sellerRank, d.dpm, d.age)) continue; // realistic availability
         candidates.push({ player: p, team: t, dpm: d.dpm, sal: playerSalaryForSeason(p, CURRENT_SEASON) });
-        // stash tier/room on the team via closure below (recomputed in loop)
-        void tTier;
-        void tRoom;
       }
     }
     candidates.sort((a, b) => b.dpm - a.dpm);
