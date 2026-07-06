@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { endSession, sessionActive, useSession } from './lib/teamStore';
+import { hasAnyMinuteOverrides, resetAllMinutes, useMinutesVersion } from './lib/minutesStore';
 import { MyTeam } from './components/MyTeam';
 import { TeamExplorer } from './components/TeamExplorer';
 import { RotationBuilder } from './components/RotationBuilder';
@@ -28,6 +30,26 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('myteam');
   const [tradeSetup, setTradeSetup] = useState<TradeSetup | null>(null);
 
+  // Re-render when the session or any minutes change so the reset button's
+  // visibility stays in sync.
+  useSession();
+  useMinutesVersion();
+  const dirty = sessionActive() || hasAnyMinuteOverrides();
+
+  const resetAll = () => {
+    if (
+      !window.confirm(
+        'Reset everything back to the original rosters and rotations?\n\n' +
+          'This clears all trades and signings from your GM session and every ' +
+          'minute adjustment across all teams. This cannot be undone.'
+      )
+    )
+      return;
+    endSession();
+    resetAllMinutes();
+    setTradeSetup(null);
+  };
+
   const signAndTrade = (acquiring: string, rights: string, faName: string) => {
     setTradeSetup({ acquiring, rights, faName });
     setTab('trade');
@@ -42,6 +64,15 @@ export default function App() {
             <h1>Apron Room</h1>
             <p className="tagline">NBA Trade &amp; Free Agent Machine · Two-Apron Analyzer</p>
           </div>
+          {dirty && (
+            <button
+              className="reset-all"
+              onClick={resetAll}
+              title="Clear all trades, signings, and minute adjustments"
+            >
+              ↺ Reset all
+            </button>
+          )}
         </div>
         <nav className="tabs">
           {TABS.map((t) => (

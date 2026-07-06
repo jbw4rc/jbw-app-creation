@@ -119,8 +119,20 @@ export function resetTeamMinutes(abbr: string): void {
   commit();
 }
 
+/** Drop every team's manual minute edits (back to the DARKO-scaled seed). */
+export function resetAllMinutes(): void {
+  if (Object.keys(data).length === 0) return;
+  data = {};
+  commit();
+}
+
 export function hasMinuteOverrides(abbr: string): boolean {
   return Boolean(data[abbr] && Object.keys(data[abbr]).length);
+}
+
+/** Whether any team has manual minute edits. */
+export function hasAnyMinuteOverrides(): boolean {
+  return Object.keys(data).length > 0;
 }
 
 function subscribe(fn: () => void): () => void {
