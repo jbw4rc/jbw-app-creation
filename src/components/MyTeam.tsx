@@ -25,7 +25,7 @@ import { money } from '../lib/format';
 
 const netFmt = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(1)}`;
 
-type TabId = 'rotation' | 'trade' | 'signings';
+type TabId = 'rotation' | 'targets' | 'trade' | 'signings';
 
 // The contention ladder, worst → best — the game board you're climbing.
 const LADDER: TalentTier[] = ['cellar', 'fringe', 'playoff', 'contender'];
@@ -256,9 +256,13 @@ export function MyTeam({ onNavigate }: { onNavigate?: (tab: TabId) => void }) {
       <div className="gm-do">
         <span className="gm-do-label">Make your move</span>
         <div className="gm-do-btns">
+          <button className="gm-do-btn" onClick={() => onNavigate?.('targets')}>
+            <strong>Find trade targets</strong>
+            <span>cap-legal deals for your needs</span>
+          </button>
           <button className="gm-do-btn" onClick={() => onNavigate?.('trade')}>
-            <strong>Trade</strong>
-            <span>swap players &amp; picks</span>
+            <strong>Trade Machine</strong>
+            <span>build a swap by hand</span>
           </button>
           <button className="gm-do-btn" onClick={() => onNavigate?.('signings')}>
             <strong>Sign a free agent</strong>

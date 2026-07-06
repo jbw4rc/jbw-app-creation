@@ -93,7 +93,7 @@ function sumSalaries(players: Player[], season: number): number {
  * - First apron: standard 125% + $250k matching.
  * - Second apron: dollar-for-dollar (≤ 100%), no expansion.
  */
-function maxIncomingFor(
+export function maxIncomingFor(
   preTier: ApronTier,
   outgoing: number,
   capRoom: number

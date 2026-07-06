@@ -1195,6 +1195,42 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .gm-switch summary { cursor: pointer; padding: 4px 0; }
 .gm-switch summary:hover { color: var(--coral); }
 .gm-switch .team-picker { margin-top: 8px; }
+/* ---- Trade Targets ---- */
+.trade-targets { display: flex; flex-direction: column; gap: 14px; }
+.tt-title { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 2px 0 0; }
+.tt-lede { font-size: 13px; color: var(--ink-soft); max-width: 660px; margin: 8px 0 0; line-height: 1.5; }
+.tt-picker { margin: 0; }
+.tt-empty { font-size: 13px; color: var(--ink-soft); background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 16px; line-height: 1.5; }
+.tt-groups { display: flex; flex-direction: column; gap: 16px; }
+.tt-group-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
+.tt-need-dot { width: 10px; height: 10px; border-radius: 999px; flex: none; }
+.tt-need-dot.tt-critical { background: var(--red); }
+.tt-need-dot.tt-moderate { background: var(--yellow); }
+.tt-need-label { font-size: 15px; font-weight: 700; color: var(--ink); }
+.tt-need-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; color: var(--ink-soft); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 7px; }
+.tt-need-detail { font-size: 11.5px; color: var(--ink-faint); flex: 1 1 200px; min-width: 0; }
+.tt-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.tt-card { display: flex; flex-direction: column; gap: 9px; padding: 12px 14px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.tt-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tt-get { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tt-get-label, .tt-send-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.tt-get-name { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--ink); }
+.tt-get-meta { font-size: 11.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.tt-arch { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); background: var(--bg); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 7px; }
+.tt-gain { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
+.tt-gain-val { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+.tt-gain-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.tt-send { display: flex; flex-direction: column; gap: 1px; padding-top: 7px; border-top: 1px solid var(--rule); }
+.tt-send-players { font-size: 13px; color: var(--ink); }
+.tt-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tt-route { font-size: 10.5px; color: var(--green); font-variant-numeric: tabular-nums; }
+.tt-propose {
+  flex: none; cursor: pointer; font-family: var(--sans); font-size: 12px; font-weight: 600; color: #fff;
+  background: var(--coral); border: none; border-radius: 7px; padding: 6px 14px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.tt-propose:hover { filter: brightness(1.06); }
+.tt-foot { font-size: 11px; color: var(--ink-faint); line-height: 1.5; margin: 4px 0 0; }
 /* Commit buttons (Signings / Trade Machine) */
 .se-commit, .tg-commit {
   margin-top: 10px; width: 100%; font-family: var(--sans); font-size: 13px; font-weight: 600;

@@ -5,17 +5,19 @@ import { MyTeam } from './components/MyTeam';
 import { TeamExplorer } from './components/TeamExplorer';
 import { RotationBuilder } from './components/RotationBuilder';
 import { TradeMachine } from './components/TradeMachine';
+import { TradeTargets } from './components/TradeTargets';
 import { StatsExplorer } from './components/StatsExplorer';
 import { SigningExplorer } from './components/SigningExplorer';
 import { LeagueThresholds } from './components/LeagueThresholds';
 
-type Tab = 'myteam' | 'explorer' | 'stats' | 'rotation' | 'trade' | 'signings';
+type Tab = 'myteam' | 'explorer' | 'stats' | 'rotation' | 'targets' | 'trade' | 'signings';
 
 const TABS: { id: Tab; label: string; blurb: string }[] = [
   { id: 'myteam', label: 'My Team', blurb: 'GM session — trades, signings & contention' },
   { id: 'explorer', label: 'Team Explorer', blurb: 'Team financials — cap, apron, picks & holds' },
   { id: 'stats', label: 'Stats', blurb: 'Advanced metrics — leaderboard & by team' },
   { id: 'rotation', label: 'Rotation Builder', blurb: 'Allocate minutes; see team value & rank' },
+  { id: 'targets', label: 'Trade Targets', blurb: 'Cap-legal deals that fix your needs' },
   { id: 'trade', label: 'Trade Machine', blurb: 'Test a swap against the apron rules' },
   { id: 'signings', label: 'Signings', blurb: 'Free agents & signing a player against the cap' },
 ];
@@ -95,6 +97,7 @@ export default function App() {
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'stats' && <StatsExplorer />}
         {tab === 'rotation' && <RotationBuilder />}
+        {tab === 'targets' && <TradeTargets />}
         {tab === 'trade' && (
           <TradeMachine setup={tradeSetup} onConsumeSetup={() => setTradeSetup(null)} />
         )}
