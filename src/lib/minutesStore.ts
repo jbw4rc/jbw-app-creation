@@ -1,7 +1,9 @@
 import { useSyncExternalStore } from 'react';
 import type { Player } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
-import { projectedMinutes } from './rookies';
+import { darkoFor } from './darko';
+import { positionGroup, type PosGroup } from './position';
+import { projectedMinutes, projectedDpm } from './rookies';
 
 // ---------------------------------------------------------------------------
 // Rotation-minutes store.
@@ -55,62 +57,69 @@ export function rotationPlayers(players: Player[]): Player[] {
 // projections top out around 39, so this only trims the very highest.
 const SEED_MAX_MIN = 38;
 
+const CENTER_CEILING = 56; // most center minutes a team reserves up front
+
 /**
- * Seed each team's 240 game-minutes from DARKO's projected per-player minutes
- * (x_minutes). DARKO's projection already reflects what teams actually do —
- * including developing young players: it projects a negative-DPM lottery rookie
- * like Ace Bailey ~33 minutes because Utah plays him. So we allocate by PROJECTED
- * MINUTES, not by value; ordering by DPM would bury exactly those young assets.
+ * Seed each team's 240 game-minutes from DARKO's projected minutes (x_minutes) —
+ * capped at each player's projection so nobody is inflated past their real role —
+ * but allocate them in order of VALUE, because DARKO's per-player projections are
+ * roster-blind: on a loaded team it can project a bench guy (Jared McCain, 31)
+ * more minutes than a star (Jalen Williams, 23). Handing minutes to the better
+ * players first fixes that and keeps a contender's stars on the floor.
  *
- * Reconciling to 240 (a full roster's projections rarely sum to exactly 240):
- *  • Over-subscribed (deep team, sum > 240): scale everyone down proportionally,
- *    so each keeps their share of the minutes DARKO gives them — no hard cutoff
- *    that zeroes the 8th man, no value-based benching of developing players.
- *  • Under-subscribed (thin team, sum < 240): keep each player's projection and
- *    spread the surplus to the bench/mid-rotation, sparing the stars, rather than
- *    inflating anyone past their real role.
- * Each player is capped at a realistic 38-minute ceiling either way.
+ * The exception is player development, which is team-context-dependent: a rebuild
+ * plays its young lottery pick heavy minutes despite a negative rookie-year DPM
+ * (Ace Bailey), while a contender sits its low-value youngster. So young players
+ * (<= 23) get a value boost that scales with how WEAK the team is — big on a
+ * tank, zero on a contender.
+ *
+ * Centers are reserved first so a guard-heavy team doesn't zero its lone center;
+ * a thin rotation that can't reach 240 spreads the surplus to the bench.
  */
 export function seedMinutes(players: Player[]): Record<string, number> {
-  const info = players.map((p) => ({
-    id: p.id,
-    // DARKO where available, else the rookie model; capped at the 38 ceiling.
-    proj: Math.min(Math.round(projectedMinutes(p)), SEED_MAX_MIN),
-  }));
+  const info = players.map((p) => {
+    const d = darkoFor(p.name);
+    return {
+      id: p.id,
+      proj: Math.min(Math.round(projectedMinutes(p)), SEED_MAX_MIN),
+      dpm: projectedDpm(p) ?? -2,
+      age: p.age,
+      grp: (positionGroup(p.position, d?.posNum, d?.pos) ?? 'F') as PosGroup,
+    };
+  });
   const out: Record<string, number> = {};
   for (const x of info) out[x.id] = 0;
-  const total = info.reduce((s, x) => s + x.proj, 0);
-  if (total <= 0) return out;
+  if (info.reduce((s, x) => s + x.proj, 0) <= 0) return out;
 
-  // Over-subscribed: scale proportionally to 240. Restrict to the real rotation
-  // (projected >= 8) so deep-bench end-of-roster minutes don't dilute the pool
-  // and over-compress the starters — those players realistically DNP. Falls back
-  // to the whole roster if the rotation alone can't cover 240.
-  if (total >= TOTAL_ROTATION_MINUTES) {
-    let pool = info.filter((x) => x.proj >= 8);
-    if (pool.reduce((s, x) => s + x.proj, 0) < TOTAL_ROTATION_MINUTES) pool = info;
-    const poolTotal = pool.reduce((s, x) => s + x.proj, 0);
-    const scale = TOTAL_ROTATION_MINUTES / poolTotal;
-    const fracs: { id: string; frac: number }[] = [];
-    let floored = 0;
-    for (const x of pool) {
-      const exact = x.proj * scale;
-      const f = Math.floor(exact);
-      out[x.id] = f;
-      floored += f;
-      fracs.push({ id: x.id, frac: exact - f });
+  // Team strength → development factor. Contenders (lots of positive value) play
+  // their best; weak teams lean into developing their young players.
+  const strength = info.reduce((s, x) => s + Math.max(0, x.dpm), 0);
+  const devFactor = Math.max(0, Math.min(1, (14 - strength) / 14));
+  // A young player's boost scales with how much DARKO projects his team to play
+  // him — the team's own read on how much it's developing him. So Utah's heavily
+  // projected lottery picks (Cody Williams, Ace Bailey) rank in despite ugly
+  // rookie DPM, while a lightly-used youngster doesn't jump the line.
+  const key = (x: (typeof info)[number]) => x.dpm + (x.age <= 23 ? (devFactor * x.proj) / 5 : 0);
+
+  // Fill a pool by value (development-adjusted), each capped at their projection.
+  const fill = (pool: typeof info, budget: number) => {
+    let rem = budget;
+    for (const x of [...pool].sort((a, b) => key(b) - key(a))) {
+      const give = Math.max(0, Math.min(x.proj, SEED_MAX_MIN, rem));
+      out[x.id] = give;
+      rem -= give;
     }
-    let rem = TOTAL_ROTATION_MINUTES - floored;
-    fracs.sort((a, b) => b.frac - a.frac);
-    for (let i = 0; i < fracs.length && rem > 0; i++, rem--) out[fracs[i].id]++;
-    return out;
-  }
+  };
 
-  // Under-subscribed: everyone gets their projection; spread the surplus to the
-  // bench/mid-rotation (least-used regulars first), sparing the stars. Cap each
-  // recipient a little above their own projection; deep bench (< 8) is left alone.
-  for (const x of info) out[x.id] = x.proj;
-  let remaining = TOTAL_ROTATION_MINUTES - total;
+  // Reserve centers first, then guards/forwards.
+  fill(info.filter((x) => x.grp === 'C'), CENTER_CEILING);
+  const centerMinutes = info.filter((x) => x.grp === 'C').reduce((s, x) => s + out[x.id], 0);
+  fill(info.filter((x) => x.grp !== 'C'), TOTAL_ROTATION_MINUTES - centerMinutes);
+
+  // Under-subscribed: spread whatever's left to the bench/mid-rotation (least-used
+  // regulars first), sparing the stars. Cap each a little above their projection;
+  // deep bench (< 8) is left alone.
+  let remaining = TOTAL_ROTATION_MINUTES - info.reduce((s, x) => s + out[x.id], 0);
   let guard = 0;
   while (remaining > 0 && guard++ < 5000) {
     let best: string | null = null;
