@@ -1,9 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { Player } from '../types';
 import { CURRENT_SEASON } from '../data/leagueConstants';
-import { darkoFor } from './darko';
-import { positionGroup, type PosGroup } from './position';
-import { projectedMinutes, projectedDpm } from './rookies';
+import { projectedMinutes } from './rookies';
 
 // ---------------------------------------------------------------------------
 // Rotation-minutes store.
@@ -59,60 +57,60 @@ const SEED_MAX_MIN = 38;
 
 /**
  * Seed each team's 240 game-minutes from DARKO's projected per-player minutes
- * (x_minutes), which already encode role and load management.
+ * (x_minutes). DARKO's projection already reflects what teams actually do —
+ * including developing young players: it projects a negative-DPM lottery rookie
+ * like Ace Bailey ~33 minutes because Utah plays him. So we allocate by PROJECTED
+ * MINUTES, not by value; ordering by DPM would bury exactly those young assets.
  *
- * Within a position we hand out minutes by VALUE (DARKO DPM), not by DARKO's
- * projected minutes: when a rotation is over-subscribed, the better players
- * should play. DARKO sometimes projects a replacement-level guard heavy minutes
- * (it had Ja'Kobe Walter at 36) ahead of a clearly better one (Quickley at 30) —
- * ranking by minutes would bench Quickley at 0. Each player is still capped at
- * their own projected minutes, so nobody gets inflated past their real role.
- *
- * The center spot also gets crowded out on guard-heavy teams, so we RESERVE the
- * centers first, then fill the rest of the 240 with the guards and forwards.
- *
- * We deliberately do NOT scale everyone to hit 240: summing a full roster's
- * projections overshoots for deep teams (squishing the stars) and falls short
- * for thin ones (inflating them). Stars land at their real projected minutes.
+ * Reconciling to 240 (a full roster's projections rarely sum to exactly 240):
+ *  • Over-subscribed (deep team, sum > 240): scale everyone down proportionally,
+ *    so each keeps their share of the minutes DARKO gives them — no hard cutoff
+ *    that zeroes the 8th man, no value-based benching of developing players.
+ *  • Under-subscribed (thin team, sum < 240): keep each player's projection and
+ *    spread the surplus to the bench/mid-rotation, sparing the stars, rather than
+ *    inflating anyone past their real role.
+ * Each player is capped at a realistic 38-minute ceiling either way.
  */
-const CENTER_CEILING = 56; // most center minutes a team will reserve up front
-
 export function seedMinutes(players: Player[]): Record<string, number> {
-  const info = players.map((p) => {
-    const d = darkoFor(p.name);
-    return {
-      id: p.id,
-      // DARKO where available, else the rookie model (first-year players).
-      proj: projectedMinutes(p),
-      dpm: projectedDpm(p) ?? -2, // no DARKO/rookie ≈ replacement level
-      grp: (positionGroup(p.position, d?.posNum, d?.pos) ?? 'F') as PosGroup,
-    };
-  });
+  const info = players.map((p) => ({
+    id: p.id,
+    // DARKO where available, else the rookie model; capped at the 38 ceiling.
+    proj: Math.min(Math.round(projectedMinutes(p)), SEED_MAX_MIN),
+  }));
   const out: Record<string, number> = {};
   for (const x of info) out[x.id] = 0;
-  if (info.reduce((s, x) => s + x.proj, 0) <= 0) return out;
+  const total = info.reduce((s, x) => s + x.proj, 0);
+  if (total <= 0) return out;
 
-  // Fill a pool's budget by DPM (best players first), each capped at their own
-  // projected minutes (and the 38 ceiling) so nobody is inflated past their role.
-  const fill = (pool: typeof info, budget: number) => {
-    let rem = budget;
-    for (const x of [...pool].sort((a, b) => b.dpm - a.dpm)) {
-      const give = Math.max(0, Math.min(Math.round(x.proj), SEED_MAX_MIN, rem));
-      out[x.id] = give;
-      rem -= give;
+  // Over-subscribed: scale proportionally to 240. Restrict to the real rotation
+  // (projected >= 8) so deep-bench end-of-roster minutes don't dilute the pool
+  // and over-compress the starters — those players realistically DNP. Falls back
+  // to the whole roster if the rotation alone can't cover 240.
+  if (total >= TOTAL_ROTATION_MINUTES) {
+    let pool = info.filter((x) => x.proj >= 8);
+    if (pool.reduce((s, x) => s + x.proj, 0) < TOTAL_ROTATION_MINUTES) pool = info;
+    const poolTotal = pool.reduce((s, x) => s + x.proj, 0);
+    const scale = TOTAL_ROTATION_MINUTES / poolTotal;
+    const fracs: { id: string; frac: number }[] = [];
+    let floored = 0;
+    for (const x of pool) {
+      const exact = x.proj * scale;
+      const f = Math.floor(exact);
+      out[x.id] = f;
+      floored += f;
+      fracs.push({ id: x.id, frac: exact - f });
     }
-  };
+    let rem = TOTAL_ROTATION_MINUTES - floored;
+    fracs.sort((a, b) => b.frac - a.frac);
+    for (let i = 0; i < fracs.length && rem > 0; i++, rem--) out[fracs[i].id]++;
+    return out;
+  }
 
-  // Reserve the centers first (by value), then fill the rest with guards/forwards.
-  fill(info.filter((x) => x.grp === 'C'), CENTER_CEILING);
-  const centerMinutes = info.filter((x) => x.grp === 'C').reduce((s, x) => s + out[x.id], 0);
-  fill(info.filter((x) => x.grp !== 'C'), TOTAL_ROTATION_MINUTES - centerMinutes);
-
-  // Hand out whatever's left (a thin rotation that couldn't fill 240) across the
-  // rotation — least-used regulars first, so we deepen the rotation / go
-  // small-ball rather than inflate a star. Cap each recipient a little above
-  // their own projection; deep bench (projected < 8) is left alone.
-  let remaining = TOTAL_ROTATION_MINUTES - info.reduce((s, x) => s + out[x.id], 0);
+  // Under-subscribed: everyone gets their projection; spread the surplus to the
+  // bench/mid-rotation (least-used regulars first), sparing the stars. Cap each
+  // recipient a little above their own projection; deep bench (< 8) is left alone.
+  for (const x of info) out[x.id] = x.proj;
+  let remaining = TOTAL_ROTATION_MINUTES - total;
   let guard = 0;
   while (remaining > 0 && guard++ < 5000) {
     let best: string | null = null;
