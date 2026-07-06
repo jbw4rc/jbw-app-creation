@@ -60,12 +60,15 @@ const SEED_MAX_MIN = 38;
  * Seed each team's 240 game-minutes from DARKO's projected per-player minutes
  * (x_minutes), which already encode role and load management.
  *
- * The center spot is the one that gets crowded out: a deep backcourt (TOR
- * projects seven 30+ minute guards/wings) can use up all 240 and leave the lone
- * center at zero. So we RESERVE the centers' projected minutes first, then fill
- * the rest of the 240 with everyone else, top-down by projection. Guards and
- * forwards compete freely (they're rarely starved), which avoids forcing a rigid
- * split on teams with an unusual position mix.
+ * Within a position we hand out minutes by VALUE (DARKO DPM), not by DARKO's
+ * projected minutes: when a rotation is over-subscribed, the better players
+ * should play. DARKO sometimes projects a replacement-level guard heavy minutes
+ * (it had Ja'Kobe Walter at 36) ahead of a clearly better one (Quickley at 30) —
+ * ranking by minutes would bench Quickley at 0. Each player is still capped at
+ * their own projected minutes, so nobody gets inflated past their real role.
+ *
+ * The center spot also gets crowded out on guard-heavy teams, so we RESERVE the
+ * centers first, then fill the rest of the 240 with the guards and forwards.
  *
  * We deliberately do NOT scale everyone to hit 240: summing a full roster's
  * projections overshoots for deep teams (squishing the stars) and falls short
@@ -76,23 +79,29 @@ const CENTER_CEILING = 56; // most center minutes a team will reserve up front
 export function seedMinutes(players: Player[]): Record<string, number> {
   const info = players.map((p) => {
     const d = darkoFor(p.name);
-    return { id: p.id, proj: d?.min ?? 0, grp: (positionGroup(p.position, d?.posNum, d?.pos) ?? 'F') as PosGroup };
+    return {
+      id: p.id,
+      proj: d?.min ?? 0,
+      dpm: d?.dpm ?? -2, // no DARKO ≈ replacement level
+      grp: (positionGroup(p.position, d?.posNum, d?.pos) ?? 'F') as PosGroup,
+    };
   });
   const out: Record<string, number> = {};
   for (const x of info) out[x.id] = 0;
   if (info.reduce((s, x) => s + x.proj, 0) <= 0) return out;
 
+  // Fill a pool's budget by DPM (best players first), each capped at their own
+  // projected minutes (and the 38 ceiling) so nobody is inflated past their role.
   const fill = (pool: typeof info, budget: number) => {
     let rem = budget;
-    for (const x of [...pool].sort((a, b) => b.proj - a.proj)) {
+    for (const x of [...pool].sort((a, b) => b.dpm - a.dpm)) {
       const give = Math.max(0, Math.min(Math.round(x.proj), SEED_MAX_MIN, rem));
       out[x.id] = give;
       rem -= give;
     }
   };
 
-  // Reserve the centers' projected minutes first (up to a ceiling), then fill the
-  // rest of the 240 with the guards and forwards.
+  // Reserve the centers first (by value), then fill the rest with guards/forwards.
   fill(info.filter((x) => x.grp === 'C'), CENTER_CEILING);
   const centerMinutes = info.filter((x) => x.grp === 'C').reduce((s, x) => s + out[x.id], 0);
   fill(info.filter((x) => x.grp !== 'C'), TOTAL_ROTATION_MINUTES - centerMinutes);
