@@ -56,6 +56,10 @@ export function rotationPlayers(players: Player[]): Player[] {
 // Nobody's seed exceeds this — a realistic minutes-leader ceiling. DARKO's own
 // projections top out around 39, so this only trims the very highest.
 const SEED_MAX_MIN = 38;
+// Young, unproven players (rookies / second-years) don't carry a max-minutes
+// load, even on a tank that leans on them — cap them lower than a proven star.
+const YOUNG_MAX_MIN = 33;
+const YOUNG_AGE = 22;
 
 const CENTER_CEILING = 56; // most center minutes a team reserves up front
 
@@ -105,7 +109,8 @@ export function seedMinutes(players: Player[]): Record<string, number> {
   const fill = (pool: typeof info, budget: number) => {
     let rem = budget;
     for (const x of [...pool].sort((a, b) => key(b) - key(a))) {
-      const give = Math.max(0, Math.min(x.proj, SEED_MAX_MIN, rem));
+      const ceiling = x.age <= YOUNG_AGE ? YOUNG_MAX_MIN : SEED_MAX_MIN;
+      const give = Math.max(0, Math.min(x.proj, ceiling, rem));
       out[x.id] = give;
       rem -= give;
     }

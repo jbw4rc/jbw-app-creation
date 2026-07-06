@@ -1,5 +1,6 @@
 import type { Player, Team } from '../types';
 import { projectedDpm } from './rookies';
+import { unsignedFirstRounders } from './draftHolds';
 import { allocation, rotationPlayers, minutesVersion } from './minutesStore';
 import { getTeams, getBaselineTeams, rosterStoreVersion } from './teamStore';
 
@@ -23,7 +24,9 @@ import { getTeams, getBaselineTeams, rosterStoreVersion } from './teamStore';
  * `players` and kept players keep their overrides while new ones get the seed.
  */
 export function rosterDpm(abbr: string, players: Player[]): number {
-  const rot = rotationPlayers(players);
+  // Include the team's unsigned first-round picks (cap holds) — they'll sign and
+  // play, and their rookie minutes/value belong in the team's expected rating.
+  const rot = [...rotationPlayers(players), ...unsignedFirstRounders(abbr)];
   const mins = allocation(abbr, rot);
   let total = 0;
   for (const p of rot) {

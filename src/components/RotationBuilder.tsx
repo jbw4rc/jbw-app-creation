@@ -18,6 +18,7 @@ import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
 import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
 import { archetype } from '../lib/archetype';
 import { rookieInfo } from '../lib/rookies';
+import { unsignedFirstRounders } from '../lib/draftHolds';
 import { diagnoseLineup } from '../lib/lineupDiagnostics';
 import { optimizeRotation, type OptimizeResult } from '../lib/optimizeRotation';
 import { PlayerName } from './PlayerName';
@@ -57,7 +58,10 @@ export function RotationBuilder() {
   // Drop any pending optimize preview when the team changes.
   useEffect(() => setPreview(null), [abbr]);
 
-  const rotation = useMemo(() => rotationPlayers(team.players), [team]);
+  const rotation = useMemo(
+    () => [...rotationPlayers(team.players), ...unsignedFirstRounders(team.abbreviation)],
+    [team]
+  );
   const seed = useMemo(() => seedMinutes(rotation), [rotation]);
   const mins = allocation(abbr, rotation);
 
