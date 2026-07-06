@@ -51,33 +51,75 @@ export function rotationPlayers(players: Player[]): Player[] {
   });
 }
 
+// Nobody's seed exceeds this — a realistic minutes-leader ceiling. DARKO's own
+// projections top out around 39, so this only trims the very highest.
+const SEED_MAX_MIN = 38;
+
 /**
- * DARKO minutes for the given players, scaled so they total 240 (the seed).
- * Rounded to whole minutes via largest-remainder so the integers still sum to
- * exactly 240 (easier to read/adjust, especially on mobile).
+ * Seed each team's 240 game-minutes from DARKO's projected per-player minutes
+ * (x_minutes), which already encode role and load management.
+ *
+ * We do NOT scale everyone to hit 240 — summing a full roster's projections
+ * overshoots 240 for deep teams (squishing the stars) and falls short for thin
+ * ones (inflating them). Instead we allocate from the highest-projected players
+ * down, giving each their DARKO minutes (capped), until the 240 are used up.
+ * That yields a realistic ~9–10 man rotation with stars at their real projected
+ * minutes; anyone past the cutoff seeds to 0 (bench). If a team's projections
+ * fall short of 240, the surplus is spread across the rotation (still capped),
+ * never inflating a single player past the ceiling.
  */
 export function seedMinutes(players: Player[]): Record<string, number> {
   const raw = players.map((p) => ({ id: p.id, min: darkoFor(p.name)?.min ?? 0 }));
-  const sum = raw.reduce((s, r) => s + r.min, 0);
   const out: Record<string, number> = {};
-  if (sum <= 0) {
-    for (const r of raw) out[r.id] = 0;
-    return out;
+  for (const r of raw) out[r.id] = 0;
+  if (raw.reduce((s, r) => s + r.min, 0) <= 0) return out;
+
+  // Allocate top-down by projected minutes until the 240 run out.
+  const sorted = [...raw].sort((a, b) => b.min - a.min);
+  let remaining = TOTAL_ROTATION_MINUTES;
+  for (const r of sorted) {
+    const give = Math.max(0, Math.min(Math.round(r.min), SEED_MAX_MIN, remaining));
+    out[r.id] = give;
+    remaining -= give;
   }
-  const scale = TOTAL_ROTATION_MINUTES / sum;
-  const fracs: { id: string; frac: number }[] = [];
-  let floored = 0;
-  for (const r of raw) {
-    const exact = r.min * scale;
-    const f = Math.floor(exact);
-    out[r.id] = f;
-    floored += f;
-    fracs.push({ id: r.id, frac: exact - f });
+
+  // Thin projections (rotation sums < 240): fill the surplus into the rotation
+  // from the least-used player upward, sparing the top minutes — so the stars
+  // stay at their DARKO projection and the extra goes to the bench/mid-rotation.
+  // Each recipient is capped a little above their own projection so nobody
+  // balloons. Deep bench (projected < 8) is left alone.
+  const proj = new Map(raw.map((r) => [r.id, Math.round(r.min)]));
+  let guard = 0;
+  while (remaining > 0 && guard++ < 5000) {
+    let best: string | null = null;
+    let bestMin = Infinity;
+    for (const r of sorted) {
+      const pj = proj.get(r.id) ?? 0;
+      if (pj < 8) continue; // skip deep bench
+      const fillCap = Math.min(SEED_MAX_MIN, pj + 6); // limit inflation over projection
+      if (out[r.id] >= fillCap) continue;
+      if (out[r.id] < bestMin) {
+        bestMin = out[r.id];
+        best = r.id;
+      }
+    }
+    if (best == null) {
+      // Everyone at their fill cap: relax and spread the rest over the rotation.
+      let progressed = false;
+      for (const r of sorted) {
+        if (remaining <= 0) break;
+        if (r.min > 0 && out[r.id] < SEED_MAX_MIN) {
+          out[r.id]++;
+          remaining--;
+          progressed = true;
+        }
+      }
+      if (!progressed) break;
+      continue;
+    }
+    out[best]++;
+    remaining--;
   }
-  // Hand out the leftover minutes to the largest fractional parts.
-  let rem = TOTAL_ROTATION_MINUTES - floored;
-  fracs.sort((a, b) => b.frac - a.frac);
-  for (let i = 0; i < fracs.length && rem > 0; i++, rem--) out[fracs[i].id]++;
   return out;
 }
 
