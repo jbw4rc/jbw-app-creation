@@ -12,6 +12,7 @@ import { useMinutesVersion } from '../lib/minutesStore';
 import { findTradeTargets, type TradeTarget } from '../lib/tradeTargets';
 import { darkoFor } from '../lib/darko';
 import { archetype } from '../lib/archetype';
+import { PlayerName } from './PlayerName';
 import { money } from '../lib/format';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
@@ -109,7 +110,7 @@ export function TradeTargets() {
                       <div className="tt-card-top">
                         <div className="tt-get">
                           <span className="tt-get-label">Acquire</span>
-                          <span className="tt-get-name">{t.incoming.name}</span>
+                          <PlayerName name={t.incoming.name} className="tt-get-name" />
                           <span className="tt-get-meta">
                             {t.fromTeam}
                             {arch && <span className="tt-arch">{arch}</span>}
@@ -127,7 +128,12 @@ export function TradeTargets() {
                       <div className="tt-send">
                         <span className="tt-send-label">Send</span>
                         <span className="tt-send-players">
-                          {t.outgoing.map((p) => p.name).join(', ')}
+                          {t.outgoing.map((p, i) => (
+                            <span key={p.id}>
+                              {i > 0 && ', '}
+                              <PlayerName name={p.name} />
+                            </span>
+                          ))}
                         </span>
                       </div>
                       <div className="tt-card-foot">

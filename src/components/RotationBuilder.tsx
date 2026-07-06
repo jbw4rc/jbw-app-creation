@@ -19,6 +19,7 @@ import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } 
 import { archetype } from '../lib/archetype';
 import { diagnoseLineup } from '../lib/lineupDiagnostics';
 import { optimizeRotation, type OptimizeResult } from '../lib/optimizeRotation';
+import { PlayerName } from './PlayerName';
 
 // ---------------------------------------------------------------------------
 // Rotation Builder: hand out a team's 240 game-minutes (current season) and see
@@ -369,7 +370,7 @@ export function RotationBuilder() {
           <div className="rb-row" key={r.id}>
             <div className="rb-player">
               <span className="rb-nameline">
-                <span className="rb-name">{r.name}</span>
+                <PlayerName name={r.name} className="rb-name" />
                 {r.arch && <span className="rb-arch">{r.arch}</span>}
               </span>
               <span className="rb-meta">

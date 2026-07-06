@@ -9,6 +9,7 @@ import { TradeTargets } from './components/TradeTargets';
 import { StatsExplorer } from './components/StatsExplorer';
 import { SigningExplorer } from './components/SigningExplorer';
 import { LeagueThresholds } from './components/LeagueThresholds';
+import { PlayerCard } from './components/PlayerCard';
 
 type Tab = 'myteam' | 'explorer' | 'stats' | 'rotation' | 'targets' | 'trade' | 'signings';
 
@@ -111,6 +112,8 @@ export default function App() {
           illustrative for planning, not official league rulings.
         </span>
       </footer>
+
+      <PlayerCard />
     </div>
   );
 }

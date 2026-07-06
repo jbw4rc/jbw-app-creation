@@ -21,6 +21,8 @@ import {
   type TradeException,
 } from '../lib/tradeExceptionsStore';
 import { darkoFor } from '../lib/darko';
+import { archetype } from '../lib/archetype';
+import { PlayerName } from './PlayerName';
 import { contractTerm } from '../lib/contract';
 import { AGING_PEAK_AGE } from '../data/agingCurve';
 import { buildSignedPlayer, signableHolds, stId } from '../lib/signAndTrade';
@@ -929,21 +931,35 @@ function PlayerRow({
   const salary = playerSalaryForSeason(player, CURRENT_SEASON);
   const tradable = salary > 0 && !player.twoWay;
   const darko = darkoFor(player.name);
+  const arch = archetype(darko);
   const term = contractTerm(player, CURRENT_SEASON);
   return (
-    <button
+    <div
       className={`trade-player${selected ? ' selected' : ''}${
         tradable ? '' : ' untradable'
       }`}
       onClick={tradable ? onToggle : undefined}
-      disabled={!tradable}
+      role={tradable ? 'button' : undefined}
+      tabIndex={tradable ? 0 : undefined}
+      aria-pressed={tradable ? selected : undefined}
+      onKeyDown={
+        tradable
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onToggle();
+              }
+            }
+          : undefined
+      }
       title={
         tradable ? '' : player.twoWay ? 'Two-way contract' : 'No current-season salary to trade'
       }
     >
       <span className="tp-check">{selected ? '✓' : ''}</span>
       <span className="tp-name">
-        {player.name}
+        <PlayerName name={player.name} />
+        {arch && <span className="rb-arch tp-arch">{arch}</span>}
         {tradable && (
           <span
             className={`tp-term${term.years <= 1 ? ' expiring' : ''}`}
@@ -965,6 +981,6 @@ function PlayerRow({
         {darko?.value != null ? money(darko.value * 1_000_000) : '·'}
       </span>
       <span className="tp-salary">{player.twoWay ? 'TW' : tradable ? money(salary) : '—'}</span>
-    </button>
+    </div>
   );
 }

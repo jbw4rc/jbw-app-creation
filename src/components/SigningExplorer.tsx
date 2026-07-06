@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CURRENT_SEASON, getSeasonCap } from '../data/leagueConstants';
 import { SEEDED_DARKO } from '../data/seededDarko';
+import { archetype } from '../lib/archetype';
+import { PlayerName } from './PlayerName';
 import { SEEDED_CAP_HOLDS } from '../data/seededCapHolds';
 import { TEAMS } from '../data/teams';
 import { useTeams, getSelectedTeam, setSelectedTeam, getTeam, commitSessionMove } from '../lib/teamStore';
@@ -277,7 +279,12 @@ export function SigningExplorer({
                     className={`se-row${selectedFA === f.key ? ' se-sel' : ''}`}
                     onClick={() => setSelectedFA(f.key)}
                   >
-                    <td className="se-name">{f.name}</td>
+                    <td className="se-name">
+                      <PlayerName name={f.name} />
+                      {archetype(SEEDED_DARKO[f.key]) && (
+                        <span className="rb-arch se-arch">{archetype(SEEDED_DARKO[f.key])}</span>
+                      )}
+                    </td>
                     <td className="se-pos">{f.pos ?? '—'}</td>
                     <td>{f.age ?? '—'}</td>
                     <td className="se-projsal">${f.projected.toFixed(1)}M</td>
@@ -468,7 +475,12 @@ function SigningAnalysis({
     <div className="se-analysisbox">
       <div className="se-fa-head">
         <div>
-          <span className="se-fa-name">{fa.name}</span>
+          <span className="se-fa-name">
+            <PlayerName name={fa.name} />
+            {archetype(SEEDED_DARKO[fa.key]) && (
+              <span className="rb-arch se-arch">{archetype(SEEDED_DARKO[fa.key])}</span>
+            )}
+          </span>
           <span className="se-fa-meta">
             {fa.pos ? `${fa.pos} · ` : ''}
             {fa.age ?? '—'} yo · DPM {fa.dpm == null ? '—' : fa.dpm.toFixed(1)}
