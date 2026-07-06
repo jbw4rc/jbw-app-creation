@@ -102,7 +102,12 @@ export function RosterProjection({ team }: { team: Team }) {
   }, [team, season, sortKey, dir]);
 
   const shown = useMemo(
-    () => rows.filter((r) => posFilter === 'all' || positionGroup(r.player.position) === posFilter),
+    () =>
+      rows.filter(
+        (r) =>
+          posFilter === 'all' ||
+          positionGroup(r.player.position, undefined, darkoFor(r.player.name)?.pos) === posFilter
+      ),
     [rows, posFilter]
   );
 

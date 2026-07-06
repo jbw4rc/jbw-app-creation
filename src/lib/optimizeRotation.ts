@@ -20,16 +20,34 @@ import { TOTAL_ROTATION_MINUTES } from './minutesStore';
 // penalty just nudges the split toward a realistic shape and yields when keeping
 // a stud on the floor is worth far more than perfect position balance.
 //
+// Each player's minute ceiling is their DARKO projected minutes plus a little
+// headroom — NOT a flat number. DARKO's projection already encodes role and
+// durability (a load-managed center like Mitchell Robinson projects ~13 min, a
+// backup like Queta ~18), so anchoring the cap to it keeps Optimize from
+// stacking two backup bigs to 70+ minutes just because their per-minute DPM is
+// high. Stars who really play 36–38 (Tatum, Mobley) keep their ceiling.
+//
 // Method: seed from the current allocation (already a sensible DARKO-based
 // split), then hill-climb small minute transfers between any two players —
 // accepting a move only when it raises the objective — until it settles.
 // ---------------------------------------------------------------------------
 
-const MAX_PLAYER_MIN = 38; // realistic starter ceiling (SGA/Luka territory)
+const GLOBAL_MAX_MIN = 38; // nobody plays more than this
+const MIN_CEIL = 12; // even a deep-bench arm can absorb up to this if needed
+const PROJ_HEADROOM = 6; // minutes a player may exceed their DARKO projection by
+const PROJ_FALLBACK = 20; // ceiling basis when DARKO has no projected minutes
 const GROUP_TARGET: Record<PosGroup, number> = { G: 96, F: 96, C: 48 };
+// A team may drift this far from the target split for free (double-big and
+// three-guard looks are normal); minutes beyond the band are penalized.
+const GROUP_TOL: Record<PosGroup, number> = { G: 14, F: 14, C: 8 };
 const LAMBDA_FLAGS = 0.35; // gently prefer greener flags among equal-value options
-const LAMBDA_POS = 0.03; // per minute of G/F/C imbalance
+const LAMBDA_POS = 0.2; // per minute of G/F/C imbalance BEYOND the tolerance band
 const MAX_ITERS = 400;
+
+// A player's realistic minute ceiling: DARKO projected minutes + headroom,
+// bounded by [MIN_CEIL, GLOBAL_MAX].
+const minuteCeiling = (projMin: number | null | undefined) =>
+  Math.min(GLOBAL_MAX_MIN, Math.max(MIN_CEIL, Math.round((projMin ?? PROJ_FALLBACK) + PROJ_HEADROOM)));
 
 // Flag health goals — mirror the thresholds in lineupDiagnostics. `dir` = +1 when
 // more is better, −1 for shot congestion (fewer high-usage players is better).
@@ -46,6 +64,7 @@ interface Opt {
   name: string;
   grp: PosGroup;
   dpm: number;
+  cap: number; // this player's realistic minute ceiling
 }
 
 export interface OptimizeResult {
@@ -79,10 +98,12 @@ export function optimizeRotation(
     return {
       id: p.id,
       name: p.name,
-      grp: positionGroup(p.position, d?.posNum) ?? 'F', // unlisted → forward
+      grp: positionGroup(p.position, d?.posNum, d?.pos) ?? 'F', // unlisted → forward
       dpm: d?.dpm ?? -2, // no DARKO ≈ replacement level
+      cap: minuteCeiling(d?.min), // realistic ceiling from projected minutes
     };
   });
+  const capOf = new Map(players.map((p) => [p.id, p.cap]));
   const groups: PosGroup[] = ['G', 'F', 'C'];
 
   // G/F/C minutes for an allocation, and the total distance from 96/96/48.
@@ -93,18 +114,18 @@ export function optimizeRotation(
   };
   const posImbalance = (m: Record<string, number>) => {
     const t = posMinutes(m);
-    return groups.reduce((s, g) => s + Math.abs(t[g] - GROUP_TARGET[g]), 0);
+    return groups.reduce((s, g) => s + Math.max(0, Math.abs(t[g] - GROUP_TARGET[g]) - GROUP_TOL[g]), 0);
   };
 
   // ---- Feasible seed from the current allocation --------------------------
   // Clamp to the per-player ceiling, then true-up to exactly 240 by adding to /
   // trimming from players by DPM (add to the best with room, trim the weakest).
   const mins: Record<string, number> = {};
-  for (const p of players) mins[p.id] = Math.max(0, Math.min(MAX_PLAYER_MIN, Math.round(current[p.id] ?? 0)));
+  for (const p of players) mins[p.id] = Math.max(0, Math.min(p.cap, Math.round(current[p.id] ?? 0)));
   let total = players.reduce((s, p) => s + mins[p.id], 0);
   const byDpmDesc = [...players].sort((a, b) => b.dpm - a.dpm);
   while (total < TOTAL_ROTATION_MINUTES) {
-    const p = byDpmDesc.find((x) => mins[x.id] < MAX_PLAYER_MIN);
+    const p = byDpmDesc.find((x) => mins[x.id] < x.cap);
     if (!p) break;
     mins[p.id]++;
     total++;
@@ -146,7 +167,7 @@ export function optimizeRotation(
       for (const a of players) {
         if (mins[a.id] < step) continue;
         for (const b of players) {
-          if (a.id === b.id || mins[b.id] + step > MAX_PLAYER_MIN) continue;
+          if (a.id === b.id || mins[b.id] + step > (capOf.get(b.id) ?? GLOBAL_MAX_MIN)) continue;
           mins[a.id] -= step;
           mins[b.id] += step;
           const s = evaluate(mins);

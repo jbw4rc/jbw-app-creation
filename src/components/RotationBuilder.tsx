@@ -33,6 +33,7 @@ interface Row {
   id: string;
   name: string;
   pos: string;
+  grp: PosGroup | null;
   arch: string | null;
   dpm: number | null;
   min: number;
@@ -62,7 +63,7 @@ export function RotationBuilder() {
   const rows: Row[] = rotation.map((p) => {
     const d = darkoFor(p.name);
     const min = mins[p.id] ?? 0;
-    return { id: p.id, name: p.name, pos: p.position || '—', arch: archetype(d), dpm: d?.dpm ?? null, min, contrib: (d?.dpm ?? 0) * (min / 48) };
+    return { id: p.id, name: p.name, pos: p.position || '—', grp: positionGroup(p.position, d?.posNum, d?.pos), arch: archetype(d), dpm: d?.dpm ?? null, min, contrib: (d?.dpm ?? 0) * (min / 48) };
   });
   const rowById = new Map(rows.map((r) => [r.id, r]));
 
@@ -74,7 +75,7 @@ export function RotationBuilder() {
       dpm: (a, b) => (b.dpm ?? -99) - (a.dpm ?? -99),
       name: (a, b) => a.name.localeCompare(b.name),
       pos: (a, b) =>
-        (GROUP_ORDER[positionGroup(a.pos) ?? 'F'] - GROUP_ORDER[positionGroup(b.pos) ?? 'F']) ||
+        (GROUP_ORDER[a.grp ?? 'F'] - GROUP_ORDER[b.grp ?? 'F']) ||
         b.min - a.min,
     };
     return [...rows].sort(cmp[sortKey]).map((r) => r.id);
@@ -89,7 +90,7 @@ export function RotationBuilder() {
   const posTotals: Record<PosGroup, number> = { G: 0, F: 0, C: 0 };
   let posUnknown = 0;
   for (const r of rows) {
-    const g = positionGroup(r.pos);
+    const g = r.grp;
     if (g) posTotals[g] += r.min;
     else posUnknown += r.min;
   }

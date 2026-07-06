@@ -15,10 +15,24 @@ function bucket(avg: number): PosGroup {
 }
 
 /** Guard / forward / center for a player, from position string then DARKO posNum. */
-export function positionGroup(position?: string | null, posNum?: number | null): PosGroup | null {
+export function positionGroup(
+  position?: string | null,
+  posNum?: number | null,
+  darkoPos?: string | null
+): PosGroup | null {
   const toks = (position ?? '').toUpperCase().match(/PG|SG|SF|PF|C|G|F/g);
   if (toks && toks.length) {
-    return bucket(toks.reduce((s, t) => s + (RANK[t] ?? 3), 0) / toks.length);
+    let g = bucket(toks.reduce((s, t) => s + (RANK[t] ?? 3), 0) / toks.length);
+    // Forward-first dual listings like "PF, C" average to center, but the player
+    // really plays the 4 (Mobley). When the FIRST-listed slot is a forward and
+    // DARKO agrees it's a forward, count them as a forward. Center-first listings
+    // ("C, PF" — Adebayo, Portis) stay centers, as do clean "C" listings.
+    const primaryForward = toks[0] === 'PF' || toks[0] === 'SF' || toks[0] === 'F';
+    if (g === 'C' && primaryForward && darkoPos) {
+      const dp = darkoPos.toUpperCase();
+      if (dp === 'F' || dp === 'F-C' || dp === 'SF' || dp === 'PF') g = 'F';
+    }
+    return g;
   }
   if (posNum != null && Number.isFinite(posNum)) return bucket(posNum);
   return null;
