@@ -979,6 +979,31 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .rb-pos-diff.rb-over { color: var(--coral); }
 .rb-pos-diff.rb-under { color: var(--blue); }
 .rb-pos-diff.rb-on { color: var(--green); }
+/* Lineup diagnostics — structural flags, independent of DPM */
+.rb-diag {
+  padding: 12px 14px; background: var(--card);
+  border: 1px solid var(--rule); border-radius: var(--radius-sm);
+}
+.rb-diag-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.rb-diag-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); }
+.rb-diag-sub { font-size: 11px; color: var(--ink-faint); }
+.rb-diag-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+.rb-flag {
+  display: flex; flex-direction: column; gap: 3px; padding: 9px 11px;
+  border: 1px solid var(--rule); border-left-width: 3px; border-radius: var(--radius-sm); background: var(--bg);
+}
+.rb-flag-good { border-left-color: var(--green); }
+.rb-flag-watch { border-left-color: var(--yellow); }
+.rb-flag-alert { border-left-color: var(--red); }
+.rb-flag-top { display: flex; align-items: center; gap: 7px; }
+.rb-flag-dot { width: 8px; height: 8px; border-radius: 999px; flex: none; }
+.rb-dot-good { background: var(--green); }
+.rb-dot-watch { background: var(--yellow); }
+.rb-dot-alert { background: var(--red); }
+.rb-flag-label { font-size: 12.5px; font-weight: 600; color: var(--ink); flex: 1 1 auto; }
+.rb-flag-val { font-family: var(--serif); font-size: 17px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.rb-flag-target { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); }
+.rb-flag-detail { font-size: 11.5px; line-height: 1.35; color: var(--ink-soft); }
 /* Player rows */
 .rb-list { display: flex; flex-direction: column; }
 .rb-row {

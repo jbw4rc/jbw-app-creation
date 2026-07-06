@@ -16,6 +16,7 @@ import {
 import { rankForDpm, tierForRank, TIER_META } from '../lib/teamTalent';
 import { positionGroup, POSITION_TARGETS, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
 import { archetype } from '../lib/archetype';
+import { diagnoseLineup } from '../lib/lineupDiagnostics';
 
 // ---------------------------------------------------------------------------
 // Rotation Builder: hand out a team's 240 game-minutes (current season) and see
@@ -101,6 +102,10 @@ export function RotationBuilder() {
   const valDelta = currentDpm - baselineDpm;
   const rankDelta = base.overall - cur.overall; // >0 = climbed
   const edited = hasMinuteOverrides(abbr);
+
+  // Structural flags (spacing, rim protection, playmaking, shot distribution,
+  // rebounding) — kept entirely separate from the DPM talent number above.
+  const diag = diagnoseLineup(rotation, mins);
 
   // Cap the total at 240: a player can rise only into the minutes still free.
   const setMin = (id: string, next: number) => {
@@ -192,6 +197,28 @@ export function RotationBuilder() {
             </span>
           </span>
         )}
+      </div>
+
+      {/* Lineup diagnostics — construction flags, independent of the DPM talent
+          number. Reads "expected players with X on the floor" from your minutes. */}
+      <div className="rb-diag">
+        <div className="rb-diag-head">
+          <span className="rb-diag-title">Lineup diagnostics</span>
+          <span className="rb-diag-sub">structural fit — separate from talent (DPM)</span>
+        </div>
+        <div className="rb-diag-grid">
+          {diag.flags.map((f) => (
+            <div className={`rb-flag rb-flag-${f.level}`} key={f.key}>
+              <span className="rb-flag-top">
+                <span className={`rb-flag-dot rb-dot-${f.level}`} aria-hidden />
+                <span className="rb-flag-label">{f.label}</span>
+                <span className="rb-flag-val">{f.onFloor.toFixed(1)}</span>
+              </span>
+              <span className="rb-flag-target">healthy {f.target}</span>
+              <span className="rb-flag-detail">{f.detail}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="rb-toolbar">
