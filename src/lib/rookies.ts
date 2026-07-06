@@ -13,8 +13,9 @@ import { darkoFor } from './darko';
 //    number (monotonic: the #1 pick earns the most, #30 the least). First-round
 //    rookies are flagged `signedUsing === 'RSC'`.
 //  • Minutes: high picks play big developmental minutes; late firsts get spot
-//    minutes; second-rounders / UDFAs barely play. (Real first-round rookie MPG
-//    by slot: top-3 ~27, 4-9 ~22, 10-14 ~16, 15-22 ~12, 23-30 ~8.)
+//    minutes. (Real first-round rookie MPG by slot: top-3 ~27, 4-9 ~22, 10-14
+//    ~16, 15-22 ~12, 23-30 ~8.) We only project FIRST-round picks — second-round
+//    and undrafted rookies rarely earn rotation minutes and stay at 0.
 //  • Value: rookies are almost always BELOW replacement in year one — a real
 //    short-term drag that scales with slot. This is the current-season
 //    expectation; the aging curve handles the upside in later years.
@@ -48,15 +49,12 @@ export function rookieInfo(p: Player): RookieProjection | null {
   const salM = cy && cy.salary > 0 ? cy.salary / 1e6 : 0;
   if (salM <= 0) return null;
 
-  // First-round rookies sign rookie-scale (RSC) contracts.
+  // Only project first-round rookies (rookie-scale / RSC contracts). Second-round
+  // and undrafted rookies rarely earn rotation minutes — some barely get signed —
+  // so we leave them at 0 / replacement rather than inventing playing time.
   if (p.signedUsing === 'RSC') {
     const b = firstRoundBand(salM);
     return { ...b, firstRound: true };
-  }
-  // Young, no-DARKO, small contract = second-rounder / two-way convert / UDFA:
-  // deep-bench developmental minutes at well below replacement.
-  if (p.age <= 22 && salM < 3.5) {
-    return { dpm: -3.4, min: 6, label: '2nd-round rookie', firstRound: false };
   }
   return null;
 }
