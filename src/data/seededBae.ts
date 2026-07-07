@@ -10,16 +10,16 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "Taxpayer-MLE Used ( Jock Landale )"
   },
   "BOS": {
-    "initial": 5477000,
+    "initial": 5181680,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 5181680,
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "BKN": {
     "initial": 0,
     "used": 0,
     "space": 0,
-    "note": "Room-MLE Used ( Josh Minott )"
+    "note": "Cap Room Used ( Josh Minott )"
   },
   "CHA": {
     "initial": 5477000,
@@ -76,10 +76,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "LAC": {
-    "initial": 5477000,
+    "initial": 0,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "LAL": {
     "initial": 0,
@@ -136,9 +136,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHI": {
-    "initial": 4688580,
+    "initial": 1161227,
     "used": 0,
-    "space": 4688580,
+    "space": 1161227,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHX": {
@@ -154,9 +154,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "SAC": {
-    "initial": 0,
+    "initial": 2734551,
     "used": 0,
-    "space": 0,
+    "space": 2734551,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "SAS": {
