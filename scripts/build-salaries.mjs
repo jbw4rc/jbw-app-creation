@@ -110,9 +110,15 @@ function parseRosterTable(tableHtml) {
       const cell = cells[i] || '';
       if (/class="[^"]*\bufa\b/i.test(cell)) { contract.push({ season, salary: 0, option: 'ufa' }); continue; }
       if (/class="[^"]*\brfa\b/i.test(cell)) { contract.push({ season, salary: 0, option: 'rfa' }); continue; }
-      const capM = cell.match(/class="cap_hit[^"]*"[^>]*>\s*\$?([\d,]+)/i);
-      if (!capM) continue;
-      const salary = dollars(capM[1]);
+      // Salary cell (SalarySwish marks it class="cap_hit …"). Pull the dollar
+      // figure from the cell's TEXT rather than requiring it to sit right after
+      // the tag: an extension's first year prepends an arrow marker (icon/glyph)
+      // before the amount, which the old adjacency match dropped — zeroing out,
+      // e.g., the first year of a freshly signed extension.
+      if (!/class="cap_hit/i.test(cell)) continue;
+      const numM = strip(cell).match(/([\d,]{4,})/);
+      if (!numM) continue;
+      const salary = dollars(numM[1]);
       if (salary <= 0) continue;
       let option = 'guaranteed';
       if (/team_option_tag[^>]*>\s*P\b/i.test(cell)) option = 'player';
