@@ -94,7 +94,7 @@ export default function App() {
       <LeagueThresholds />
 
       <main className="app-main">
-        {tab === 'myteam' && <MyTeam onNavigate={setTab} />}
+        {tab === 'myteam' && <MyTeam />}
         {tab === 'explorer' && <TeamExplorer />}
         {tab === 'stats' && <StatsExplorer />}
         {tab === 'rotation' && <RotationBuilder />}

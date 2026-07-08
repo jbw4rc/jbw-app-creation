@@ -226,6 +226,7 @@ export function startSession(myTeam: string): void {
   const baseline: Record<string, Player[]> = {};
   for (const t of cache) baseline[t.abbreviation] = t.players;
   session = { myTeam, startedAt: new Date().toISOString(), moves: [], rosters: {}, baseline };
+  setSelectedTeam(myTeam); // focus the shared selection on the franchise you're running
   commit();
 }
 
@@ -246,6 +247,7 @@ export function resetSession(): void {
 export function setSessionTeam(myTeam: string): void {
   if (!session || session.myTeam === myTeam) return;
   session = { ...session, myTeam };
+  setSelectedTeam(myTeam); // keep the shared selection on the franchise you're running
   commit();
 }
 

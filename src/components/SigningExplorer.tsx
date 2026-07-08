@@ -89,13 +89,16 @@ const ROSTER_MIN_FOR_CAP = 12; // cap-space teams charge empty slots up to 12
 
 export function SigningExplorer({
   onSignAndTrade,
+  lockTeam,
 }: {
   onSignAndTrade?: (acquiring: string, rights: string, faName: string) => void;
+  lockTeam?: string; // GM Mode pins the signing team to your franchise
 } = {}) {
   const teams = useTeams();
   // Default to the team last selected in Team Explorer; keep the shared
   // selection in sync when the user picks a different team here.
-  const [abbr, setAbbr] = useState(getSelectedTeam);
+  const [abbrState, setAbbr] = useState(getSelectedTeam);
+  const abbr = lockTeam ?? abbrState;
   const [selectedFA, setSelectedFA] = useState<string | null>(null);
   const [renounced, setRenounced] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
@@ -214,16 +217,18 @@ export function SigningExplorer({
             (n={CONTRACT_MODEL_INFO.n} deals, R²={CONTRACT_MODEL_INFO.r2.toFixed(2)}) vs DARKO value
           </span>
         </div>
-        <label className="se-team">
-          <span>Signing team</span>
-          <select value={abbr} onChange={(e) => changeTeam(e.target.value)}>
-            {teams.map((t) => (
-              <option key={t.abbreviation} value={t.abbreviation}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!lockTeam && (
+          <label className="se-team">
+            <span>Signing team</span>
+            <select value={abbr} onChange={(e) => changeTeam(e.target.value)}>
+              {teams.map((t) => (
+                <option key={t.abbreviation} value={t.abbreviation}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       {/* Team's signing tools + cap room before/after renouncing holds. */}

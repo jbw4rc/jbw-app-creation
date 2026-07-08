@@ -47,10 +47,11 @@ type SortKey = 'min' | 'dpm' | 'name' | 'pos';
 const SORT_LABEL: Record<SortKey, string> = { min: 'Minutes', dpm: 'DPM', name: 'Name', pos: 'Position' };
 const GROUP_ORDER: Record<string, number> = { G: 0, F: 1, C: 2 };
 
-export function RotationBuilder() {
+export function RotationBuilder({ lockTeam }: { lockTeam?: string } = {}) {
   const teams = useTeams();
   useMinutesVersion(); // re-render on edits
-  const abbr = useSelectedTeam();
+  const selected = useSelectedTeam();
+  const abbr = lockTeam ?? selected; // GM Mode pins this to your franchise
   const team = teams.find((t) => t.abbreviation === abbr) ?? teams[0];
   const [sortKey, setSortKey] = useState<SortKey>('min');
   const [sortNonce, setSortNonce] = useState(0);
@@ -161,23 +162,25 @@ export function RotationBuilder() {
 
   return (
     <div className="rotation-builder">
-      <div className="team-picker">
-        {teams.map((t) => {
-          const s = summarizeTeamSeason(t, CURRENT_SEASON);
-          return (
-            <button
-              key={t.abbreviation}
-              className={`team-chip tier-border-${s.tier}${t.abbreviation === abbr ? ' active' : ''}`}
-              onClick={() => setSelectedTeam(t.abbreviation)}
-            >
-              <span className="chip-abbr">{t.abbreviation}</span>
-              {getRosterStatus(t.abbreviation).imported && (
-                <span className="chip-imported" title="Imported data">✓</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {!lockTeam && (
+        <div className="team-picker">
+          {teams.map((t) => {
+            const s = summarizeTeamSeason(t, CURRENT_SEASON);
+            return (
+              <button
+                key={t.abbreviation}
+                className={`team-chip tier-border-${s.tier}${t.abbreviation === abbr ? ' active' : ''}`}
+                onClick={() => setSelectedTeam(t.abbreviation)}
+              >
+                <span className="chip-abbr">{t.abbreviation}</span>
+                {getRosterStatus(t.abbreviation).imported && (
+                  <span className="chip-imported" title="Imported data">✓</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Impact panel — value & rank vs the DARKO baseline */}
       <div className="rb-impact">

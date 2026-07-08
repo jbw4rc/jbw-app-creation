@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import type { TradeSetup } from '../App';
 import { CURRENT_SEASON } from '../data/leagueConstants';
 import { summarizeTeamSeason } from '../lib/apron';
 import {
@@ -16,6 +18,10 @@ import { teamNeeds, tradeChips, draftTally } from '../lib/teamNeeds';
 import { freeAgentQuiver } from '../lib/freeAgentQuiver';
 import { usedExceptionsFor, useSignings } from '../lib/signingsStore';
 import { money } from '../lib/format';
+import { RotationBuilder } from './RotationBuilder';
+import { TradeTargets } from './TradeTargets';
+import { TradeMachine } from './TradeMachine';
+import { SigningExplorer } from './SigningExplorer';
 
 // ---------------------------------------------------------------------------
 // My Team — the GM "game". Pick your franchise, read its needs and the
@@ -25,7 +31,16 @@ import { money } from '../lib/format';
 
 const netFmt = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(1)}`;
 
-type TabId = 'rotation' | 'targets' | 'trade' | 'signings';
+// GM Mode is a self-contained workspace: the tools open *inside* this tab as
+// sub-views rather than kicking you out to the top-level tabs, so the game loop
+// (see a need → make a move → watch your rank move) stays in one place.
+type GmView = 'dashboard' | 'targets' | 'trade' | 'signings' | 'rotation';
+const VIEW_LABEL: Record<Exclude<GmView, 'dashboard'>, string> = {
+  targets: 'Trade Targets',
+  trade: 'Trade Machine',
+  signings: 'Sign a Free Agent',
+  rotation: 'Rotation',
+};
 
 // The contention ladder, worst → best — the game board you're climbing.
 const LADDER: TalentTier[] = ['cellar', 'fringe', 'playoff', 'contender'];
@@ -50,11 +65,21 @@ function TierLadder({ current, start }: { current: TalentTier; start: TalentTier
   );
 }
 
-export function MyTeam({ onNavigate }: { onNavigate?: (tab: TabId) => void }) {
+export function MyTeam() {
   const teams = useTeams();
   const session = useSession();
   const selected = useSelectedTeam();
   useSignings(); // re-render as signings change (signing power)
+
+  // Which tool is open inside GM Mode, plus a sign-and-trade hand-off from the
+  // Signings sub-view to the Trade Machine sub-view.
+  const [view, setView] = useState<GmView>('dashboard');
+  const [tradeSetup, setTradeSetup] = useState<TradeSetup | null>(null);
+  // Snap back to the dashboard whenever the session ends or you switch teams.
+  useEffect(() => {
+    setView('dashboard');
+    setTradeSetup(null);
+  }, [session?.myTeam]);
 
   const TeamPicker = ({ current, onPick }: { current: string; onPick: (a: string) => void }) => (
     <div className="team-picker">
@@ -125,6 +150,61 @@ export function MyTeam({ onNavigate }: { onNavigate?: (tab: TabId) => void }) {
     cur?.tier === 'contender'
       ? 'You built a contender. Now go win it.'
       : `Climb from ${cur ? TIER_META[cur.tier].label : '—'} to Contender.`;
+
+  // --- A tool opened inside GM Mode: the self-contained workspace ------------
+  // The dashboard's mini-scoreboard stays pinned on top, so a move you commit
+  // in the tool ticks your value/rank without leaving the view.
+  if (view !== 'dashboard') {
+    return (
+      <div className="myteam gm gm-workspace">
+        <div className="gm-subhead">
+          <button className="gm-back" onClick={() => setView('dashboard')}>
+            ← Dashboard
+          </button>
+          <div className="gm-subhead-crumb">
+            <span className="cs-kicker">GM · {team?.name ?? abbr}</span>
+            <span className="gm-subhead-view">{VIEW_LABEL[view]}</span>
+          </div>
+          {cur && (
+            <div className="gm-subhead-score">
+              <div className="gm-mini">
+                <span className="gm-mini-label">Team value</span>
+                <span className="gm-mini-val">{netFmt(cur.dpm)}</span>
+              </div>
+              <div className="gm-mini">
+                <span className="gm-mini-label">League rank</span>
+                <span className="gm-mini-val">
+                  #{cur.overallRank}
+                  <span className="gm-mini-of">/30</span>
+                </span>
+              </div>
+              {rankUp !== 0 && (
+                <span className={`gm-mini-delta ${rankUp > 0 ? 'rb-up' : 'rb-down'}`}>
+                  {rankUp > 0 ? `▲ ${rankUp}` : `▼ ${Math.abs(rankUp)}`} this session
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="gm-subview">
+          {view === 'targets' && <TradeTargets />}
+          {view === 'trade' && (
+            <TradeMachine setup={tradeSetup} onConsumeSetup={() => setTradeSetup(null)} />
+          )}
+          {view === 'signings' && (
+            <SigningExplorer
+              lockTeam={abbr}
+              onSignAndTrade={(acquiring, rights, faName) => {
+                setTradeSetup({ acquiring, rights, faName });
+                setView('trade');
+              }}
+            />
+          )}
+          {view === 'rotation' && <RotationBuilder lockTeam={abbr} />}
+        </div>
+      </div>
+    );
+  }
 
   const StatCompare = ({ label, curText, baseText, delta }: { label: string; curText: string; baseText: string; delta: number }) => (
     <div className="rb-stat">
@@ -256,19 +336,19 @@ export function MyTeam({ onNavigate }: { onNavigate?: (tab: TabId) => void }) {
       <div className="gm-do">
         <span className="gm-do-label">Make your move</span>
         <div className="gm-do-btns">
-          <button className="gm-do-btn" onClick={() => onNavigate?.('targets')}>
+          <button className="gm-do-btn" onClick={() => setView('targets')}>
             <strong>Find trade targets</strong>
             <span>cap-legal deals for your needs</span>
           </button>
-          <button className="gm-do-btn" onClick={() => onNavigate?.('trade')}>
+          <button className="gm-do-btn" onClick={() => setView('trade')}>
             <strong>Trade Machine</strong>
             <span>build a swap by hand</span>
           </button>
-          <button className="gm-do-btn" onClick={() => onNavigate?.('signings')}>
+          <button className="gm-do-btn" onClick={() => setView('signings')}>
             <strong>Sign a free agent</strong>
             <span>spend your cap / exceptions</span>
           </button>
-          <button className="gm-do-btn" onClick={() => onNavigate?.('rotation')}>
+          <button className="gm-do-btn" onClick={() => setView('rotation')}>
             <strong>Adjust rotation</strong>
             <span>optimize the minutes you have</span>
           </button>
