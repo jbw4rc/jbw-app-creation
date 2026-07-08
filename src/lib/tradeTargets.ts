@@ -43,6 +43,8 @@ function providesNeed(key: string, d: DarkoInfo): boolean {
   switch (key) {
     case 'rim':
       return v(b.blk) >= 1.6 && (grp === 'C' || grp === 'F');
+    case 'poa':
+      return (d.ddpm ?? 0) >= 0.5 && v(b.stl) >= 1.5 && (grp === 'G' || grp === 'F');
     case 'spacing':
       return v(b.fg3a) >= 4 && v(b.fg3pct) >= 0.34;
     case 'playmaking':

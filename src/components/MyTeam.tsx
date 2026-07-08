@@ -22,6 +22,7 @@ import { RotationBuilder } from './RotationBuilder';
 import { TradeTargets } from './TradeTargets';
 import { TradeMachine } from './TradeMachine';
 import { SigningExplorer } from './SigningExplorer';
+import { TeamProfile } from './TeamProfile';
 
 // ---------------------------------------------------------------------------
 // My Team — the GM "game". Pick your franchise, read its needs and the
@@ -269,6 +270,9 @@ export function MyTeam() {
           />
         </div>
       )}
+
+      {/* League-relative scouting profile: strengths & weaknesses by axis. */}
+      <TeamProfile abbr={abbr} />
 
       {/* Needs + Arsenal — the heart of the game loop */}
       <div className="gm-cols">

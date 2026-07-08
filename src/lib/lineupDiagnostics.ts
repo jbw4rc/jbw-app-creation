@@ -43,6 +43,7 @@ interface Attr {
   shooter: boolean;
   creator: boolean;
   rim: boolean;
+  poa: boolean; // point-of-attack / perimeter defender
   rebounder: boolean;
   highUsage: boolean;
 }
@@ -71,6 +72,11 @@ function attrsFor(rotation: Player[], mins: Record<string, number>): Attr[] {
       creator: !!b && v(b.ast) >= 5,
       // Rim protection needs shot-blocking AND size (guards don't protect the rim).
       rim: !!b && v(b.blk) >= 1.6 && (grp === 'C' || grp === 'F'),
+      // Point-of-attack defender: a guard/wing who defends (positive D-DPM) and
+      // gets after it on the ball (steals). This is the perimeter stopper that
+      // keeps quick guards out of the paint — the thing block-based rim
+      // protection can't measure.
+      poa: !!b && (d?.ddpm ?? 0) >= 0.5 && v(b.stl) >= 1.5 && (grp === 'G' || grp === 'F'),
       rebounder: !!b && v(b.reb) >= 9,
       highUsage: usage >= 22,
     });
@@ -138,6 +144,27 @@ export function diagnoseLineup(rotation: Player[], mins: Record<string, number>)
           ? `${one(val)} rim protectors on average — the paint is defended.`
           : `${one(val)} rim protectors on the floor on average.` +
             (exposed > 0 ? ` ${Math.round(exposed)} frontcourt minutes have no shot-blocking.` : ''),
+    });
+  }
+
+  // --- Point-of-attack defense --------------------------------------------
+  {
+    const val = onFloor(a, (x) => x.poa);
+    const level = levelFor(val, 1.0, 0.6);
+    const leak = a
+      .filter((x) => (x.grp === 'G' || x.grp === 'F') && !x.poa)
+      .reduce((s, x) => s + x.min, 0);
+    flags.push({
+      key: 'poa',
+      label: 'Perimeter defense',
+      onFloor: val,
+      target: '≥ 1.0 on-ball',
+      level,
+      detail:
+        level === 'good'
+          ? `${one(val)} on-ball defenders on average — the point of attack is covered.`
+          : `${one(val)} perimeter stoppers on the floor on average — quick guards can get downhill.` +
+            (leak > 0 ? ` ${Math.round(leak)} guard/wing minutes with no plus defender.` : ''),
     });
   }
 
