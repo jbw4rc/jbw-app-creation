@@ -1240,6 +1240,43 @@ h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 700; letter-spac
 .tp-rank { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-soft); text-align: right; }
 .tp-row.tp-strength .tp-rank { color: var(--green); font-weight: 600; }
 .tp-row.tp-weak .tp-rank { color: var(--red); font-weight: 600; }
+/* ---- Financial flexibility + draft assets cards ---- */
+.grade-pill {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px;
+  padding: 0 9px; border-radius: 9px; color: #fff; font-family: var(--serif); font-size: 21px;
+  font-weight: 700; flex-shrink: 0; font-variant-numeric: tabular-nums;
+}
+.grade-pill.grade-strength { background: var(--green); }
+.grade-pill.grade-solid { background: var(--blue); }
+.grade-pill.grade-weak { background: var(--red); }
+.ff-horizon { display: flex; gap: 11px; align-items: flex-start; padding: 9px 0; }
+.ff-horizon + .ff-horizon { border-top: 1px solid var(--rule); }
+.ff-horizon-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ff-horizon-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-weight: 700; }
+.ff-horizon-blurb { font-size: 12px; color: var(--ink-soft); line-height: 1.45; }
+.ff-traj { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 5px; }
+.ff-traj-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); font-weight: 700; }
+.ff-traj-row { display: grid; grid-template-columns: 54px 1fr auto; align-items: center; gap: 9px; }
+.ff-traj-season { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.ff-traj-track { height: 7px; border-radius: 4px; background: var(--rule); overflow: hidden; }
+.ff-traj-fill { height: 100%; border-radius: 4px; }
+.ff-traj-amt { font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; text-align: right; min-width: 56px; }
+.ff-traj-foot { font-size: 10px; color: var(--ink-faint); margin-top: 1px; }
+.da-picks { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.da-pick { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.da-pick-yr { font-size: 12px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 58px; }
+.da-origin {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule-strong); color: var(--ink-soft);
+}
+.da-origin.da-incoming { color: var(--green); border-color: var(--green); }
+.da-cond {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 1px 7px; border-radius: 999px; border: 1px solid var(--orange); color: var(--orange);
+}
+.da-pick-val { margin-left: auto; font-size: 11.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.da-more { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+.da-stepien { display: block; margin-top: 8px; font-size: 11px; color: var(--coral); }
 /* ---- Clickable player name + stat card ---- */
 .pl-name {
   font: inherit; color: inherit; background: none; border: none; padding: 0; margin: 0; cursor: pointer;

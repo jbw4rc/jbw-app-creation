@@ -23,6 +23,8 @@ import { TradeTargets } from './TradeTargets';
 import { TradeMachine } from './TradeMachine';
 import { SigningExplorer } from './SigningExplorer';
 import { TeamProfile } from './TeamProfile';
+import { FinancialCard } from './FinancialCard';
+import { DraftAssetsCard } from './DraftAssetsCard';
 
 // ---------------------------------------------------------------------------
 // My Team — the GM "game". Pick your franchise, read its needs and the
@@ -335,6 +337,14 @@ export function MyTeam() {
           </div>
         </div>
       </div>
+
+      {/* Financial flexibility + draft assets — the resources behind the moves */}
+      {team && (
+        <div className="gm-cols">
+          <FinancialCard team={team} />
+          <DraftAssetsCard team={team} />
+        </div>
+      )}
 
       {/* Make a move */}
       <div className="gm-do">
