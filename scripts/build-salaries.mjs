@@ -443,7 +443,11 @@ const bad = [];
 for (const r of report.sort((a, b) => a.abbr.localeCompare(b.abbr))) {
   if (r.ok) exact++;
   // Plausibility gates (independent of the flaky per-team total-row parse).
-  if (r.n < 7 || r.n > 21) bad.push(`${r.abbr}: ${r.n} players`);
+  // Upper bound is generous: a team can carry 15 standard + 3 two-way plus
+  // several dead/waived and non-guaranteed contracts across the cap-counting
+  // sections, so >24 (not >21) is the real "something's duplicated" signal —
+  // the per-team checksum already guards correctness.
+  if (r.n < 7 || r.n > 24) bad.push(`${r.abbr}: ${r.n} players`);
   if (r.sum2026 < 60_000_000 || r.sum2026 > 320_000_000) bad.push(`${r.abbr}: sum $${r.sum2026.toLocaleString()}`);
   console.log(
     `  ${r.abbr.padEnd(4)} ${String(r.n).padStart(3)}   $${r.sum2026.toLocaleString().padStart(14)}   $${r.checksum.toLocaleString().padStart(14)} ${r.ok ? 'exact' : ''}`
