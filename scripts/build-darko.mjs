@@ -51,16 +51,23 @@ for (const p of parts) {
   const age = num((p.match(/(?:^|[,{])age:(-?[\d.]+)/) || [])[1]);
   const pos = (p.match(/(?:^|[,{])position:"([^"]*)"/) || [])[1] || null;
   const posNum = num((p.match(/(?:^|[,{])position_num:(-?[\d.]+)/) || [])[1]);
+  // x_position: DARKO's projected 5-way position ARCHETYPE ("pg_pos" … "c_pos").
+  // Cleaner than the coarse `position` string (which mislabels e.g. shooting
+  // guards as "F") — this is the position we group off of.
+  const xpos = (p.match(/(?:^|[,{])x_position:"([^"]*)"/) || [])[1] || null;
   // x_minutes: DARKO's projected minutes per game — used to weight team talent by
   // real playing time (a team only has 240 player-minutes to allocate a game).
   const min = num((p.match(/(?:^|[,{])x_minutes:(-?[\d.]+)/) || [])[1]);
   // Projected per-100-possession box line — drives the derived player archetype
   // (playmaking, shot volume, 3-point rate, rim protection, rebounding).
   const g100 = (k) => num((p.match(new RegExp(`(?:^|[,{])x_${k}_100:(-?[\\d.]+)`)) || [])[1]);
+  // Keep offensive and defensive rebounds SEPARATE (they're different skills);
+  // reb stays as the sum for backward compatibility.
+  const orb = g100('orb'), drb = g100('drb');
   const box = {
     pts: g100('pts'), ast: g100('ast'), stl: g100('stl'), blk: g100('blk'),
     tov: g100('tov'), fga: g100('fga'), fg3a: g100('fg3a'), fta: g100('fta'),
-    reb: (g100('orb') ?? 0) + (g100('drb') ?? 0),
+    orb, drb, reb: (orb ?? 0) + (drb ?? 0),
     fg3pct: num((p.match(/(?:^|[,{])x_fg3_pct:(-?[\d.]+)/) || [])[1]),
   };
   // s1..s15: DARKO's player-specific value-retention curve by future season
@@ -72,7 +79,7 @@ for (const p of parts) {
   if (!id || !name || dpm == null) continue;
   // Keep one row per player (the most-experienced / current snapshot line).
   const prev = byId.get(id);
-  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games, age, pos, posNum, min, box, decline });
+  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games, age, pos, xpos, posNum, min, box, decline });
 }
 
 const players = [...byId.values()].sort((a, b) => b.dpm - a.dpm);
@@ -97,10 +104,12 @@ for (const p of players) {
       rank: p.rank,
       age: p.age == null ? null : Math.round(p.age * 10) / 10,
       pos: p.pos,
-      posNum: p.posNum == null ? null : Math.round(p.posNum * 10) / 10,
+      xpos: p.xpos,
+      posNum: p.posNum == null ? null : Math.round(p.posNum * 100) / 100,
       min: p.min == null ? null : Math.round(p.min * 10) / 10,
       box: p.box.pts == null ? null : {
-        pts: r3(p.box.pts), ast: r3(p.box.ast), reb: r3(p.box.reb), stl: r3(p.box.stl),
+        pts: r3(p.box.pts), ast: r3(p.box.ast), reb: r3(p.box.reb),
+        orb: r3(p.box.orb), drb: r3(p.box.drb), stl: r3(p.box.stl),
         blk: r3(p.box.blk), tov: r3(p.box.tov), fga: r3(p.box.fga), fg3a: r3(p.box.fg3a),
         fta: r3(p.box.fta), fg3pct: r3(p.box.fg3pct),
       },
@@ -112,8 +121,8 @@ writeFileSync(
   'src/data/seededDarko.ts',
   `// AUTO-GENERATED DARKO Daily Plus-Minus (DPM) from darko.app.\n` +
     `// Regenerate: node scripts/build-darko.mjs\n` +
-    `export interface DarkoBox { pts: number | null; ast: number | null; reb: number | null; stl: number | null; blk: number | null; tov: number | null; fga: number | null; fg3a: number | null; fta: number | null; fg3pct: number | null; }\n` +
-    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; posNum: number | null; min: number | null; box: DarkoBox | null; decline: (number | null)[]; }\n\n` +
+    `export interface DarkoBox { pts: number | null; ast: number | null; reb: number | null; orb: number | null; drb: number | null; stl: number | null; blk: number | null; tov: number | null; fga: number | null; fg3a: number | null; fta: number | null; fg3pct: number | null; }\n` +
+    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; xpos: string | null; posNum: number | null; min: number | null; box: DarkoBox | null; decline: (number | null)[]; }\n\n` +
     `// Keyed by normalized player name (lowercase, no accents/punctuation).\n` +
     `export const SEEDED_DARKO: Record<string, DarkoInfo> = ${JSON.stringify(out, null, 0)};\n`
 );
