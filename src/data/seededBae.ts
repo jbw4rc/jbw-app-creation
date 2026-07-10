@@ -10,10 +10,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "Taxpayer-MLE Used ( Jock Landale )"
   },
   "BOS": {
-    "initial": 4767310,
+    "initial": 5477000,
     "used": 0,
-    "space": 4767310,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "BKN": {
     "initial": 0,
