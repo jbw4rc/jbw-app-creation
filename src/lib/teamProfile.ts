@@ -63,8 +63,10 @@ const DIMS: DimMeta[] = [
     strong: 'on-ball defenders wall off the point of attack', weakMsg: 'quick guards get downhill at will' },
   { key: 'rim', label: 'Rim protection', group: 'defense', arch: 'Rim Protector',
     strong: 'the paint is well protected', weakMsg: 'little rim protection behind the defense' },
-  { key: 'rebounding', label: 'Rebounding', group: 'defense', arch: 'Interior Big',
-    strong: 'controls the glass', weakMsg: 'vulnerable on the boards' },
+  { key: 'defGlass', label: 'Def. rebounding', group: 'defense', arch: 'Interior Big',
+    strong: 'closes out possessions on the defensive glass', weakMsg: 'gives up second chances on the defensive glass' },
+  { key: 'offGlass', label: 'Off. rebounding', group: 'offense', arch: 'Interior Big',
+    strong: 'crashes the offensive glass for second-chance points', weakMsg: "doesn't crash the offensive boards" },
 ];
 
 interface Raw {
@@ -74,7 +76,8 @@ interface Raw {
   poa: number;
   rim: number;
   playmaking: number;
-  rebounding: number;
+  offGlass: number; // minutes-weighted offensive rebounds per 100 (DARKO)
+  defGlass: number; // minutes-weighted defensive rebounds per 100 (DARKO)
   shotBalance: number;
 }
 
@@ -83,24 +86,29 @@ function rawFor(team: Team): Raw {
   const mins = allocation(team.abbreviation, rot);
   let offense = 0;
   let defense = 0;
-  const parts: { min: number; shooter: boolean; poa: boolean; rim: boolean; creator: boolean; rebounder: boolean; highUsage: boolean }[] = [];
+  let offGlass = 0;
+  let defGlass = 0;
+  const parts: { min: number; shooter: boolean; poa: boolean; rim: boolean; creator: boolean; highUsage: boolean }[] = [];
   for (const p of rot) {
     const min = mins[p.id] ?? 0;
     if (min <= 0) continue;
     const d = darkoFor(p.name);
     const b = d?.box;
-    const grp = positionGroup(p.position, d?.posNum, d?.pos);
+    const grp = positionGroup(p.position, d?.posNum, d?.pos, d?.xpos);
     const v = (x: number | null | undefined) => x ?? 0;
     const usage = b ? v(b.fga) + 0.44 * v(b.fta) : 0;
     offense += v(d?.odpm) * (min / ON);
     defense += v(d?.ddpm) * (min / ON);
+    // Offensive/defensive glass as minutes-weighted rebounds per 100 — the two
+    // rebounding skills modeled separately from DARKO's split.
+    offGlass += v(b?.orb) * (min / ON);
+    defGlass += v(b?.drb) * (min / ON);
     parts.push({
       min,
       shooter: !!b && v(b.fg3a) >= 4 && v(b.fg3pct) >= 0.34,
       poa: !!b && v(d?.ddpm) >= 0.5 && v(b.stl) >= 1.5 && (grp === 'G' || grp === 'F'),
       rim: !!b && v(b.blk) >= 1.6 && (grp === 'C' || grp === 'F'),
       creator: !!b && v(b.ast) >= 5,
-      rebounder: !!b && v(b.reb) >= 9,
       highUsage: usage >= 22,
     });
   }
@@ -113,7 +121,8 @@ function rawFor(team: Team): Raw {
     poa: onFloor((x) => x.poa),
     rim: onFloor((x) => x.rim),
     playmaking: onFloor((x) => x.creator),
-    rebounding: onFloor((x) => x.rebounder),
+    offGlass,
+    defGlass,
     shotBalance: -onFloor((x) => x.highUsage), // negate: fewer high-usage overlaps is better
   };
 }

@@ -39,7 +39,7 @@ function providesNeed(key: string, d: DarkoInfo): boolean {
   const b = d.box;
   if (!b) return false;
   const v = (x: number | null) => x ?? 0;
-  const grp = positionGroup(d.pos, d.posNum, d.pos);
+  const grp = positionGroup(d.pos, d.posNum, d.pos, d.xpos);
   switch (key) {
     case 'rim':
       return v(b.blk) >= 1.6 && (grp === 'C' || grp === 'F');

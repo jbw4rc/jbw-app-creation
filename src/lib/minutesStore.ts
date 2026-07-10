@@ -88,7 +88,7 @@ export function seedMinutes(players: Player[]): Record<string, number> {
       proj: Math.min(Math.round(projectedMinutes(p)), SEED_MAX_MIN),
       dpm: projectedDpm(p) ?? -2,
       age: p.age,
-      grp: (positionGroup(p.position, d?.posNum, d?.pos) ?? 'F') as PosGroup,
+      grp: (positionGroup(p.position, d?.posNum, d?.pos, d?.xpos) ?? 'F') as PosGroup,
     };
   });
   const out: Record<string, number> = {};

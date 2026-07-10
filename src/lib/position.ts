@@ -14,12 +14,32 @@ function bucket(avg: number): PosGroup {
   return avg < 2.5 ? 'G' : avg < 4.5 ? 'F' : 'C';
 }
 
-/** Guard / forward / center for a player, from position string then DARKO posNum. */
+// DARKO's projected position archetype ("pg_pos" … "c_pos") → G/F/C. This is the
+// cleanest single position signal (a proper 5-way read of where a player plays),
+// so it wins over the roster string and posNum when present.
+function xposGroup(x?: string | null): PosGroup | null {
+  if (!x) return null;
+  const m = x.toLowerCase();
+  if (m.startsWith('pg') || m.startsWith('sg')) return 'G';
+  if (m.startsWith('sf') || m.startsWith('pf')) return 'F';
+  if (m.startsWith('c')) return 'C';
+  if (m.startsWith('g')) return 'G';
+  if (m.startsWith('f')) return 'F';
+  return null;
+}
+
+/**
+ * Guard / forward / center for a player. Prefers DARKO's projected position
+ * archetype (`darkoXPos`), then the roster position string, then DARKO's posNum.
+ */
 export function positionGroup(
   position?: string | null,
   posNum?: number | null,
-  darkoPos?: string | null
+  darkoPos?: string | null,
+  darkoXPos?: string | null
 ): PosGroup | null {
+  const xg = xposGroup(darkoXPos);
+  if (xg) return xg;
   const toks = (position ?? '').toUpperCase().match(/PG|SG|SF|PF|C|G|F/g);
   if (toks && toks.length) {
     let g = bucket(toks.reduce((s, t) => s + (RANK[t] ?? 3), 0) / toks.length);

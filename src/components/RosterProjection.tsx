@@ -106,7 +106,7 @@ export function RosterProjection({ team }: { team: Team }) {
       rows.filter(
         (r) =>
           posFilter === 'all' ||
-          positionGroup(r.player.position, undefined, darkoFor(r.player.name)?.pos) === posFilter
+          positionGroup(r.player.position, undefined, darkoFor(r.player.name)?.pos, darkoFor(r.player.name)?.xpos) === posFilter
       ),
     [rows, posFilter]
   );

@@ -11,7 +11,7 @@ export function archetype(d: DarkoInfo | undefined | null): string | null {
   if (!d || !d.box || d.box.fga == null) return null;
   const b = d.box;
   const v = (x: number | null) => x ?? 0;
-  const grp = positionGroup(d.pos, d.posNum);
+  const grp = positionGroup(d.pos, d.posNum, d.pos, d.xpos);
   const usage = v(b.fga) + 0.44 * v(b.fta); // shot-creation volume per 100
   const threeRate = v(b.fga) > 0 ? v(b.fg3a) / v(b.fga) : 0;
   const od = d.odpm ?? 0;

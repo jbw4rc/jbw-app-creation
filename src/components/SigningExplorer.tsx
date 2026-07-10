@@ -53,6 +53,7 @@ interface FA {
   age: number | null;
   pos: string | null;
   posNum: number | null;
+  xpos: string | null; // DARKO projected position archetype
   rights: string | null; // team abbr holding Bird rights, if any
 }
 
@@ -74,6 +75,7 @@ const FA_POOL: FA[] = Object.entries(SEEDED_DARKO)
       age: d.age ?? null,
       pos: d.pos ?? null,
       posNum: d.posNum ?? null,
+      xpos: d.xpos ?? null,
       rights: RIGHTS[key] ?? null,
     };
   })
@@ -81,8 +83,8 @@ const FA_POOL: FA[] = Object.entries(SEEDED_DARKO)
 
 type PosFilter = 'all' | 'G' | 'F' | 'C';
 
-// Guard / forward / center for a free agent (position string first, DARKO num fallback).
-const posGroup = (fa: FA) => positionGroup(fa.pos, fa.posNum);
+// Guard / forward / center for a free agent (DARKO archetype first, then string/num).
+const posGroup = (fa: FA) => positionGroup(fa.pos, fa.posNum, fa.pos, fa.xpos);
 
 const MIN_SALARY = 2_296_274; // 2026-27 minimum (approx, vet)
 const ROSTER_MIN_FOR_CAP = 12; // cap-space teams charge empty slots up to 12

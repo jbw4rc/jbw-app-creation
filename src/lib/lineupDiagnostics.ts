@@ -55,7 +55,7 @@ function attrsFor(rotation: Player[], mins: Record<string, number>): Attr[] {
     if (min <= 0) continue;
     const d = darkoFor(p.name);
     const b = d?.box;
-    const grp = positionGroup(p.position, d?.posNum, d?.pos);
+    const grp = positionGroup(p.position, d?.posNum, d?.pos, d?.xpos);
     const v = (x: number | null | undefined) => x ?? 0;
     const usage = b ? v(b.fga) + 0.44 * v(b.fta) : 0;
     out.push({

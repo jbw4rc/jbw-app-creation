@@ -76,7 +76,7 @@ export function RotationBuilder({ lockTeam }: { lockTeam?: string } = {}) {
       id: p.id,
       name: p.name,
       pos: p.position || '—',
-      grp: positionGroup(p.position, d?.posNum, d?.pos),
+      grp: positionGroup(p.position, d?.posNum, d?.pos, d?.xpos),
       arch: archetype(d) ?? rook?.label ?? null,
       dpm,
       min,

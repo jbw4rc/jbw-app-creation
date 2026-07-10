@@ -99,7 +99,7 @@ export function optimizeRotation(
     return {
       id: p.id,
       name: p.name,
-      grp: positionGroup(p.position, d?.posNum, d?.pos) ?? 'F', // unlisted → forward
+      grp: positionGroup(p.position, d?.posNum, d?.pos, d?.xpos) ?? 'F', // unlisted → forward
       dpm: projectedDpm(p) ?? -2, // DARKO, else the rookie model, else replacement
       cap: minuteCeiling(projectedMinutes(p)), // realistic ceiling from projected minutes
     };

@@ -56,6 +56,10 @@ export interface PlayerStats {
   value?: number | null;
   /** DARKO market value minus actual salary, in $M. */
   surplus?: number | null;
+  /** DARKO projected offensive rebounds per 100 possessions. */
+  orb100?: number | null;
+  /** DARKO projected defensive rebounds per 100 possessions. */
+  drb100?: number | null;
 }
 
 export interface StatsBundle {
@@ -95,6 +99,8 @@ export const STAT_COLUMNS: StatColumn[] = [
   { key: 'salary', label: 'Cap Hit', title: 'Contract cap hit / actual salary this season ($M)', decimals: 1, money: true, groups: ['darko'] },
   { key: 'value', label: 'Value', title: "DARKO's estimated open-market value for this player ($M)", decimals: 1, money: true, groups: ['darko', 'advanced'] },
   { key: 'surplus', label: 'Surplus', title: 'Value minus Cap Hit ($M) — positive = a bargain, negative = overpaid', decimals: 1, money: true, groups: ['darko'] },
+  { key: 'orb100', label: 'ORB/100', title: 'DARKO projected offensive rebounds per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
+  { key: 'drb100', label: 'DRB/100', title: 'DARKO projected defensive rebounds per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
 
   { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, groups: ['box'] },
   { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, groups: ['box'] },

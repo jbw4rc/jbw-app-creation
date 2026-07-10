@@ -35,7 +35,8 @@ for (const t of TEAMS) for (const pl of t.players) CURRENT_TEAM[norm(pl.name)] =
 const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {
   const d = SEEDED_DARKO[norm(p.name)];
   const row: PlayerStats = d
-    ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus }
+    ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus,
+        orb100: d.box?.orb ?? null, drb100: d.box?.drb ?? null }
     : { ...p };
   const ct = CURRENT_TEAM[norm(p.name)] ?? FREE_AGENT;
   row.team = ct;
@@ -82,7 +83,10 @@ export function StatsExplorer() {
       list = list.filter((p) => p.g >= minGames);
     }
     if (pos !== 'all') {
-      list = list.filter((p) => positionGroup(p.pos, undefined, SEEDED_DARKO[norm(p.name)]?.pos) === pos);
+      list = list.filter((p) => {
+        const dk = SEEDED_DARKO[norm(p.name)];
+        return positionGroup(p.pos, undefined, dk?.pos, dk?.xpos) === pos;
+      });
     }
     if (query.trim()) {
       const q = query.toLowerCase();
