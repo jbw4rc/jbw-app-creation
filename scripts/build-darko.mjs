@@ -36,6 +36,20 @@ if (!big) throw new Error('DARKO data script not found — page layout changed')
 
 // Each record starts at "nba_id:" and ends before the next one.
 const parts = big.split(/nba_id:/).slice(1);
+
+// --- TEMP DIAGNOSTIC: why did decline (s1..s15) go null? Inspect the scripts
+// that mention player_name and the current field list. Remove after reading log.
+{
+  const cand = scripts.filter((x) => /player_name:/.test(x)).sort((a, b) => b.length - a.length);
+  console.log(`\n===== scripts mentioning player_name: ${cand.length} · lengths: ${cand.slice(0, 5).map((x) => x.length).join(', ')} =====`);
+  const jok = parts.find((p) => p.includes('player_name:"Nikola Jokic"')) || parts[0];
+  const keys = [...new Set([...jok.matchAll(/(?:^|[,{[])([a-zA-Z_][a-zA-Z0-9_]*):/g)].map((m) => m[1]))].sort();
+  console.log('KEYS:', keys.join(' '));
+  console.log('has s1?', /(?:^|[,{])s1:/.test(jok), '· has rookie_season?', /rookie_season/.test(jok), '· has x_retirement_age?', /x_retirement_age/.test(jok));
+  const snip = (re) => (jok.match(re) || [])[0] || '(none)';
+  console.log('s1 raw:', snip(/(?:^|[,{])s1:[^,}]*/), '| rookie_season raw:', snip(/rookie_season:[^,}]*/), '| retire raw:', snip(/x_retirement_age[a-z_]*:[^,}]*/));
+  console.log('===== END DIAGNOSTIC =====\n');
+}
 const byId = new Map();
 for (const p of parts) {
   const id = (p.match(/^(\d+)/) || [])[1];
