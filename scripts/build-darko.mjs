@@ -36,20 +36,6 @@ if (!big) throw new Error('DARKO data script not found — page layout changed')
 
 // Each record starts at "nba_id:" and ends before the next one.
 const parts = big.split(/nba_id:/).slice(1);
-
-// --- TEMP DIAGNOSTIC: why did decline (s1..s15) go null? Inspect the scripts
-// that mention player_name and the current field list. Remove after reading log.
-{
-  const cand = scripts.filter((x) => /player_name:/.test(x)).sort((a, b) => b.length - a.length);
-  console.log(`\n===== scripts mentioning player_name: ${cand.length} · lengths: ${cand.slice(0, 5).map((x) => x.length).join(', ')} =====`);
-  const jok = parts.find((p) => p.includes('player_name:"Nikola Jokic"')) || parts[0];
-  const keys = [...new Set([...jok.matchAll(/(?:^|[,{[])([a-zA-Z_][a-zA-Z0-9_]*):/g)].map((m) => m[1]))].sort();
-  console.log('KEYS:', keys.join(' '));
-  console.log('has s1?', /(?:^|[,{])s1:/.test(jok), '· has rookie_season?', /rookie_season/.test(jok), '· has x_retirement_age?', /x_retirement_age/.test(jok));
-  const snip = (re) => (jok.match(re) || [])[0] || '(none)';
-  console.log('s1 raw:', snip(/(?:^|[,{])s1:[^,}]*/), '| rookie_season raw:', snip(/rookie_season:[^,}]*/), '| retire raw:', snip(/x_retirement_age[a-z_]*:[^,}]*/));
-  console.log('===== END DIAGNOSTIC =====\n');
-}
 const byId = new Map();
 for (const p of parts) {
   const id = (p.match(/^(\d+)/) || [])[1];
@@ -72,10 +58,6 @@ for (const p of parts) {
   // x_minutes: DARKO's projected minutes per game — used to weight team talent by
   // real playing time (a team only has 240 player-minutes to allocate a game).
   const min = num((p.match(/(?:^|[,{])x_minutes:(-?[\d.]+)/) || [])[1]);
-  // Longevity: the season the player entered the NBA, and DARKO's projected
-  // retirement age — for the aging view (`x_retirement_age`, not the _cal variant).
-  const rookieSeason = num((p.match(/(?:^|[,{])rookie_season:(-?[\d.]+)/) || [])[1]);
-  const retirementAge = num((p.match(/(?:^|[,{])x_retirement_age:(-?[\d.]+)/) || [])[1]);
   // Projected per-100-possession box line — drives the derived player archetype
   // (playmaking, shot volume, 3-point rate, rim protection, rebounding).
   const g100 = (k) => num((p.match(new RegExp(`(?:^|[,{])x_${k}_100:(-?[\\d.]+)`)) || [])[1]);
@@ -86,9 +68,7 @@ for (const p of parts) {
     pts: g100('pts'), ast: g100('ast'), stl: g100('stl'), blk: g100('blk'),
     tov: g100('tov'), fga: g100('fga'), fg3a: g100('fg3a'), fta: g100('fta'),
     orb, drb, reb: (orb ?? 0) + (drb ?? 0),
-    fgpct: num((p.match(/(?:^|[,{])x_fg_pct:(-?[\d.]+)/) || [])[1]),
     fg3pct: num((p.match(/(?:^|[,{])x_fg3_pct:(-?[\d.]+)/) || [])[1]),
-    ftpct: num((p.match(/(?:^|[,{])x_ft_pct:(-?[\d.]+)/) || [])[1]),
   };
   // s1..s15: DARKO's player-specific value-retention curve by future season
   // (s1 = this season = 1.0). Used as the aging curve in trade value.
@@ -99,12 +79,29 @@ for (const p of parts) {
   if (!id || !name || dpm == null) continue;
   // Keep one row per player (the most-experienced / current snapshot line).
   const prev = byId.get(id);
-  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games, age, pos, xpos, posNum, min, rookieSeason, retirementAge, box, decline });
+  if (!prev || games >= prev.games) byId.set(id, { id: +id, name, dpm, odpm, ddpm, salary, value, surplus, rank, games, age, pos, xpos, posNum, min, box, decline });
 }
 
 const players = [...byId.values()].sort((a, b) => b.dpm - a.dpm);
 console.log(`  parsed ${players.length} players`);
 if (players.length < 300) throw new Error(`only ${players.length} DARKO players — layout likely changed`);
+
+// Guard against darko.app serving a REDUCED payload (it trimmed its embedded
+// dataset in July 2026, dropping the projected box line, position archetype, and
+// the s1..s15 aging curve). If those are largely missing, fail loudly rather than
+// overwrite the good seed with a gutted one. Restores automatically if the full
+// feed returns.
+const frac = (pred) => players.filter(pred).length / players.length;
+const boxOk = frac((p) => p.box && p.box.blk != null && p.box.orb != null);
+const xposOk = frac((p) => p.xpos);
+const agingOk = frac((p) => p.decline.some((x) => x != null));
+console.log(`  completeness — box ${(boxOk * 100) | 0}% · xpos ${(xposOk * 100) | 0}% · aging ${(agingOk * 100) | 0}%`);
+if (boxOk < 0.5 || xposOk < 0.5 || agingOk < 0.5) {
+  throw new Error(
+    `DARKO payload looks reduced (box ${(boxOk * 100) | 0}% · xpos ${(xposOk * 100) | 0}% · aging ${(agingOk * 100) | 0}%) — ` +
+      `refusing to overwrite the good seed. darko.app has likely trimmed its public data again.`
+  );
+}
 console.log('  top 5 by DPM: ' + players.slice(0, 5).map((p) => `${p.name} ${p.dpm.toFixed(1)}`).join(', '));
 
 // Map keyed by normalized name for joining to our roster/stats.
@@ -127,13 +124,11 @@ for (const p of players) {
       xpos: p.xpos,
       posNum: p.posNum == null ? null : Math.round(p.posNum * 100) / 100,
       min: p.min == null ? null : Math.round(p.min * 10) / 10,
-      rookieSeason: p.rookieSeason,
-      retirementAge: p.retirementAge == null ? null : Math.round(p.retirementAge * 10) / 10,
       box: p.box.pts == null ? null : {
         pts: r3(p.box.pts), ast: r3(p.box.ast), reb: r3(p.box.reb),
         orb: r3(p.box.orb), drb: r3(p.box.drb), stl: r3(p.box.stl),
         blk: r3(p.box.blk), tov: r3(p.box.tov), fga: r3(p.box.fga), fg3a: r3(p.box.fg3a),
-        fta: r3(p.box.fta), fgpct: r3(p.box.fgpct), fg3pct: r3(p.box.fg3pct), ftpct: r3(p.box.ftpct),
+        fta: r3(p.box.fta), fg3pct: r3(p.box.fg3pct),
       },
       decline: p.decline.map(r3),
     };
@@ -143,8 +138,8 @@ writeFileSync(
   'src/data/seededDarko.ts',
   `// AUTO-GENERATED DARKO Daily Plus-Minus (DPM) from darko.app.\n` +
     `// Regenerate: node scripts/build-darko.mjs\n` +
-    `export interface DarkoBox { pts: number | null; ast: number | null; reb: number | null; orb: number | null; drb: number | null; stl: number | null; blk: number | null; tov: number | null; fga: number | null; fg3a: number | null; fta: number | null; fgpct: number | null; fg3pct: number | null; ftpct: number | null; }\n` +
-    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; xpos: string | null; posNum: number | null; min: number | null; rookieSeason: number | null; retirementAge: number | null; box: DarkoBox | null; decline: (number | null)[]; }\n\n` +
+    `export interface DarkoBox { pts: number | null; ast: number | null; reb: number | null; orb: number | null; drb: number | null; stl: number | null; blk: number | null; tov: number | null; fga: number | null; fg3a: number | null; fta: number | null; fg3pct: number | null; }\n` +
+    `export interface DarkoInfo { name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; xpos: string | null; posNum: number | null; min: number | null; box: DarkoBox | null; decline: (number | null)[]; }\n\n` +
     `// Keyed by normalized player name (lowercase, no accents/punctuation).\n` +
     `export const SEEDED_DARKO: Record<string, DarkoInfo> = ${JSON.stringify(out, null, 0)};\n`
 );

@@ -31,13 +31,29 @@ const norm = (s: string) =>
 const CURRENT_TEAM: Record<string, string> = {};
 for (const t of TEAMS) for (const pl of t.players) CURRENT_TEAM[norm(pl.name)] = t.abbreviation;
 
-// Stats rows augmented with DARKO DPM and re-keyed to the current team (once).
+const round1 = (x: number) => Math.round(x * 10) / 10;
+
+// Stats rows augmented with DARKO (DPM, projected box line, aging trajectory)
+// and re-keyed to the current team (once).
 const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {
   const d = SEEDED_DARKO[norm(p.name)];
-  const row: PlayerStats = d
-    ? { ...p, dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus,
-        orb100: d.box?.orb ?? null, drb100: d.box?.drb ?? null }
-    : { ...p };
+  let row: PlayerStats = { ...p };
+  if (d) {
+    const b = d.box;
+    const dec = d.decline ?? [];
+    // Projected DPM n seasons out = current DPM × the player's retention curve
+    // (dec[0] = this season = 1.0, dec[n] = n seasons out).
+    const projDpm = (n: number) => (d.dpm != null && dec[n] != null ? round1(d.dpm * (dec[n] as number)) : null);
+    row = {
+      ...p,
+      dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus,
+      pts100: b?.pts ?? null, ast100: b?.ast ?? null, orb100: b?.orb ?? null, drb100: b?.drb ?? null,
+      stl100: b?.stl ?? null, blk100: b?.blk ?? null, tov100: b?.tov ?? null,
+      fga100: b?.fga ?? null, fg3a100: b?.fg3a ?? null, fta100: b?.fta ?? null,
+      xFg3Pct: b?.fg3pct ?? null,
+      dpmY1: projDpm(1), dpmY2: projDpm(2), dpmY3: projDpm(3), dpmY4: projDpm(4), dpmY5: projDpm(5),
+    };
+  }
   const ct = CURRENT_TEAM[norm(p.name)] ?? FREE_AGENT;
   row.team = ct;
   row.teams = [ct];
@@ -186,6 +202,8 @@ export function StatsExplorer() {
           <span>Columns</span>
           <select value={group} onChange={(e) => setGroup(e.target.value as Group)}>
             <option value="darko">DARKO (DPM + Value)</option>
+            <option value="projected">DARKO Projected</option>
+            <option value="aging">Aging</option>
             <option value="advanced">Advanced</option>
             <option value="box">Box score</option>
             <option value="all">All</option>

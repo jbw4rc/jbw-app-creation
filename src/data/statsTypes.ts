@@ -56,10 +56,27 @@ export interface PlayerStats {
   value?: number | null;
   /** DARKO market value minus actual salary, in $M. */
   surplus?: number | null;
-  /** DARKO projected offensive rebounds per 100 possessions. */
+  // DARKO projected per-100-possession box line (all optional; absent w/o a match).
+  pts100?: number | null;
+  ast100?: number | null;
   orb100?: number | null;
-  /** DARKO projected defensive rebounds per 100 possessions. */
   drb100?: number | null;
+  stl100?: number | null;
+  blk100?: number | null;
+  tov100?: number | null;
+  fga100?: number | null;
+  fg3a100?: number | null;
+  fta100?: number | null;
+  /** DARKO projected 3-point % (stored 0–1). */
+  xFg3Pct?: number | null;
+
+  // Aging view.
+  /** Projected DPM 1–5 seasons out (current DPM × DARKO retention curve). */
+  dpmY1?: number | null;
+  dpmY2?: number | null;
+  dpmY3?: number | null;
+  dpmY4?: number | null;
+  dpmY5?: number | null;
 }
 
 export interface StatsBundle {
@@ -89,18 +106,36 @@ export interface StatColumn {
   higherBetter?: boolean;
 }
 
-export type StatGroup = 'box' | 'advanced' | 'darko';
+export type StatGroup = 'box' | 'advanced' | 'darko' | 'projected' | 'aging';
 
 export const STAT_COLUMNS: StatColumn[] = [
   // DARKO — its own board, and folded into the Advanced view.
-  { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus — projected net points per 100 possessions vs. an average player', decimals: 1, groups: ['darko', 'advanced'] },
+  { key: 'dpm', label: 'DPM', title: 'DARKO Daily Plus-Minus — projected net points per 100 possessions vs. an average player', decimals: 1, groups: ['darko', 'advanced', 'aging'] },
   { key: 'odpm', label: 'O-DPM', title: 'DARKO offensive plus-minus — offensive impact per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
   { key: 'ddpm', label: 'D-DPM', title: 'DARKO defensive plus-minus — defensive impact per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
   { key: 'salary', label: 'Cap Hit', title: 'Contract cap hit / actual salary this season ($M)', decimals: 1, money: true, groups: ['darko'] },
   { key: 'value', label: 'Value', title: "DARKO's estimated open-market value for this player ($M)", decimals: 1, money: true, groups: ['darko', 'advanced'] },
   { key: 'surplus', label: 'Surplus', title: 'Value minus Cap Hit ($M) — positive = a bargain, negative = overpaid', decimals: 1, money: true, groups: ['darko'] },
-  { key: 'orb100', label: 'ORB/100', title: 'DARKO projected offensive rebounds per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
-  { key: 'drb100', label: 'DRB/100', title: 'DARKO projected defensive rebounds per 100 possessions', decimals: 1, groups: ['darko', 'advanced'] },
+  { key: 'orb100', label: 'ORB/100', title: 'DARKO projected offensive rebounds per 100 possessions', decimals: 1, groups: ['darko', 'advanced', 'projected'] },
+  { key: 'drb100', label: 'DRB/100', title: 'DARKO projected defensive rebounds per 100 possessions', decimals: 1, groups: ['darko', 'advanced', 'projected'] },
+
+  // DARKO projected per-100 box line + shooting (its own "Projected" view).
+  { key: 'pts100', label: 'PTS/100', title: 'DARKO projected points per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'ast100', label: 'AST/100', title: 'DARKO projected assists per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'stl100', label: 'STL/100', title: 'DARKO projected steals per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'blk100', label: 'BLK/100', title: 'DARKO projected blocks per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'tov100', label: 'TOV/100', title: 'DARKO projected turnovers per 100 possessions (lower is better)', decimals: 1, groups: ['projected'], higherBetter: false },
+  { key: 'fga100', label: 'FGA/100', title: 'DARKO projected field-goal attempts per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'fg3a100', label: '3PA/100', title: 'DARKO projected 3-point attempts per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'fta100', label: 'FTA/100', title: 'DARKO projected free-throw attempts per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'xFg3Pct', label: 'x3P%', title: 'DARKO projected 3-point percentage', decimals: 1, percent: true, groups: ['projected'] },
+
+  // Aging view: current impact + the projected-DPM trajectory.
+  { key: 'dpmY1', label: 'DPM +1', title: 'Projected DPM one season out (current DPM × DARKO retention curve)', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY2', label: 'DPM +2', title: 'Projected DPM two seasons out', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY3', label: 'DPM +3', title: 'Projected DPM three seasons out', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY4', label: 'DPM +4', title: 'Projected DPM four seasons out', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY5', label: 'DPM +5', title: 'Projected DPM five seasons out', decimals: 1, groups: ['aging'] },
 
   { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, groups: ['box'] },
   { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, groups: ['box'] },
