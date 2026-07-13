@@ -4,10 +4,10 @@ export interface BaeInfo { initial: number; used: number; space: number; note: s
 
 export const SEEDED_BAE: Record<string, BaeInfo> = {
   "ATL": {
-    "initial": 0,
+    "initial": 5477000,
     "used": 0,
-    "space": 0,
-    "note": "Taxpayer-MLE Used ( Jock Landale )"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "BOS": {
     "initial": 5477000,
@@ -28,10 +28,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "CHI": {
-    "initial": 5477000,
+    "initial": 0,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 0,
+    "note": "Cap Room Used ( Norman Powell )"
   },
   "CLE": {
     "initial": 5477000,
@@ -67,7 +67,7 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "initial": 0,
     "used": 0,
     "space": 0,
-    "note": "Taxpayer-MLE Used ( Marcus Smart )"
+    "note": "Cap Room Used ( Tari Eason )"
   },
   "IND": {
     "initial": 0,
@@ -172,10 +172,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "UTA": {
-    "initial": 0,
+    "initial": 5477000,
     "used": 0,
-    "space": 0,
-    "note": "Taxpayer-MLE Used ( Jaxson Hayes )"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "WAS": {
     "initial": 5477000,
