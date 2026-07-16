@@ -1,0 +1,11 @@
+{
+  "territory_or_zip": "06880",
+  "coverage_a": 600000,
+  "year_built": 1988,
+  "construction": "frame",
+  "protection_class": 4,
+  "roof_age": 8,
+  "deductible": 1000,
+  "hurricane_deductible_pct": 2,
+  "discounts": ["protective_devices", "claims_free", "multi_policy"]
+}
