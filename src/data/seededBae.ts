@@ -136,9 +136,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHI": {
-    "initial": 3907779,
+    "initial": 31251,
     "used": 3400000,
-    "space": 507779,
+    "space": 0,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHX": {
