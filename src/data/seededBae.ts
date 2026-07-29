@@ -49,7 +49,7 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "initial": 0,
     "used": 0,
     "space": 0,
-    "note": "BAE Limit (Reduced by apron room)"
+    "note": "Taxpayer-MLE Used ( Spencer Jones )"
   },
   "DET": {
     "initial": 0,
@@ -58,10 +58,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Used Last Season ( Daniss Jenkins )"
   },
   "GSW": {
-    "initial": 5477000,
+    "initial": 0,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "HOU": {
     "initial": 0,
@@ -136,9 +136,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHI": {
-    "initial": 31251,
+    "initial": 4766707,
     "used": 3400000,
-    "space": 0,
+    "space": 1366707,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHX": {
