@@ -49,7 +49,7 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "initial": 0,
     "used": 0,
     "space": 0,
-    "note": "Taxpayer-MLE Used ( Spencer Jones )"
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "DET": {
     "initial": 0,
@@ -136,10 +136,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHI": {
-    "initial": 4766707,
+    "initial": 5477000,
     "used": 3400000,
-    "space": 1366707,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 2077000,
+    "note": "BAE Limit"
   },
   "PHX": {
     "initial": 0,
