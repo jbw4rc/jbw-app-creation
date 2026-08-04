@@ -76,10 +76,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "LAC": {
-    "initial": 0,
+    "initial": 5477000,
     "used": 0,
-    "space": 0,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "LAL": {
     "initial": 0,
@@ -94,10 +94,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "MIA": {
-    "initial": 4342290,
+    "initial": 5477000,
     "used": 0,
-    "space": 4342290,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "MIL": {
     "initial": 5477000,
@@ -112,9 +112,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "NOP": {
-    "initial": 4715520,
+    "initial": 2266099,
     "used": 0,
-    "space": 4715520,
+    "space": 2266099,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "NYK": {
@@ -166,9 +166,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "TOR": {
-    "initial": 0,
+    "initial": 3034424,
     "used": 0,
-    "space": 0,
+    "space": 3034424,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "UTA": {
