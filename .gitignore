@@ -16,3 +16,9 @@ signings-debug.txt
 repeater-debug.txt
 darko-debug.txt
 tw-debug.txt
+
+# Real data — never commit extracts or parsed output
+*.xlsx
+*.xls
+*.csv
+data-real/
