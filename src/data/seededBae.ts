@@ -77,8 +77,8 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
   },
   "LAC": {
     "initial": 5477000,
-    "used": 0,
-    "space": 5477000,
+    "used": 6439024,
+    "space": 0,
     "note": "BAE Limit"
   },
   "LAL": {
