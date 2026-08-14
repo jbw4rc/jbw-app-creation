@@ -15,7 +15,7 @@ export interface DraftOrderSeed {
 
 export const SEEDED_DRAFT_ORDER: DraftOrderSeed = {
   "season": "2027",
-  "asOf": "2026-08-13T13:12:56.947Z",
+  "asOf": "2026-08-14T13:07:46.588Z",
   "source": "Tankathon (projected)",
   "order": {
     "SAC": 1,
