@@ -1,6 +1,6 @@
-# Poll Resy (Cru) and OpenTable (The Nautilus) for open tables and text an
-# alert the moment one appears. Runs on GitHub's runners, which can reach
-# these sites (unlike the dev sandbox).
+# Poll Resy (Cru) and OpenTable (The Nautilus) for open tables and push an
+# alert (via ntfy.sh) the moment one appears. Runs on GitHub's runners,
+# which can reach these sites (unlike the dev sandbox).
 #
 # NOTE: scheduled (cron) triggers only fire off the repo's default branch.
 # Until this is merged to main, use "Run workflow" (workflow_dispatch) to
@@ -51,8 +51,5 @@ jobs:
 
       - name: Check availability
         env:
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
-          TWILIO_TO_NUMBER: ${{ secrets.TWILIO_TO_NUMBER }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: python check_once.py

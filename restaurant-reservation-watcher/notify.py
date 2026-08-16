@@ -1,13 +1,18 @@
 import os
 
-from twilio.rest import Client
+import requests
 
 
-def send_sms(body: str) -> None:
-    sid = os.environ["TWILIO_ACCOUNT_SID"]
-    token = os.environ["TWILIO_AUTH_TOKEN"]
-    from_number = os.environ["TWILIO_FROM_NUMBER"]
-    to_number = os.environ["TWILIO_TO_NUMBER"]
-
-    client = Client(sid, token)
-    client.messages.create(body=body, from_=from_number, to=to_number)
+def send_alert(body: str) -> None:
+    """Push a notification via ntfy.sh -- no account, no API key, just a
+    shared topic name. Anyone who knows the topic can publish/subscribe to
+    it (ntfy.sh's public server is unauthenticated), so treat NTFY_TOPIC
+    like a lightweight secret: long and made-up, not "cru-nantucket"."""
+    topic = os.environ["NTFY_TOPIC"]
+    resp = requests.post(
+        f"https://ntfy.sh/{topic}",
+        data=body.encode("utf-8"),
+        headers={"Title": "Table open!", "Priority": "urgent", "Tags": "bell"},
+        timeout=15,
+    )
+    resp.raise_for_status()

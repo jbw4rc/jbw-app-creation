@@ -5,7 +5,7 @@ Designed to be invoked on a schedule (GitHub Actions cron every 10 min) --
 NOT as a long-running loop. Each run:
   1. Checks every configured restaurant/date/party-size combination.
   2. Diffs the currently-open slots against the previous run's state.json.
-  3. Texts (via Twilio) only the slots that are newly open since last run.
+  3. Pushes an alert (via ntfy.sh) only for slots that are newly open since last run.
   4. Saves the current open-slot set as the new state.
 
 This means it re-alerts if a slot closes and later reopens -- each
@@ -18,7 +18,7 @@ from datetime import datetime
 import yaml
 
 from checkers import resy, opentable
-from notify import send_sms
+from notify import send_alert
 from state import load_open_slots, save_open_slots, slot_key
 
 
@@ -75,7 +75,7 @@ def main() -> int:
         slot = currently_open[key]
         msg = format_alert(slot)
         print(f"[{datetime.now()}] ALERT: {msg}")
-        send_sms(msg)
+        send_alert(msg)
 
     print(
         f"[{datetime.now()}] checked {len(config['watches'])} watch(es), "
