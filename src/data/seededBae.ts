@@ -34,10 +34,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "Cap Room Used ( Norman Powell )"
   },
   "CLE": {
-    "initial": 5477000,
+    "initial": 0,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 0,
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "DAL": {
     "initial": 5477000,
