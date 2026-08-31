@@ -109,7 +109,7 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "initial": 0,
     "used": 0,
     "space": 0,
-    "note": "Taxpayer-MLE Used ( Jonathan Kuminga )"
+    "note": "BAE Limit (Reduced by apron room)"
   },
   "NOP": {
     "initial": 0,
