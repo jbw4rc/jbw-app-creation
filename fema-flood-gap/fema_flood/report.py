@@ -956,7 +956,7 @@ def render_html(report, limit=40, alternate=None):
         "payloads": payloads,
         "hasAlternate": alternate is not None,
         "hasHome": has_home,
-        "hasPa": bool(report.pa),
+        "hasPa": bool(report.pa and report.pa.matched.projects),
         "altShortBasis": (_short_basis(alternate.options.deflator)
                           if alternate else None),
         "primaryShortBasis": _short_basis(report.options.deflator),

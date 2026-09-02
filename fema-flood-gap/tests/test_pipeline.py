@@ -1878,8 +1878,10 @@ class TestPaAcrossStates(unittest.TestCase):
         built = self._no_sheltering()
         page = report.render(built, "html")
         self.assertNotIn('data-cell="pa.m.total"', page)     # no skeleton table
+        self.assertNotIn('id="pabody"', page)
         self.assertNotIn("Beyond IHP", page)
-        self.assertNotIn("No sheltering", page)
+        # The block is absent, so the page never advertises the search.
+        self.assertNotIn("shelter-in-home repairs the state co-funded", page)
 
     def test_but_the_research_outputs_keep_the_finding(self):
         """Knowing a state has none is a result worth recording."""
