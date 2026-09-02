@@ -18,6 +18,9 @@ const script = html.slice(html.lastIndexOf('<script>') + 8,
 function Node(id, attrs) {
   this.id = id;
   this.attrs = attrs || {};
+  this.style = {};
+  this.dataset = {};
+  this.classList = {add: function () {}, remove: function () {}};
   this._text = '';
   this.innerHTML = '';
   this.className = '';
@@ -33,6 +36,9 @@ Object.defineProperty(Node.prototype, 'textContent', {
 Node.prototype.getAttribute = function (name) {
   return name in this.attrs ? this.attrs[name] : null;
 };
+Node.prototype.setAttribute = function (name, value) {
+  this.attrs[name] = String(value);
+};
 Node.prototype.addEventListener = function (event, fn) {
   this.handlers[event] = fn;
 };
@@ -47,6 +53,19 @@ const nodes = {
   tablebody: new Node('tablebody'),
   tablecaption: new Node('tablecaption'),
   sincelabel: new Node('sincelabel'),
+  heroGap: new Node('heroGap'),
+  heroSub: new Node('heroSub'),
+  comparecaption: new Node('comparecaption'),
+  compareintro: new Node('compareintro'),
+  shareintro: new Node('shareintro'),
+  hointro: new Node('hointro'),
+  hosection: new Node('hosection'),
+  reading: new Node('reading'),
+  barIhp: new Node('barIhp'),
+  barNfip: new Node('barNfip'),
+  barIhpVal: new Node('barIhpVal'),
+  barNfipVal: new Node('barNfipVal'),
+  tip: new Node('tip'),
   toggle: new Node('toggle'),
   since: new Node('since'),
   resetyears: new Node('resetyears'),
@@ -79,6 +98,14 @@ if (sinceYear !== null && nodes.since.handlers.input) {
 }
 
 const out = {basis: nodes.basis.textContent, lede: nodes.lede.textContent,
+             heroGap: nodes.heroGap.textContent, heroSub: nodes.heroSub.textContent,
+             comparecaption: nodes.comparecaption.textContent,
+             shareintro: nodes.shareintro.textContent,
+             hointro: nodes.hointro.textContent, reading: nodes.reading.textContent,
+             barIhpWidth: nodes.barIhp.style.width, barNfipWidth: nodes.barNfip.style.width,
+             barIhpVal: nodes.barIhpVal.textContent, barNfipVal: nodes.barNfipVal.textContent,
+             barIhpAria: nodes.barIhp.getAttribute('aria-label'),
+             barIhpTip: nodes.barIhp.dataset.tip,
              caption: nodes.tablecaption.textContent,
              sinceLabel: nodes.sincelabel.textContent,
              toggleLabel: nodes.toggle.textContent,

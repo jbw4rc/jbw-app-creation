@@ -1321,3 +1321,103 @@ class TestUninsuredHomeowners(unittest.TestCase):
         self.assertEqual(sum(r["ihpTotal"] for r in rows), 41900.0)
         self.assertEqual(sum(r["otherIhpTotal"] for r in rows), 900.0)
         self.assertEqual(sum(r["floodIhpTotal"] for r in rows), 41000.0)
+
+
+class TestStoryStructure(unittest.TestCase):
+    """The page must argue, not just report: order, hero, comparison, limits."""
+
+    @classmethod
+    def setUpClass(cls):
+        client = make_client()
+        cls.real = pipeline.build(client, make_options(deflator=cpi.Deflator(2024)))
+        cls.nominal = pipeline.build(client, make_options())
+        cls.page = report.render(cls.real, "html", alternate=cls.nominal)
+
+    def test_sections_run_in_story_order(self):
+        steps = re.findall(r'<p class="step">([^<]*)</p>', self.page)
+        self.assertEqual([s.split(" ")[0] for s in steps], ["1", "2", "3", "4", "5", "6"])
+        self.assertIn("Aid versus insurance", steps[1])
+        self.assertIn("The gap", steps[2])
+        self.assertIn("Why it matters more now", steps[3])
+        self.assertIn("The bigger picture", steps[4])
+        self.assertIn("Evidence", steps[5])
+
+    def test_exactly_one_hero_figure_and_it_is_the_gap(self):
+        self.assertEqual(self.page.count('class="hero"'), 1)
+        self.assertIn('id="heroGap"', self.page)
+
+    def test_comparison_chart_has_legend_and_both_series(self):
+        self.assertIn('class="legend"', self.page)
+        self.assertEqual(self.page.count('class="sw s1"'), 1)
+        self.assertEqual(self.page.count('class="sw s2"'), 1)
+        self.assertIn('id="barIhp"', self.page)
+        self.assertIn('id="barNfip"', self.page)
+        # Validated categorical pair, both modes, never the page's green.
+        self.assertIn("--series-1:#2a78d6;--series-2:#eb6834", self.page)
+        self.assertIn("--series-1:#3987e5;--series-2:#d95926", self.page)
+
+    def test_limits_are_a_titled_section_not_a_footer(self):
+        self.assertIn("What this shows, and what it does not", self.page)
+        self.assertIn('class="limits"', self.page)
+        self.assertIn("not a random draw", self.page)
+
+    def test_headline_is_a_claim_with_the_ratio(self):
+        text = report.headline(self.real)
+        self.assertIn("times as much", text)
+        self.assertIn("turned to FEMA", text)
+        self.assertIn(report.money(self.real.gap_per_household()), text)
+        # The same sentence leads the text and Markdown outputs.
+        self.assertIn("times as much", report.render(self.real, "text"))
+        self.assertIn("times as much", report.render(self.real, "md"))
+
+    def test_headline_without_nfip_makes_no_comparison(self):
+        built = pipeline.build(make_client(), make_options(skip_nfip=True))
+        self.assertNotIn("times as much", report.headline(built))
+
+
+class TestStoryArithmetic(TestPageScriptArithmetic):
+    """The in-page story elements agree with the pipeline as the state changes."""
+
+    def test_hero_equals_the_gap_card_and_the_pipeline(self):
+        page = self.run_page()
+        self.assertEqual(page["heroGap"], report.money(self.real.gap_per_household()))
+        self.assertEqual(page["heroGap"], page["gap"])
+
+    def test_bars_are_proportional_and_labelled(self):
+        page = self.run_page()
+        ihp = float(page["barIhpWidth"].rstrip("%"))
+        nfip = float(page["barNfipWidth"].rstrip("%"))
+        self.assertEqual(nfip, 78.0)                      # the longer bar caps the track
+        self.assertAlmostEqual(ihp / nfip,
+                               self.real.ihp_mean() / self.real.nfip_mean(), places=4)
+        self.assertEqual(page["barIhpVal"], report.money(self.real.ihp_mean()))
+        self.assertEqual(page["barNfipVal"], report.money(self.real.nfip_mean()))
+        self.assertIn("FEMA IHP", page["barIhpAria"])
+        self.assertIn("including those paid nothing", page["barIhpTip"])
+
+    def test_caption_states_the_ratio(self):
+        ratio = self.real.nfip_mean() / self.real.ihp_mean()
+        self.assertIn("%.0f times" % ratio, self.run_page()["comparecaption"])
+
+    def test_story_text_follows_the_slider(self):
+        page = self.run_page("2016")
+        self.assertIn("since 2016", page["comparecaption"])
+        self.assertIn("since 2016", page["shareintro"])
+        self.assertIn("since 2016", page["lede"])
+        self.assertIn("since 2016", page["reading"])
+        equivalent = pipeline.build(
+            make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))
+        self.assertEqual(page["heroGap"], report.money(equivalent.gap_per_household()))
+
+    def test_story_text_follows_the_dollar_basis(self):
+        page = self.run_page("", "toggle")
+        self.assertEqual(page["heroGap"], report.money(self.nominal.gap_per_household()))
+        self.assertIn("Nominal", page["basis"])
+
+    def test_non_numeric_year_reads_as_all_years(self):
+        page = self.run_page("garbage")
+        self.assertEqual(page["heroGap"], report.money(self.real.gap_per_household()))
+        self.assertEqual(page["sinceLabel"], "all years")
+
+    def test_singular_household_is_grammatical(self):
+        self.assertIn("1 household;", self.run_page()["note:hoOther"])
