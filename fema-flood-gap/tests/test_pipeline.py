@@ -1114,12 +1114,49 @@ class TestPageScriptArithmetic(unittest.TestCase):
         self.assertEqual(page["ihpMean"], report.money(equivalent.ihp_mean()))
         self.assertEqual(page["stateShare"],
                          report.money(equivalent.state_cost_share()))
+        # The NFIP side must move with the slider too, or the gap is computed
+        # from a full claim history against a truncated aid history.
+        self.assertEqual(page["nfipMean"], report.money(equivalent.nfip_mean()))
+        self.assertEqual(page["gap"],
+                         report.money(equivalent.gap_per_household()))
+        self.assertEqual(page["aggregateGap"],
+                         report.money(equivalent.aggregate_gap()))
+        self.assertNotEqual(page["nfipMean"],
+                            report.money(self.real.nfip_mean()))
         self.assertEqual(page["tableRows"], 1)
         self.assertEqual(page["sinceLabel"], "2016")
 
     def test_filtered_caption_says_what_is_shown(self):
-        self.assertIn("declarations from 2016 onward", self.run_page("2016")["caption"])
+        self.assertIn("declarations beginning 2016 or later",
+                      self.run_page("2016")["caption"])
         self.assertIn("no declaration date", self.run_page()["caption"])
 
     def test_cost_share_rows_survive_filtering(self):
         self.assertEqual(self.run_page("2016")["shareRows"], 4)
+
+    def test_nfip_note_names_the_date_field_it_filtered_on(self):
+        filtered = self.run_page("2016")
+        self.assertIn("date of loss from 2016 onward", filtered["note:nfipMean"])
+        self.assertNotIn("date of loss", self.run_page()["note:nfipMean"])
+
+
+class TestYearRangeAppliesToBothSides(unittest.TestCase):
+    """A year range must narrow claims as well as registrations."""
+
+    def test_library_callers_get_the_same_defaulting_as_the_cli(self):
+        options = make_options(min_year=2016, max_year=2020)
+        self.assertEqual(options.nfip.min_year, 2016)
+        self.assertEqual(options.nfip.max_year, 2020)
+
+    def test_an_explicit_claim_range_is_not_overridden(self):
+        options = make_options(min_year=2016, nfip_min_year=1990)
+        self.assertEqual(options.nfip.min_year, 1990)
+
+    def test_filtering_moves_both_sides(self):
+        everything = pipeline.build(make_client(), make_options())
+        recent = pipeline.build(make_client(), make_options(min_year=2016))
+        self.assertNotEqual(everything.nfip.paid.n, recent.nfip.paid.n)
+        self.assertNotEqual(everything.nfip_mean(), recent.nfip_mean())
+        # The 2005 claims are gone from the later view.
+        self.assertNotIn(2005, recent.nfip.by_year)
+        self.assertIn(2005, everything.nfip.by_year)

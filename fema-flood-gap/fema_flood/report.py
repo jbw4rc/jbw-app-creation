@@ -625,9 +625,13 @@ PAGE_SCRIPT = """
       gap: money(sum.gap),
       aggregateGap: money(sum.aggregateGap)
     };
+    /* The two sides are filtered on different date fields -- declarations by
+       their year, claims by date of loss -- so the note says which, rather
+       than leaving a reader to assume one event set. */
     var notes = {
       ihpTotal: 'HA ' + money(sum.haTotal) + ' + ONA ' + money(sum.onaTotal),
-      nfipMean: 'across ' + count(sum.nfip.paidClaims) + ' paid claims',
+      nfipMean: 'across ' + count(sum.nfip.paidClaims) + ' paid claims' +
+        (showingAllYears() ? '' : ' with a date of loss from ' + since + ' onward'),
       ihpMean: count(sum.ihpPaid) + ' of ' + count(sum.households) +
         ' households received an award'
     };
@@ -679,7 +683,8 @@ PAGE_SCRIPT = """
 
     var scope = showingAllYears()
       ? 'All ' + count(sum.rows.length) + ' declarations'
-      : count(sum.rows.length) + ' declarations from ' + since + ' onward';
+      : count(sum.rows.length) + ' declarations beginning ' + since +
+        ' or later';
     var note = '';
     if (showingAllYears() && config.undated) {
       note = ', including ' + count(config.undated) +

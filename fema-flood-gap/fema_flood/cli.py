@@ -222,11 +222,12 @@ def build_options(args, state):
         primary_residence_only=args.primary_residence_only,
         keep_values=keep_values)
 
+    # min/max default to the report's year range in RunOptions; passing them
+    # here would only duplicate that.
     nfip = analysis.NfipOptions(
         owner_occupied_only=args.nfip_owner_occupied,
         primary_residence_only=args.nfip_primary_residence,
-        min_year=args.nfip_since if args.nfip_since is not None else args.min_year,
-        max_year=args.nfip_until if args.nfip_until is not None else args.max_year,
+        min_year=args.nfip_since, max_year=args.nfip_until,
         keep_values=keep_values)
 
     shares = costshare.CostShare(

@@ -85,5 +85,7 @@ const out = {basis: nodes.basis.textContent, lede: nodes.lede.textContent,
 for (const node of cards) {
   const key = node.getAttribute('data-card');
   if (key) out[key] = node.textContent;
+  const note = node.getAttribute('data-note');
+  if (note) out['note:' + note] = node.textContent;
 }
 process.stdout.write(JSON.stringify(out, null, 2));

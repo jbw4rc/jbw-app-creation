@@ -175,6 +175,14 @@ class RunOptions:
         self.cost_share = cost_share or costshare.CostShare()
         self.min_year = min_year
         self.max_year = max_year
+        # A year range applies to both sides unless the caller narrowed the
+        # claims separately. Leaving this to the CLI meant a library caller
+        # got a truncated aid history compared against a full claim history,
+        # which silently distorts the gap.
+        if self.nfip.min_year is None:
+            self.nfip.min_year = min_year
+        if self.nfip.max_year is None:
+            self.nfip.max_year = max_year
         self.incident_types = incident_types
         self.flood_declarations_only = flood_declarations_only
         self.disasters = disasters
