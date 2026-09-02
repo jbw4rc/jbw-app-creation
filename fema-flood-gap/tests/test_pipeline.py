@@ -707,3 +707,76 @@ class TestNumericIdPaging(unittest.TestCase):
         self.assertEqual(len(rows), 7)
         self.assertEqual(len({r["id"] for r in rows}), 7)
         self.assertTrue(any("quoted literal" in m for m in messages))
+
+
+class TestPowerQueryParity(unittest.TestCase):
+    """Parity with the reference Power Query filter the user validated against:
+
+        Table.SelectRows(source, each
+            [damagedStateAbbreviation] = "MS" and [ownRent] = "O"
+            and [floodDamage] = 1 and [floodInsurance] = 0)
+
+    In M, comparing null to a value yields null, and SelectRows keeps only
+    rows that evaluate to true -- so nulls are dropped on every clause. The
+    tool's default cohort must select exactly the same rows.
+    """
+
+    @staticmethod
+    def power_query_predicate(row, state):
+        def equals(value, expected):
+            if value is None:                     # null = x  ->  null, not true
+                return False
+            if isinstance(value, bool):           # the API sends bools for 1/0
+                return value == bool(expected)
+            return value == expected
+
+        return (equals(row.get("damagedStateAbbreviation"), state)
+                and equals(row.get("ownRent"), "O")
+                and equals(row.get("floodDamage"), 1)
+                and equals(row.get("floodInsurance"), 0))
+
+    def _reference_ids(self, rows, state):
+        return {row["id"] for row in rows
+                if self.power_query_predicate(row, state)}
+
+    def test_same_rows_as_the_power_query_filter(self):
+        client = make_client()
+        result = pipeline.build(client, make_options())
+        expected = self._reference_ids(fixtures.IHP_RECORDS, "LA")
+        self.assertEqual(result.ihp.statewide.households, len(expected))
+        self.assertEqual(
+            sum(bucket.households for bucket in result.ihp.by_disaster.values()),
+            len(expected))
+
+    def test_parity_holds_when_flags_arrive_as_booleans(self):
+        as_booleans = [dict(row,
+                            floodDamage=bool(row["floodDamage"]),
+                            floodInsurance=None if row["floodInsurance"] is None
+                            else bool(row["floodInsurance"]))
+                       for row in fixtures.IHP_RECORDS]
+        tables = dict(fixtures.TABLES,
+                      IndividualsAndHouseholdsProgramValidRegistrations=as_booleans)
+        result = pipeline.build(
+            FakeClient(tables, field_types=fixtures.FIELD_TYPES), make_options())
+        self.assertEqual(result.ihp.statewide.households,
+                         len(self._reference_ids(as_booleans, "LA")))
+
+    def test_null_insurance_is_excluded_by_default_as_in_power_query(self):
+        null_rows = [r["id"] for r in fixtures.IHP_RECORDS
+                     if r["floodInsurance"] is None]
+        self.assertEqual(null_rows, ["r06"], "fixture must have one null-insurance row")
+
+        # Widen the query so the record actually reaches the client-side check,
+        # rather than being filtered out by the API before we can see it.
+        result = pipeline.build(make_client(reject_compound_filters=True),
+                                make_options())
+        self.assertEqual(result.ihp.rejections.unknown_insurance, 1)
+        self.assertEqual(result.ihp.statewide.households,
+                         len(self._reference_ids(fixtures.IHP_RECORDS, "LA")))
+
+    def test_counting_unknown_insurance_as_uninsured_deviates_deliberately(self):
+        strict = pipeline.build(make_client(), make_options())
+        loose = pipeline.build(
+            make_client(), make_options(cohort_unknown_insurance="uninsured"))
+        self.assertEqual(strict.ihp.statewide.households, 5)
+        self.assertEqual(loose.ihp.statewide.households, 6)
