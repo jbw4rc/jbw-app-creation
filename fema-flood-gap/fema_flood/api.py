@@ -28,6 +28,22 @@ DEFAULT_PAGE_SIZE = 5000
 
 RETRY_STATUS = {408, 425, 429, 500, 502, 503, 504}
 
+# Words OpenFEMA uses when it is the $filter it objects to, as opposed to some
+# other malformed part of the request. Used to decide whether widening the
+# query is a sensible recovery or would just repeat the same failure.
+_FILTER_COMPLAINTS = ("filter", "operator", "operand", "predicate", "column",
+                      "field", "attribute")
+
+
+def looks_like_filter_rejection(error):
+    """True when a 400 is plausibly about the ``$filter``, not the rest of the URL."""
+    body = (getattr(error, "body", "") or "").lower()
+    if not body:
+        return True          # no detail to go on; the caller may still retry
+    if "querystring parameter" in body or "query_parameter" in body:
+        return False         # a malformed parameter, which widening will not fix
+    return any(word in body for word in _FILTER_COMPLAINTS)
+
 
 class OpenFemaError(RuntimeError):
     """Any non-recoverable failure talking to OpenFEMA."""
@@ -193,9 +209,12 @@ class Client:
     # ------------------------------------------------------------------ public
 
     def count(self, dataset, version, filter=None):
-        """Row count for a query, via ``$inlinecount`` on a one-row page."""
+        """Row count for a query, via ``$inlinecount`` on a one-row page.
+
+        OpenFEMA follows OData here: the value is ``allpages``, not ``all``.
+        """
         url = self.build_url(dataset, version, {
-            "$inlinecount": "all", "$top": 1, "$select": "id", "$filter": filter,
+            "$inlinecount": "allpages", "$top": 1, "$select": "id", "$filter": filter,
         })
         payload = self.get(url)
         meta = payload.get("metadata") or {}

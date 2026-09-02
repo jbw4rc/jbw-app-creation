@@ -10,8 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fixtures
 from fake_api import FakeClient
 
-from fema_flood import (analysis, catalog, cpi, datasets, declarations,
-                        pipeline, report)
+from fema_flood import (analysis, api as api_mod, catalog, cpi, datasets,
+                        declarations, pipeline, report)
 
 
 def make_client(**kwargs):
@@ -433,3 +433,47 @@ class TestErrorBodies(unittest.TestCase):
 
         exc = urllib.error.HTTPError("u", 400, "bad", {}, io.BytesIO(b"bad filter"))
         self.assertEqual(_error_body(exc), "bad filter")
+
+
+class TestErrorDiagnosis(unittest.TestCase):
+    """A 400 that is not about the filter must not be misreported as one."""
+
+    def test_malformed_parameter_is_not_treated_as_a_filter_rejection(self):
+        class BadParameter(FakeClient):
+            def _fetch(self, url):
+                if "inlinecount" in url:
+                    raise api_mod.HttpError(
+                        400, url,
+                        '{"error":"Bad Request","message":"Unexpected querystring '
+                        'parameter","code":"INVALID_QUERY_PARAMETER"}')
+                return super()._fetch(url)
+
+        client = BadParameter(fixtures.TABLES, field_types=fixtures.FIELD_TYPES)
+        with self.assertRaises(api_mod.OpenFemaError) as caught:
+            pipeline.build(client, make_options())
+        message = str(caught.exception)
+        self.assertIn("querystring", message)
+        self.assertNotIn("compound cohort filter", message)
+
+    def test_filter_complaint_still_triggers_the_widening_fallback(self):
+        client = make_client(reject_compound_filters=True)
+        result = pipeline.build(client, make_options())
+        self.assertEqual(result.ihp.statewide.households, 5)
+        self.assertTrue(any("compound cohort filter" in w for w in result.warnings))
+
+    def test_classification_of_error_bodies(self):
+        cases = [
+            ('{"message":"Unexpected querystring parameter: \'$inlinecount\'"}', False),
+            ('{"message":"Invalid operator in $filter"}', True),
+            ('{"message":"Unknown column floodDamage"}', True),
+            ("", True),
+        ]
+        for body, expected in cases:
+            error = api_mod.HttpError(400, "u", body)
+            self.assertIs(api_mod.looks_like_filter_rejection(error), expected, body)
+
+    def test_count_uses_the_odata_spelling(self):
+        client = make_client()
+        client.count("FimaNfipClaims", 2, "state eq 'LA'")
+        self.assertTrue(any("allpages" in url for url in client.urls))
+        self.assertFalse(any("inlinecount=all&" in url for url in client.urls))

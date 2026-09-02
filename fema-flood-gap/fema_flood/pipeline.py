@@ -227,16 +227,23 @@ def build(client, options):
         expected = client.count(options.ihp_dataset, options.ihp_version, cohort_filter)
         progress("  %s registrations match the cohort filter" % f"{expected:,}")
     except api.HttpError as exc:
-        if exc.status != 400:
+        # Only a complaint about the filter itself is worth recovering from by
+        # widening the query. Any other 400 -- a malformed parameter, say --
+        # would fail identically on the retry, and swallowing it here would
+        # report the wrong cause.
+        if exc.status != 400 or not api.looks_like_filter_rejection(exc):
             raise
-        # Some deployments reject compound filters on flag columns; widening to
-        # the state keeps the run correct (the cohort is re-applied locally),
-        # just slower.
         report.warnings.append(
             "OpenFEMA rejected the compound cohort filter; fell back to a "
             "state-only query and applied the cohort locally.")
         cohort_filter = datasets.ihp_state_filter(ihp_schema, options.state)
-        expected = client.count(options.ihp_dataset, options.ihp_version, cohort_filter)
+        try:
+            expected = client.count(options.ihp_dataset, options.ihp_version,
+                                    cohort_filter)
+        except api.HttpError as retry_error:
+            raise api.OpenFemaError(
+                "the cohort query failed (%s) and so did the widened retry (%s)"
+                % (exc, retry_error))
 
     progress("Fetching IHP registrations...")
     ihp_records = client.records(

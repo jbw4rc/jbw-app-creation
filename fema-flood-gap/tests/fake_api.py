@@ -121,7 +121,16 @@ class FakeClient(api.Client):
             page = [{k: v for k, v in row.items() if k in keep} for row in page]
 
         metadata = {"lastRefresh": self.last_refresh}
-        if params.get("$inlinecount") == "all":
+        inlinecount = params.get("$inlinecount")
+        if inlinecount is not None and inlinecount not in ("allpages", "none"):
+            # The real API is strict about this, and getting it wrong is what
+            # broke the first live run.
+            raise api.HttpError(400, url, '{"error":"Bad Request","message":'
+                                '"Unexpected querystring parameter: \'$inlinecount '
+                                'must be \\"allpages\\" or \\"none\\" (was '
+                                '\\"%s\\")\'","code":"INVALID_QUERY_PARAMETER"}'
+                                % inlinecount)
+        if inlinecount == "allpages":
             metadata["count"] = count
         return {"metadata": metadata, dataset: page}
 
