@@ -871,3 +871,36 @@ class TestTransientNetworkFailures(unittest.TestCase):
             rows = list(second.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
             self.assertEqual(len(rows), 7)
             self.assertGreaterEqual(second.cache_hits, 2)
+
+
+class TestDollarBasisIsStated(unittest.TestCase):
+    """A shared page must say, unmissably, which dollars it is quoting."""
+
+    def _html(self, **overrides):
+        return report.render(
+            pipeline.build(make_client(), make_options(**overrides)), "html")
+
+    def test_adjusted_page_names_the_base_year(self):
+        page = self._html(deflator=cpi.Deflator(2024))
+        self.assertIn('class="basis real"', page)
+        self.assertIn("constant 2024 dollars", page)
+        self.assertNotIn("NOT adjusted", page)
+
+    def test_unadjusted_page_says_so_prominently(self):
+        page = self._html()
+        self.assertIn('class="basis nominal"', page)
+        self.assertIn("NOT adjusted for inflation", page)
+
+    def test_provisional_index_is_flagged(self):
+        self.assertIn("provisional", self._html(deflator=cpi.Deflator(2025)))
+
+    def test_declaration_table_repeats_the_basis(self):
+        page = self._html(deflator=cpi.Deflator(2024))
+        self.assertIn("Dollar columns: all figures in constant 2024 dollars", page)
+
+    def test_basis_appears_in_every_text_format(self):
+        for fmt, needle in (("text", "constant 2024 dollars"),
+                            ("md", "Constant 2024 dollars")):
+            built = pipeline.build(make_client(),
+                                   make_options(deflator=cpi.Deflator(2024)))
+            self.assertIn(needle, report.render(built, fmt), fmt)

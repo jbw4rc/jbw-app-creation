@@ -338,13 +338,25 @@ def render_html(report, limit=40):
          "difference per household across the whole cohort"),
     ]
 
+    deflator = report.options.deflator
+    if deflator.active:
+        basis_class, basis_text = "real", "All figures in constant %d dollars (CPI-U)" % deflator.base_year
+        if deflator.provisional:
+            basis_text += " - %d index is provisional" % deflator.base_year
+    else:
+        # The riskier default to miss: a page mixing 2005 and 2021 dollars
+        # without saying so reads as a like-for-like comparison and is not one.
+        basis_class, basis_text = ("nominal",
+                                   "Nominal dollars - NOT adjusted for inflation; "
+                                   "amounts from different years are not comparable")
+
     body = [
         "<header><p class=\"eyebrow\">OpenFEMA analysis</p>",
         "<h1>%s: what flood aid paid, what insurance would have</h1>" % e(report.state_name),
+        "<p class=\"basis %s\">%s</p>" % (basis_class, e(basis_text)),
         "<p class=\"lede\">%s</p>" % e(headline(report)),
-        "<p class=\"meta\">Generated %s &middot; %s &middot; Cohort: %s</p></header>"
-        % (e(report.generated), e(report.options.deflator.label()),
-           e(report.options.cohort.describe())),
+        "<p class=\"meta\">Generated %s &middot; Cohort: %s</p></header>"
+        % (e(report.generated), e(report.options.cohort.describe())),
         "<section class=\"cards\">",
     ]
     for label, value, note in cards:
@@ -354,7 +366,9 @@ def render_html(report, limit=40):
     body.append("</section>")
 
     if rows:
-        body.append("<section><h2>By declaration</h2><div class=\"scroll\"><table>")
+        body.append("<section><h2>By declaration</h2>"
+                    "<p class=\"caption\">Dollar columns: %s.</p>"
+                    "<div class=\"scroll\"><table>" % e(basis_text.lower()))
         body.append(
             "<thead><tr><th>DR</th><th>Disaster</th><th class=\"n\">Year</th>"
             "<th class=\"n\">Households</th><th class=\"n\">IHP total</th>"
@@ -379,7 +393,8 @@ def render_html(report, limit=40):
         body.append("<section><h2>Notes</h2><ul>")
         body.extend("<li>%s</li>" % e(warning) for warning in report.warnings)
         body.append("</ul></section>")
-    body.append("<footer><p>%s</p></footer>" % e(CAVEATS))
+    body.append("<footer><p>%s</p><p>%s</p></footer>"
+                % (e(basis_text + "."), e(CAVEATS)))
 
     return HTML_TEMPLATE % {
         "title": e("%s flood aid vs. NFIP" % report.state_name),
@@ -393,9 +408,11 @@ HTML_TEMPLATE = """<!doctype html>
 <title>%(title)s</title>
 <style>
 :root{color-scheme:light dark;--bg:#faf9f7;--panel:#fff;--ink:#1c1917;--muted:#6b6560;
---line:#e5e1dc;--accent:#0b6b53;--accent-soft:#e8f2ee}
+--line:#e5e1dc;--accent:#0b6b53;--accent-soft:#e8f2ee;
+--warn:#8a5200;--warn-soft:#fdf1de}
 @media (prefers-color-scheme:dark){:root{--bg:#161513;--panel:#211f1d;--ink:#f2efea;
---muted:#a8a29b;--line:#35322e;--accent:#4cc39c;--accent-soft:#1e2f2a}}
+--muted:#a8a29b;--line:#35322e;--accent:#4cc39c;--accent-soft:#1e2f2a;
+--warn:#e0a458;--warn-soft:#332818}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
 font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -405,6 +422,11 @@ color:var(--accent);font-weight:600}
 h1{margin:0 0 16px;font-size:34px;line-height:1.2;letter-spacing:-.02em}
 h2{margin:40px 0 14px;font-size:20px;letter-spacing:-.01em}
 .lede{margin:0 0 12px;font-size:18px;color:var(--ink);max-width:70ch}
+.basis{display:inline-block;margin:0 0 16px;padding:6px 12px;border-radius:999px;
+font-size:13px;font-weight:600;border:1px solid transparent}
+.basis.real{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.basis.nominal{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.caption{margin:0 0 10px;font-size:13px;color:var(--muted)}
 .meta{margin:0;font-size:13px;color:var(--muted);max-width:80ch}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;
 margin-top:32px}
