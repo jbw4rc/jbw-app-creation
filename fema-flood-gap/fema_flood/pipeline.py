@@ -226,24 +226,30 @@ def build(client, options):
     try:
         expected = client.count(options.ihp_dataset, options.ihp_version, cohort_filter)
         progress("  %s registrations match the cohort filter" % f"{expected:,}")
-    except api.HttpError as exc:
-        # Only a complaint about the filter itself is worth recovering from by
-        # widening the query. Any other 400 -- a malformed parameter, say --
-        # would fail identically on the retry, and swallowing it here would
-        # report the wrong cause.
-        if exc.status != 400 or not api.looks_like_filter_rejection(exc):
-            raise
-        report.warnings.append(
-            "OpenFEMA rejected the compound cohort filter; fell back to a "
-            "state-only query and applied the cohort locally.")
-        cohort_filter = datasets.ihp_state_filter(ihp_schema, options.state)
-        try:
-            expected = client.count(options.ihp_dataset, options.ihp_version,
-                                    cohort_filter)
-        except api.HttpError as retry_error:
-            raise api.OpenFemaError(
-                "the cohort query failed (%s) and so did the widened retry (%s)"
-                % (exc, retry_error))
+    except api.OpenFemaError as exc:
+        # Two very different failures land here. If OpenFEMA rejected the
+        # *filter*, the query has to change and the run cannot proceed until it
+        # does. Anything else only costs the progress estimate, which nothing
+        # downstream depends on -- so it must not cost the whole report.
+        rejected_filter = (isinstance(exc, api.HttpError) and exc.status == 400
+                           and api.looks_like_filter_rejection(exc))
+        if rejected_filter:
+            report.warnings.append(
+                "OpenFEMA rejected the compound cohort filter; fell back to a "
+                "state-only query and applied the cohort locally.")
+            cohort_filter = datasets.ihp_state_filter(ihp_schema, options.state)
+            try:
+                expected = client.count(options.ihp_dataset, options.ihp_version,
+                                        cohort_filter)
+            except api.OpenFemaError as retry_error:
+                raise api.OpenFemaError(
+                    "the cohort query failed (%s) and so did the widened retry (%s)"
+                    % (exc, retry_error))
+        else:
+            progress("  could not pre-count the cohort (%s); continuing" % exc)
+            report.warnings.append(
+                "The cohort pre-count failed (%s), so progress output had no "
+                "total. The figures themselves are unaffected." % exc)
 
     progress("Fetching IHP registrations...")
     ihp_records = client.records(
@@ -260,8 +266,10 @@ def build(client, options):
 
     # ---- context denominators ---------------------------------------------
     if not options.skip_context:
-        progress("Counting comparison cohorts...")
-        report.context = _context_counts(client, ihp_schema, options)
+        progress("Counting comparison cohorts (each is a server-side scan of "
+                 "the whole registration table; slow the first time)...")
+        report.context = _context_counts(client, ihp_schema, options,
+                                         known_cohort_count=expected)
 
     # ---- NFIP claims -------------------------------------------------------
     if not options.skip_nfip:
@@ -328,32 +336,54 @@ def _resolve_versions(client, options, report):
                                     " (%s)" % catalog.describe(entry) if entry else ""))
 
 
-def _context_counts(client, ihp_schema, options):
+def _context_counts(client, ihp_schema, options, known_cohort_count=None):
     """Cheap ``$inlinecount`` queries that put the cohort in proportion.
+
+    Cheap in bandwidth, not in time: each one makes OpenFEMA scan the whole
+    registration table, so they are reported individually as they land rather
+    than behind one silent pause. They are also cached, so only the first run
+    for a state pays for them.
 
     These are statewide across every declaration on file -- they are not
     narrowed by the year/incident filters, because OpenFEMA cannot count over an
     arbitrary disaster-number set in one request. The report labels them so.
     """
+    progress = client.progress
     counts = {}
-    queries = {
-        "all_registrations": datasets.ihp_state_filter(ihp_schema, options.state),
-        "owner_registrations": datasets.ihp_cohort_filter(
-            ihp_schema, options.state, owner_only=True, flood_damage=False),
-        "owner_flood_damaged": datasets.ihp_cohort_filter(
-            ihp_schema, options.state, owner_only=True, flood_damage=True),
-        "owner_flood_damaged_uninsured": datasets.ihp_cohort_filter(
-            ihp_schema, options.state, owner_only=True, flood_damage=True,
-            insurance="uninsured"),
-        "owner_flood_damaged_insured": datasets.ihp_cohort_filter(
-            ihp_schema, options.state, owner_only=True, flood_damage=True,
-            insurance="insured"),
-    }
-    for key, query in queries.items():
+    queries = [
+        ("all_registrations", "all registrations",
+         datasets.ihp_state_filter(ihp_schema, options.state)),
+        ("owner_registrations", "owner-occupant registrations",
+         datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
+                                    flood_damage=False)),
+        ("owner_flood_damaged", "owners with flood damage",
+         datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
+                                    flood_damage=True)),
+        ("owner_flood_damaged_uninsured", "...without flood insurance",
+         datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
+                                    flood_damage=True, insurance="uninsured")),
+        ("owner_flood_damaged_insured", "...with flood insurance",
+         datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
+                                    flood_damage=True, insurance="insured")),
+    ]
+
+    for index, (key, label, query) in enumerate(queries, start=1):
+        # The uninsured cohort was already counted to size the download; asking
+        # OpenFEMA to scan 26 million rows again for the same answer is waste.
+        if key == "owner_flood_damaged_uninsured" and known_cohort_count is not None \
+                and options.cohort.unknown_insurance != "uninsured" \
+                and options.cohort.owner_only and options.cohort.flood_basis == "damage":
+            counts[key] = known_cohort_count
+            progress("  [%d/%d] %s: %s (already counted)"
+                     % (index, len(queries), label, f"{known_cohort_count:,}"))
+            continue
         try:
             counts[key] = client.count(options.ihp_dataset, options.ihp_version, query)
-        except api.OpenFemaError:
+            progress("  [%d/%d] %s: %s"
+                     % (index, len(queries), label, f"{counts[key]:,}"))
+        except api.OpenFemaError as exc:
             counts[key] = None
+            progress("  [%d/%d] %s: unavailable (%s)" % (index, len(queries), label, exc))
 
     total = counts.get("owner_flood_damaged")
     insured = counts.get("owner_flood_damaged_insured")
@@ -361,7 +391,7 @@ def _context_counts(client, ihp_schema, options):
     if None not in (total, insured, uninsured):
         # Whatever is left over has no flood-insurance value recorded at all.
         counts["owner_flood_damaged_insurance_unknown"] = total - insured - uninsured
-    if total:
+    if total and uninsured is not None:
         counts["uninsured_share"] = round(uninsured / total, 4)
     counts["_note"] = ("statewide across all declarations on file; not narrowed "
                        "by the year, incident-type, or disaster filters")

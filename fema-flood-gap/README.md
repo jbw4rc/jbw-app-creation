@@ -95,6 +95,13 @@ records sit in that bucket.
 | `--nfip-since` / `--nfip-until` | loss-year range (defaults to the declaration year range) |
 | `--match-buffer-days N` | widen each incident window when matching claims to a storm (default 3) |
 
+### Speed
+
+The slow part is the "how big is that cohort" block: five counts, each of
+which makes OpenFEMA scan the whole 26-million-row registration table.
+`--skip-context` drops them and the rest of the report is unaffected. Every
+response is cached, so only the first run for a state pays for them.
+
 ### Dollars
 
 `--adjust-to 2025` restates every amount in one year's dollars using a built-in

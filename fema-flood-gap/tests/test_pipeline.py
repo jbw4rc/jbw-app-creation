@@ -449,11 +449,15 @@ class TestErrorDiagnosis(unittest.TestCase):
                 return super()._fetch(url)
 
         client = BadParameter(fixtures.TABLES, field_types=fixtures.FIELD_TYPES)
-        with self.assertRaises(api_mod.OpenFemaError) as caught:
-            pipeline.build(client, make_options())
-        message = str(caught.exception)
-        self.assertIn("querystring", message)
-        self.assertNotIn("compound cohort filter", message)
+        result = pipeline.build(client, make_options())
+
+        # Counting is optional, so the report still lands with real figures...
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+        # ...and the warning names the actual cause rather than blaming the
+        # filter and silently widening the query.
+        warnings = " ".join(result.warnings)
+        self.assertIn("querystring", warnings)
+        self.assertNotIn("compound cohort filter", warnings)
 
     def test_filter_complaint_still_triggers_the_widening_fallback(self):
         client = make_client(reject_compound_filters=True)
@@ -477,3 +481,54 @@ class TestErrorDiagnosis(unittest.TestCase):
         client.count("FimaNfipClaims", 2, "state eq 'LA'")
         self.assertTrue(any("allpages" in url for url in client.urls))
         self.assertFalse(any("inlinecount=all&" in url for url in client.urls))
+
+
+class TestContextCounts(unittest.TestCase):
+    def test_cohort_count_is_not_queried_twice(self):
+        client = make_client()
+        pipeline.build(client, make_options())
+        cohort = datasets.ihp_cohort_filter(
+            datasets.ihp_schema(client, 2), "LA", owner_only=True,
+            flood_damage=True, insurance="uninsured")
+        counting = [u for u in client.urls
+                    if "inlinecount" in u and urllib.parse.quote(cohort) in u]
+        self.assertEqual(len(counting), 1, "the cohort was counted more than once")
+
+    def test_each_count_is_reported_as_it_lands(self):
+        messages = []
+        client = make_client(progress=messages.append)
+        pipeline.build(client, make_options())
+        progress = [m for m in messages if "[" in m and "/5]" in m]
+        self.assertEqual(len(progress), 5)
+        self.assertTrue(any("already counted" in m for m in progress))
+
+    def test_a_failed_pre_count_does_not_abort_the_report(self):
+        """The pre-count only sizes a progress bar; losing it is not fatal."""
+        class PreCountFails(FakeClient):
+            def _fetch(self, url):
+                if "inlinecount" in url and "floodInsurance" in url:
+                    raise api_mod.HttpError(503, url, "service unavailable")
+                return super()._fetch(url)
+
+        client = PreCountFails(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                               max_retries=1)
+        result = pipeline.build(client, make_options())
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+        self.assertEqual(result.ihp.statewide.households, 5)
+        self.assertTrue(any("pre-count failed" in w for w in result.warnings))
+
+    def test_a_failed_context_count_does_not_abort_the_report(self):
+        class CountsFail(FakeClient):
+            """Fails the owner-registrations context count only."""
+
+            def _fetch(self, url):
+                if "inlinecount" in url and "ownRent" in url \
+                        and "floodDamage" not in url:
+                    raise api_mod.HttpError(500, url, "boom")
+                return super()._fetch(url)
+
+        client = CountsFail(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                            max_retries=1)
+        result = pipeline.build(client, make_options())
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+        self.assertIsNone(result.context["owner_registrations"])
