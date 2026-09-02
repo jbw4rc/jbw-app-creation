@@ -5,7 +5,7 @@ import os
 import shutil
 import sys
 
-from . import (analysis, api, catalog, cpi, datasets, pipeline,
+from . import (analysis, api, catalog, cpi, datasets, pipeline, probe,
                report as report_mod, states)
 
 
@@ -40,6 +40,17 @@ def build_parser():
     listing.add_argument("keyword", nargs="?",
                          help="only show datasets whose name or title contains this")
     _add_network_args(listing)
+
+    values = sub.add_parser(
+        "values", help="show the values a column actually holds")
+    values.add_argument("state", help="state postal code or name")
+    values.add_argument("--field", action="append", dest="fields",
+                        help="logical field to sample: ownRent, floodDamage, "
+                             "floodInsurance, ownRent (repeatable; default: all three)")
+    values.add_argument("--sample", type=int, default=1000,
+                        help="records to sample (default: %(default)s)")
+    _add_dataset_args(values)
+    _add_network_args(values)
 
     cache = sub.add_parser("cache", help="inspect or clear the download cache")
     cache.add_argument("action", choices=["info", "clear"], nargs="?", default="info")
@@ -281,6 +292,33 @@ def cmd_schema(args):
     return 0
 
 
+def cmd_values(args):
+    """Diagnostic: what does this column really contain?"""
+    try:
+        state = states.resolve(args.state)
+    except states.UnknownState as exc:
+        sys.stderr.write("error: %s\n" % exc)
+        return 2
+    client = make_client(args)
+    version, _entry, _note = catalog.resolve(
+        client, args.ihp_dataset, args.ihp_version,
+        datasets.NAME_HINTS.get(args.ihp_dataset))
+    schema = datasets.ihp_schema(client, version, args.ihp_dataset)
+    logical = args.fields or ["ownRent", "floodDamage", "floodInsurance"]
+    sampled = probe.sample(
+        client, args.ihp_dataset, version,
+        [schema.name(name) for name in logical],
+        filter=datasets.ihp_state_filter(schema, state),
+        limit=args.sample)
+    print("%s -- %s v%s, sample of %d records\n"
+          % (state, args.ihp_dataset, version, args.sample))
+    for name in logical:
+        actual = schema.name(name)
+        print("%s (column %s)" % (name, actual or "not present"))
+        print("  %s\n" % probe.describe(sampled.get(actual)))
+    return 0
+
+
 def cmd_datasets(args):
     client = make_client(args)
     rows = (catalog.search(client, args.keyword) if args.keyword
@@ -319,7 +357,7 @@ def cmd_states(_args):
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    known = {"report", "schema", "datasets", "cache", "states"}
+    known = {"report", "schema", "datasets", "values", "cache", "states"}
     # `fema-flood-gap LA` should work without typing the subcommand.
     if argv and argv[0] not in known and not argv[0].startswith("-"):
         argv.insert(0, "report")
@@ -330,7 +368,8 @@ def main(argv=None):
 
     args = build_parser().parse_args(argv)
     handlers = {"report": cmd_report, "schema": cmd_schema,
-                "datasets": cmd_datasets, "cache": cmd_cache,
+                "datasets": cmd_datasets, "values": cmd_values,
+                "cache": cmd_cache,
                 "states": cmd_states}
     handler = handlers.get(args.command)
     if handler is None:

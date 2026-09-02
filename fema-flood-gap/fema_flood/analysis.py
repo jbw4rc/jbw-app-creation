@@ -158,6 +158,27 @@ class Rejections:
         return sum(vars(self).values())
 
 
+# OpenFEMA encodes tenure as single letters ("O"/"R") in the registrations
+# table, but spelled-out values appear in adjacent datasets and older extracts.
+# Accept both rather than depending on one.
+OWNER_TOKENS = ("o", "own", "owner", "owner-occupant", "homeowner")
+RENTER_TOKENS = ("r", "rent", "renter", "tenant")
+
+
+def is_owner(value):
+    """True for an owner-occupant, False for a renter, None if unrecognized."""
+    if value is None:
+        return None
+    text = str(value).strip().lower()
+    if not text:
+        return None
+    if text in OWNER_TOKENS or text.startswith("own"):
+        return True
+    if text in RENTER_TOKENS or text.startswith("rent"):
+        return False
+    return None
+
+
 def _flooded(schema, record, basis):
     flag = truthy(schema.get(record, "floodDamage"))
     level = number(schema.get(record, "waterLevel"))
@@ -256,8 +277,7 @@ def aggregate_ihp(records, schema, options, deflator, state=None,
             result.rejections.wrong_state += 1
             continue
 
-        own_rent = str(schema.get(record, "ownRent", "")).strip().lower()
-        if options.owner_only and not own_rent.startswith("own"):
+        if options.owner_only and is_owner(schema.get(record, "ownRent")) is not True:
             result.rejections.not_owner += 1
             continue
 

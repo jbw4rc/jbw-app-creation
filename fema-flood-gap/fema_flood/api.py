@@ -90,6 +90,16 @@ def quote_literal(value):
     return "'" + str(value).replace("'", "''") + "'"
 
 
+def or_filters(*parts):
+    """OR a set of predicates, for a column with several matching values."""
+    clean = [p for p in parts if p]
+    if not clean:
+        return None
+    if len(clean) == 1:
+        return clean[0]
+    return " or ".join("(%s)" % p for p in clean)
+
+
 def and_filters(*parts):
     clean = [p for p in parts if p]
     if not clean:

@@ -53,6 +53,7 @@ page for sharing), `csv` (a row per declaration, for a spreadsheet), `json`
 ./fema-flood-gap NJ --disaster 4086 --format md -o sandy.md
 ./fema-flood-gap FL --bundle out/fl                  # every format at once
 ./fema-flood-gap schema                              # how fields resolved
+./fema-flood-gap values MS                           # what a column contains
 ./fema-flood-gap cache info                          # what has been downloaded
 ```
 
@@ -140,6 +141,16 @@ Records are aggregated as they stream, so memory stays flat regardless of
 state size. Every response is cached under `~/.cache/fema-flood-gap`, so
 re-running with a different cohort definition or output format downloads
 nothing; `--refresh` re-fetches, `cache clear` empties it.
+
+Field **values** are sampled before the filter is written. OpenFEMA encodes
+tenure as `"O"`/`"R"`, not `"Owner"`/`"Renter"`, and a column the schema calls
+boolean can carry `1`/`0`. A filter in the wrong vocabulary returns zero rows,
+which reads like a real answer -- a state where nobody flooded uninsured --
+rather than a bug. So the tool samples the column, builds the filter from the
+values actually present, and prints what it found. `./fema-flood-gap values MS`
+shows the same sample on its own. If a cohort filter still matches nothing,
+the run widens to the whole state and applies the cohort locally rather than
+reporting an empty cohort as a finding.
 
 Field names are **resolved at run time** against the published schema, from a
 list of candidates per logical field (NFIP v1's `amountPaidOnBuildingClaim`

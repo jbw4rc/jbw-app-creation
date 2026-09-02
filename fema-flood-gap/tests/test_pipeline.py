@@ -19,6 +19,18 @@ def make_client(**kwargs):
     return FakeClient(fixtures.TABLES, **kwargs)
 
 
+def _vocabulary(client, schema, state="LA"):
+    """The value sample the pipeline builds its filters from."""
+    from fema_flood import probe
+    sampled = probe.sample(
+        client, datasets.IHP_DATASET, 2,
+        [schema.name("ownRent"), schema.name("floodDamage"),
+         schema.name("floodInsurance")],
+        filter=datasets.ihp_state_filter(schema, state))
+    return {logical: sampled.get(schema.name(logical))
+            for logical in ("ownRent", "floodDamage", "floodInsurance")}
+
+
 def make_options(state="LA", **overrides):
     cohort_kwargs = {k[7:]: overrides.pop(k) for k in list(overrides)
                      if k.startswith("cohort_")}
@@ -153,8 +165,10 @@ class TestReportNumbers(unittest.TestCase):
         # deriving "insured" by subtraction would have wrongly swallowed it.
         self.assertEqual(context["owner_flood_damaged_insurance_unknown"], 1)
 
-    def test_data_vintage_recorded(self):
-        self.assertEqual(self.report.vintage["ihp"], "2026-01-15T00:00:00.000Z")
+    def test_data_vintage_records_dataset_and_version(self):
+        vintage = self.report.vintage["ihp"]
+        self.assertIn("IndividualsAndHouseholdsProgramValidRegistrations v2", vintage)
+        self.assertIn("26,000,000 records", vintage)
 
 
 class TestOptions(unittest.TestCase):
@@ -487,9 +501,12 @@ class TestContextCounts(unittest.TestCase):
     def test_cohort_count_is_not_queried_twice(self):
         client = make_client()
         pipeline.build(client, make_options())
+        schema = datasets.ihp_schema(client, 2)
+        vocabulary = _vocabulary(client, schema)
         cohort = datasets.ihp_cohort_filter(
-            datasets.ihp_schema(client, 2), "LA", owner_only=True,
-            flood_damage=True, insurance="uninsured")
+            schema, "LA", owner_only=True, flood_damage=True,
+            insurance="uninsured", vocabulary=vocabulary)
+        self.assertIn("ownRent", cohort)      # the filter really is narrowed
         counting = [u for u in client.urls
                     if "inlinecount" in u and urllib.parse.quote(cohort) in u]
         self.assertEqual(len(counting), 1, "the cohort was counted more than once")
@@ -532,3 +549,79 @@ class TestContextCounts(unittest.TestCase):
         result = pipeline.build(client, make_options())
         self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
         self.assertIsNone(result.context["owner_registrations"])
+
+
+class TestVocabulary(unittest.TestCase):
+    """Filters must be written in the encoding the data actually uses.
+
+    OpenFEMA stores tenure as "O"/"R". Asking for 'Owner' returns zero rows,
+    which is indistinguishable in the output from a state with no owners --
+    the failure mode this whole path exists to prevent.
+    """
+
+    def test_filter_uses_the_sampled_letter_code(self):
+        client = make_client()
+        schema = datasets.ihp_schema(client, 2)
+        cohort = datasets.ihp_cohort_filter(
+            schema, "LA", vocabulary=_vocabulary(client, schema))
+        self.assertIn("ownRent eq 'O'", cohort)
+        self.assertNotIn("'Owner'", cohort)
+
+    def test_same_code_handles_a_spelled_out_encoding(self):
+        spelled = [dict(row, ownRent={"O": "Owner", "R": "Renter"}[row["ownRent"]])
+                   for row in fixtures.IHP_RECORDS]
+        tables = dict(fixtures.TABLES,
+                      IndividualsAndHouseholdsProgramValidRegistrations=spelled)
+        client = FakeClient(tables, field_types=fixtures.FIELD_TYPES)
+        schema = datasets.ihp_schema(client, 2)
+        cohort = datasets.ihp_cohort_filter(
+            schema, "LA", vocabulary=_vocabulary(client, schema))
+        self.assertIn("ownRent eq 'Owner'", cohort)
+
+        result = pipeline.build(client, make_options())
+        self.assertEqual(result.ihp.statewide.households, 5)
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+
+    def test_boolean_flags_use_the_sampled_type(self):
+        as_booleans = [dict(row,
+                            floodDamage=bool(row["floodDamage"]),
+                            floodInsurance=None if row["floodInsurance"] is None
+                            else bool(row["floodInsurance"]))
+                       for row in fixtures.IHP_RECORDS]
+        tables = dict(fixtures.TABLES,
+                      IndividualsAndHouseholdsProgramValidRegistrations=as_booleans)
+        client = FakeClient(tables, field_types=fixtures.FIELD_TYPES)
+        schema = datasets.ihp_schema(client, 2)
+        cohort = datasets.ihp_cohort_filter(
+            schema, "LA", insurance="uninsured",
+            vocabulary=_vocabulary(client, schema))
+        self.assertIn("floodDamage eq true", cohort)
+        self.assertIn("floodInsurance eq false", cohort)
+
+        result = pipeline.build(client, make_options())
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+
+    def test_empty_cohort_widens_instead_of_reporting_zero(self):
+        class UnsampleableColumn(FakeClient):
+            """Sampling comes back empty, so no cohort predicate can be built."""
+
+            def _fetch(self, url):
+                payload = super()._fetch(url)
+                if "%24top=1000" in url:
+                    for key in payload:
+                        if key != "metadata":
+                            payload[key] = []
+                return payload
+
+        client = UnsampleableColumn(fixtures.TABLES,
+                                    field_types=fixtures.FIELD_TYPES)
+        result = pipeline.build(client, make_options())
+        # Widened to the whole state, then filtered locally: same answer.
+        self.assertEqual(result.ihp.statewide.households, 5)
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+        self.assertEqual(result.ihp.rejections.not_owner, 1)
+
+    def test_sampled_values_are_recorded_in_the_report(self):
+        result = pipeline.build(make_client(), make_options())
+        values = result.schema_notes["ihp_values"]
+        self.assertEqual(set(values["ownRent"]), {"O", "R"})

@@ -1,6 +1,6 @@
 """Dataset definitions: which OpenFEMA endpoints we read and what we need from them."""
 
-from . import api, schema as schema_mod
+from . import analysis, api, probe, schema as schema_mod
 
 IHP_DATASET = "IndividualsAndHouseholdsProgramValidRegistrations"
 NFIP_DATASET = "FimaNfipClaims"
@@ -110,33 +110,63 @@ def ihp_state_filter(schema, state):
     return "%s eq %s" % (schema.name("state"), api.quote_literal(state))
 
 
+def _matching_literals(counter, predicate):
+    """Filter literals for every sampled value satisfying ``predicate``."""
+    if not counter:
+        return []
+    return [probe.literal(value) for value in counter
+            if value is not None and predicate(value)]
+
+
 def ihp_cohort_filter(schema, state, owner_only=True, flood_damage=True,
-                      insurance=None):
-    """Server-side narrowing for a cohort.
+                      insurance=None, vocabulary=None):
+    """Server-side narrowing for a cohort, written in the data's own vocabulary.
+
+    ``vocabulary`` maps a logical field to a Counter of values actually seen in
+    the table (see :mod:`fema_flood.probe`). It matters because the encodings
+    are not guessable: tenure is ``"O"``/``"R"``, not ``"Owner"``/``"Renter"``,
+    and a column the schema calls boolean can carry 1/0. Asking for the wrong
+    literal returns zero rows, which reads like a real answer instead of a bug.
+    Without a vocabulary the predicate is left off and applied client side --
+    slower, but never silently wrong.
 
     ``insurance`` is ``"uninsured"``, ``"insured"``, or ``None`` for no
     predicate. Note that "not uninsured" and "insured" are different sets:
-    registrations with no flood-insurance value at all match neither, so the
-    two counts do not sum to the flood-damaged total and must be queried
+    registrations with no flood-insurance value match neither, so the two
+    counts do not sum to the flood-damaged total and must be queried
     separately rather than derived by subtraction.
 
-    Pushing the cohort into ``$filter`` is the difference between downloading a
-    few tens of thousands of rows and a few million: for a state like Louisiana
-    the unfiltered registration table is larger than the cohort by two orders of
-    magnitude. Every predicate is re-checked client side in ``analysis`` so a
-    filter OpenFEMA interprets differently than we expect cannot silently widen
-    the cohort.
+    Every predicate is re-checked client side in ``analysis``, so a filter
+    OpenFEMA interprets differently than we expect cannot silently widen the
+    cohort.
     """
+    vocabulary = vocabulary or {}
     parts = [ihp_state_filter(schema, state)]
+
     if owner_only:
-        parts.append("%s eq %s" % (schema.name("ownRent"), api.quote_literal("Owner")))
+        literals = _matching_literals(
+            vocabulary.get("ownRent"), lambda v: analysis.is_owner(v) is True)
+        if literals:
+            parts.append(api.or_filters(
+                *["%s eq %s" % (schema.name("ownRent"), lit) for lit in literals]))
+
     if flood_damage:
-        parts.append("%s eq %s" % (schema.name("floodDamage"),
-                                   schema.flag_literal("floodDamage", True)))
+        literals = _matching_literals(
+            vocabulary.get("floodDamage"), lambda v: schema_mod.truthy(v) is True)
+        if literals:
+            parts.append(api.or_filters(
+                *["%s eq %s" % (schema.name("floodDamage"), lit) for lit in literals]))
+
     if insurance in ("insured", "uninsured"):
-        parts.append("%s eq %s" % (schema.name("floodInsurance"),
-                                   schema.flag_literal("floodInsurance",
-                                                       insurance == "insured")))
+        want = insurance == "insured"
+        literals = _matching_literals(
+            vocabulary.get("floodInsurance"),
+            lambda v: schema_mod.truthy(v) is want)
+        if literals:
+            parts.append(api.or_filters(
+                *["%s eq %s" % (schema.name("floodInsurance"), lit)
+                  for lit in literals]))
+
     return api.and_filters(*parts)
 
 

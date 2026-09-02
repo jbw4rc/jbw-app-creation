@@ -3,7 +3,7 @@
 import datetime
 
 from . import (analysis, api, catalog, datasets,
-               declarations as decl_mod, states)
+               declarations as decl_mod, probe, states)
 
 
 class StateReport:
@@ -215,17 +215,52 @@ def build(client, options):
     progress("Resolving IHP schema...")
     ihp_schema = datasets.ihp_schema(client, options.ihp_version, options.ihp_dataset)
     report.schema_notes["ihp"] = dict(ihp_schema.bindings)
-    cohort_filter = datasets.ihp_cohort_filter(
-        ihp_schema, options.state,
-        owner_only=options.cohort.owner_only,
-        flood_damage=options.cohort.flood_basis == "damage",
-        insurance=None if options.cohort.unknown_insurance == "uninsured"
-        else "uninsured")
+    progress("Sampling how %s encodes tenure and the flood flags..." % options.state)
+    vocabulary = probe.sample(
+        client, options.ihp_dataset, options.ihp_version,
+        [ihp_schema.name("ownRent"), ihp_schema.name("floodDamage"),
+         ihp_schema.name("floodInsurance")],
+        filter=datasets.ihp_state_filter(ihp_schema, options.state))
+    vocabulary = {logical: vocabulary.get(ihp_schema.name(logical), None)
+                  for logical in ("ownRent", "floodDamage", "floodInsurance")}
+    for logical, counter in vocabulary.items():
+        progress("  %s: %s" % (logical, probe.describe(counter)))
+        report.schema_notes.setdefault("ihp_values", {})[logical] = {
+            str(value): count for value, count in (counter or {}).items()}
+
+    def build_cohort_filter():
+        return datasets.ihp_cohort_filter(
+            ihp_schema, options.state,
+            owner_only=options.cohort.owner_only,
+            flood_damage=options.cohort.flood_basis == "damage",
+            insurance=None if options.cohort.unknown_insurance == "uninsured"
+            else "uninsured",
+            vocabulary=vocabulary)
+
+    cohort_filter = build_cohort_filter()
 
     expected = None
     try:
         expected = client.count(options.ihp_dataset, options.ihp_version, cohort_filter)
         progress("  %s registrations match the cohort filter" % f"{expected:,}")
+        if expected == 0 and cohort_filter != datasets.ihp_state_filter(
+                ihp_schema, options.state):
+            # Zero is far more often a filter that does not speak the data's
+            # vocabulary than a state where nobody flooded uninsured. Widen and
+            # let the client-side predicates decide, rather than reporting an
+            # empty cohort as a finding.
+            progress("  cohort filter matched nothing; widening to the whole "
+                     "state and filtering locally (slower)")
+            report.warnings.append(
+                "The server-side cohort filter matched no records, so the run "
+                "widened to every %s registration and applied the cohort "
+                "locally. Sampled values -- %s."
+                % (options.state,
+                   "; ".join("%s: %s" % (logical, probe.describe(counter))
+                             for logical, counter in vocabulary.items())))
+            cohort_filter = datasets.ihp_state_filter(ihp_schema, options.state)
+            expected = client.count(options.ihp_dataset, options.ihp_version,
+                                    cohort_filter)
     except api.OpenFemaError as exc:
         # Two very different failures land here. If OpenFEMA rejected the
         # *filter*, the query has to change and the run cannot proceed until it
@@ -261,14 +296,13 @@ def build(client, options):
         ihp_records, ihp_schema, options.cohort, options.deflator,
         state=options.state, disaster_years=disaster_years,
         allowed_disasters=allowed)
-    report.vintage["ihp"] = client.metadata(
-        options.ihp_dataset, options.ihp_version).get("lastRefresh")
 
     # ---- context denominators ---------------------------------------------
     if not options.skip_context:
         progress("Counting comparison cohorts (each is a server-side scan of "
                  "the whole registration table; slow the first time)...")
         report.context = _context_counts(client, ihp_schema, options,
+                                         vocabulary=vocabulary,
                                          known_cohort_count=expected)
 
     # ---- NFIP claims -------------------------------------------------------
@@ -294,8 +328,6 @@ def build(client, options):
             event_windows=decl_mod.event_windows(report.declarations,
                                                  options.match_buffer_days),
             occupancy_codes=datasets.OWNER_OCCUPANCY_CODES)
-        report.vintage["nfip"] = client.metadata(
-            options.nfip_dataset, options.nfip_version).get("lastRefresh")
 
     _add_warnings(report, options)
     return report
@@ -327,16 +359,16 @@ def _resolve_versions(client, options, report):
             setattr(options, attribute, fallback)
             continue
         setattr(options, attribute, version)
-        report.vintage.setdefault(
-            "%s_dataset" % attribute.split("_")[0], "%s v%s%s"
-            % (name, version, (" (%s)" % catalog.describe(entry)) if entry else ""))
+        report.vintage[attribute.split("_")[0]] = "%s v%s%s" % (
+            name, version, (" - %s" % catalog.describe(entry)) if entry else "")
         if note:
             report.warnings.append(note)
         progress("  %s -> v%s%s" % (name, version,
                                     " (%s)" % catalog.describe(entry) if entry else ""))
 
 
-def _context_counts(client, ihp_schema, options, known_cohort_count=None):
+def _context_counts(client, ihp_schema, options, vocabulary=None,
+                    known_cohort_count=None):
     """Cheap ``$inlinecount`` queries that put the cohort in proportion.
 
     Cheap in bandwidth, not in time: each one makes OpenFEMA scan the whole
@@ -355,22 +387,25 @@ def _context_counts(client, ihp_schema, options, known_cohort_count=None):
          datasets.ihp_state_filter(ihp_schema, options.state)),
         ("owner_registrations", "owner-occupant registrations",
          datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
-                                    flood_damage=False)),
+                                    flood_damage=False, vocabulary=vocabulary)),
         ("owner_flood_damaged", "owners with flood damage",
          datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
-                                    flood_damage=True)),
+                                    flood_damage=True, vocabulary=vocabulary)),
         ("owner_flood_damaged_uninsured", "...without flood insurance",
          datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
-                                    flood_damage=True, insurance="uninsured")),
+                                    flood_damage=True, insurance="uninsured",
+                                    vocabulary=vocabulary)),
         ("owner_flood_damaged_insured", "...with flood insurance",
          datasets.ihp_cohort_filter(ihp_schema, options.state, owner_only=True,
-                                    flood_damage=True, insurance="insured")),
+                                    flood_damage=True, insurance="insured",
+                                    vocabulary=vocabulary)),
     ]
 
     for index, (key, label, query) in enumerate(queries, start=1):
         # The uninsured cohort was already counted to size the download; asking
         # OpenFEMA to scan 26 million rows again for the same answer is waste.
         if key == "owner_flood_damaged_uninsured" and known_cohort_count is not None \
+                and query != datasets.ihp_state_filter(ihp_schema, options.state) \
                 and options.cohort.unknown_insurance != "uninsured" \
                 and options.cohort.owner_only and options.cohort.flood_basis == "damage":
             counts[key] = known_cohort_count

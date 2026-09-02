@@ -39,6 +39,17 @@ class TestCoercion(unittest.TestCase):
         self.assertIsNone(schema.date_key("August 2016"))
 
 
+class TestOwnerMatching(unittest.TestCase):
+    def test_letter_codes_and_spelled_out_values(self):
+        from fema_flood.analysis import is_owner
+        for value in ("O", "o", " O ", "Owner", "owner", "OWNER", "Own"):
+            self.assertIs(is_owner(value), True, value)
+        for value in ("R", "r", "Renter", "renter", "Rent"):
+            self.assertIs(is_owner(value), False, value)
+        for value in (None, "", "Unknown", "U"):
+            self.assertIsNone(is_owner(value), value)
+
+
 class TestAccumulator(unittest.TestCase):
     def setUp(self):
         self.acc = Accumulator()

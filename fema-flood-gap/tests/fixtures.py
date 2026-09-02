@@ -58,6 +58,11 @@ DECLARATIONS = [
 ]
 
 
+# OpenFEMA encodes tenure as single letters, not words -- assuming "Owner"
+# yields an empty cohort that reads exactly like a state with no owners.
+OWNER, RENTER = "O", "R"
+
+
 def _ihp(row_id, disaster, own_rent, flood, insurance, ihp, ha, ona,
          state="LA", water=12.0, rpfvl=0.0, ppfvl=0.0, primary=1):
     return {
@@ -73,16 +78,16 @@ def _ihp(row_id, disaster, own_rent, flood, insurance, ihp, ha, ona,
 # Cohort members are r01, r02, r07, r08, r09: 5 households, $19,000 of IHP
 # ($15,000 HA + $4,000 ONA), 4 of them funded.
 IHP_RECORDS = [
-    _ihp("r01", 4277, "Owner", 1, 0, 10000.0, 8000.0, 2000.0, rpfvl=30000.0, ppfvl=5000.0),
-    _ihp("r02", 4277, "Owner", 1, 0, 0.0, 0.0, 0.0, rpfvl=2000.0),
-    _ihp("r03", 4277, "Owner", 1, 1, 25000.0, 25000.0, 0.0),          # insured
-    _ihp("r04", 4277, "Renter", 1, 0, 4000.0, 3000.0, 1000.0),        # renter
-    _ihp("r05", 4277, "Owner", 0, 0, 900.0, 0.0, 900.0, water=0.0),   # no flood damage
-    _ihp("r06", 4277, "Owner", 1, None, 7000.0, 7000.0, 0.0),         # unknown insurance
-    _ihp("r07", 1603, "Owner", 1, 0, 5000.0, 5000.0, 0.0),
-    _ihp("r08", 1603, "Owner", 1, 0, 3000.0, 1000.0, 2000.0),
-    _ihp("r09", 9999, "Owner", 1, 0, 1000.0, 1000.0, 0.0),            # no declaration row
-    _ihp("r10", 4277, "Owner", 1, 0, 8000.0, 8000.0, 0.0, state="TX"),
+    _ihp("r01", 4277, OWNER, 1, 0, 10000.0, 8000.0, 2000.0, rpfvl=30000.0, ppfvl=5000.0),
+    _ihp("r02", 4277, OWNER, 1, 0, 0.0, 0.0, 0.0, rpfvl=2000.0),
+    _ihp("r03", 4277, OWNER, 1, 1, 25000.0, 25000.0, 0.0),          # insured
+    _ihp("r04", 4277, RENTER, 1, 0, 4000.0, 3000.0, 1000.0),        # renter
+    _ihp("r05", 4277, OWNER, 0, 0, 900.0, 0.0, 900.0, water=0.0),   # no flood damage
+    _ihp("r06", 4277, OWNER, 1, None, 7000.0, 7000.0, 0.0),         # unknown insurance
+    _ihp("r07", 1603, OWNER, 1, 0, 5000.0, 5000.0, 0.0),
+    _ihp("r08", 1603, OWNER, 1, 0, 3000.0, 1000.0, 2000.0),
+    _ihp("r09", 9999, OWNER, 1, 0, 1000.0, 1000.0, 0.0),            # no declaration row
+    _ihp("r10", 4277, OWNER, 1, 0, 8000.0, 8000.0, 0.0, state="TX"),
 ]
 
 
