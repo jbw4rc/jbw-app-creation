@@ -105,6 +105,21 @@ class StateReport:
         stats = self.ihp.statewide
         return self.options.cost_share.table(stats.ha.total, stats.ona.total)
 
+    def pa_share_of_ihp(self):
+        """The sheltering non-federal share as a fraction of IHP paid.
+
+        The number that decides whether this block is a finding or a
+        footnote, and the one that varies most between states: large where a
+        state ran STEP itself, near zero where sheltering went through
+        localities or was never used.
+        """
+        if not self.pa or not self.ihp:
+            return None
+        ihp_total = self.ihp.statewide.ihp.total
+        if self.home_insurance:
+            ihp_total += self.home_insurance.other_peril.statewide.ihp.total
+        return self.pa.matched.total / ihp_total if ihp_total else None
+
     def pa_rows(self):
         """Per-declaration PA sheltering totals, both tiers, for the page."""
         if not self.pa:

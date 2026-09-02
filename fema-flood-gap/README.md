@@ -165,8 +165,23 @@ keyword hits can be audited. On the HTML page the block sits inside section
 | `--pa-category A` | a different damage category |
 | `--pa-all-applicants` | include local applicants too |
 
-If the block comes back empty, `./fema-flood-gap pa MS` prints what is
-actually there: the resolved fields, the category codes present, the
+Across states this ranges from the largest number on the page to nothing at
+all: it is large where a state ran STEP or TSA itself (New York and New
+Jersey after Sandy, Texas after Harvey), and empty where sheltering went
+through local applicants or was never used. **An empty result is dropped
+from the HTML page**, which exists to make an argument, but kept in the text,
+Markdown and JSON outputs, where knowing a state has none is a result worth
+recording. Where there are projects, the summary states the non-federal share
+as a percentage of the IHP paid above, so materiality is visible at a glance
+when comparing states.
+
+Biological (COVID-19) declarations are excluded by default. They dominate
+Category B in every state -- medical staffing, PPE, vaccination -- and some of
+their titles do match sheltering keywords, so counting them would report
+pandemic response as housing liability. `--pa-include-covid` opts back in.
+
+To tune the keywords for a state, run `./fema-flood-gap pa <state>`: it prints
+what is actually there: the resolved fields, the category codes present, the
 applicant-id prefixes, which applicants classify as the state, and the
 largest project titles with their keyword hits marked. The report itself also
 says which of the three filters emptied the block rather than showing a

@@ -160,6 +160,7 @@ def render_text(report, limit=25, width=100):
                 label, count(totals.projects), money(totals.total),
                 money(totals.federal), money(totals.non_federal),
                 pct(totals.non_federal_share)))
+        w("\n" + _wrap(pa_summary(report), width - 2, indent="  ", initial="  ") + "\n")
         w("\n" + _wrap(PA_NOTE, width - 2, indent="  ", initial="  ") + "\n")
 
     rows = report.cost_share_table()
@@ -413,7 +414,7 @@ def render_markdown(report, limit=25):
                 label, count(totals.projects), money(totals.total),
                 money(totals.federal), money(totals.non_federal),
                 pct(totals.non_federal_share)))
-        w("\n_%s_\n" % PA_NOTE)
+        w("\n%s\n\n_%s_\n" % (pa_summary(report), PA_NOTE))
 
     rows = report.cost_share_table()
     if rows:
@@ -719,9 +720,44 @@ def _section(step, title, inner, intro=None, section_id=None):
                html.escape(title), lead, inner))
 
 
+def pa_summary(report):
+    """One sentence on what the PA search found, including when it found nothing.
+
+    Across states this block ranges from the largest number on the page to
+    zero, so an empty result has to say what was searched and what turned up
+    rather than render an empty table.
+    """
+    if not report.pa:
+        return None
+    pa = report.pa
+    if pa.matched.projects:
+        share = report.pa_share_of_ihp()
+        return ("%s sheltering or shelter-in-home projects with a state applicant, "
+                "%s obligated, of which %s was the non-federal share%s."
+                % (count(pa.matched.projects), money(pa.matched.total),
+                   money(pa.matched.non_federal),
+                   " -- equal to %s of the IHP paid above" % pct(share)
+                   if share else ""))
+    return ("No sheltering or shelter-in-home projects with a state applicant were "
+            "found. Of %s Public Assistance projects read for %s, %s were in "
+            "category %s, %s of those had a state or state-agency applicant, and "
+            "none of those had a title naming sheltering. Sheltering here may have "
+            "run through local applicants, or not been used: `fema-flood-gap pa %s` "
+            "lists the projects and their titles."
+            % (count(pa.records_seen), report.state,
+               count(sum(v for k, v in pa.categories.items()
+                         if k[:1] == (pa.options.category or "")[:1].upper())),
+               pa.options.category, count(pa.state_applicants), report.state))
+
+
 def _pa_block(report):
     """The 'beyond IHP' table inside section 2: PA sheltering, state applicants."""
     e = html.escape
+    if not report.pa.matched.projects:
+        # Nothing to show on a page meant to make an argument. The finding is
+        # not lost: the text, Markdown and JSON outputs carry what was
+        # searched and what turned up, which is what a research run needs.
+        return ""
     cells = ["projects", "total", "federal", "nonFederal", "share"]
     rows = []
     for tier, label in (("m", "Sheltering / shelter-in-home (keyword floor)"),
@@ -1087,6 +1123,13 @@ PAGE_SCRIPT = """
       setCell('pa.' + tier + '.share', t.total ? pct(non / t.total, 1) : 'n/a');
     });
     var non = sum.m.total - sum.m.federal;
+    if (!sum.m.projects) {
+      setText('paintro',
+        'No sheltering or shelter-in-home projects with a state applicant fall ' +
+        'in this range. Sheltering may have run through local applicants, or ' +
+        'not been used.');
+      return;
+    }
     setText('paintro',
       'IHP is not the only line. Sheltering displaced households in hotels and ' +
       'shelters, and shelter-in-home repair programs, run through Public ' +

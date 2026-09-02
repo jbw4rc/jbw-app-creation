@@ -1847,3 +1847,71 @@ class TestCovidIsNotAHousingCost(unittest.TestCase):
             "DisasterDeclarationsSummaries", 2, filter="state eq 'LA'",
             key=schema.key_field()), schema)
         self.assertEqual(decl_mod.non_housing(collapsed), {4528})
+
+
+
+class TestPaAcrossStates(unittest.TestCase):
+    """Kept as a research tool: nothing found must read as clearly as something."""
+
+    def _no_sheltering(self):
+        """A state whose Category B has a state applicant but no sheltering."""
+        projects = [row for row in fixtures.PA_PROJECTS
+                    if "shelter" not in row["applicationTitle"].lower()
+                    and "TSA" not in row["applicationTitle"]
+                    and "STEP" not in row["applicationTitle"]]
+        tables = dict(fixtures.TABLES,
+                      PublicAssistanceFundedProjectsDetails=projects)
+        return pipeline.build(FakeClient(tables, field_types=fixtures.FIELD_TYPES),
+                              make_options())
+
+    def test_a_state_with_none_says_what_it_searched(self):
+        built = self._no_sheltering()
+        self.assertEqual(built.pa.matched.projects, 0)
+        summary = report.pa_summary(built)
+        self.assertIn("No sheltering", summary)
+        self.assertIn("had a state or state-agency applicant", summary)
+        self.assertIn("may have run through local applicants", summary)
+        self.assertIn("fema-flood-gap pa LA", summary)
+
+    def test_an_empty_result_leaves_the_pitch_page_alone(self):
+        """The HTML makes an argument; an empty block is noise on it."""
+        built = self._no_sheltering()
+        page = report.render(built, "html")
+        self.assertNotIn('data-cell="pa.m.total"', page)     # no skeleton table
+        self.assertNotIn("Beyond IHP", page)
+        self.assertNotIn("No sheltering", page)
+
+    def test_but_the_research_outputs_keep_the_finding(self):
+        """Knowing a state has none is a result worth recording."""
+        built = self._no_sheltering()
+        for fmt in ("text", "md"):
+            output = report.render(built, fmt)
+            self.assertIn("No sheltering", output, fmt)
+            self.assertIn("had a state or state-agency applicant", output, fmt)
+        payload = json.loads(report.render(built, "json"))
+        block = payload["public_assistance_sheltering"]
+        self.assertEqual(block["keyword_floor"]["projects"], 0)
+        self.assertGreater(block["state_applicant_rows"], 0)
+        self.assertIn("categories_seen", block)
+
+    def test_a_state_with_results_still_shows_the_block(self):
+        page = report.render(pipeline.build(make_client(), make_options()), "html")
+        self.assertIn("Beyond IHP", page)
+        self.assertIn('data-cell="pa.m.total"', page)
+
+    def test_a_state_with_some_reports_its_size_against_ihp(self):
+        built = pipeline.build(make_client(), make_options())
+        summary = report.pa_summary(built)
+        self.assertIn("4 sheltering", summary)
+        self.assertIn(report.money(built.pa.matched.non_federal), summary)
+        self.assertIn("of the IHP paid above", summary)
+        share = built.pa_share_of_ihp()
+        self.assertAlmostEqual(
+            share, 6_500_000.0 / (19_000.0 + 900.0))
+
+    def test_share_is_none_without_a_pa_pull(self):
+        from fema_flood.pa import PaOptions
+        built = pipeline.build(make_client(),
+                               make_options(pa=PaOptions(enabled=False)))
+        self.assertIsNone(built.pa_share_of_ihp())
+        self.assertIsNone(report.pa_summary(built))
