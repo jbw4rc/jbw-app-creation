@@ -108,9 +108,18 @@ Three OpenFEMA datasets:
 
 | Purpose | Dataset |
 | --- | --- |
-| Household awards | `IndividualsAndHouseholdsProgramValidRegistrations` (v1) |
-| Insurance payouts | `FimaNfipClaims` (v2) |
-| Disaster names, types, incident dates | `DisasterDeclarationsSummaries` (v2) |
+| Household awards | `IndividualsAndHouseholdsProgramValidRegistrations` |
+| Insurance payouts | `FimaNfipClaims` |
+| Disaster names, types, incident dates | `DisasterDeclarationsSummaries` |
+
+**Versions are not hard-coded.** OpenFEMA republishes a table under a new
+version number and retires the old one, and the version sits in the URL path,
+so a baked-in guess becomes a 404. On every run the tool reads OpenFEMA's own
+dataset catalog and binds to the current, non-deprecated version of each
+table. `./fema-flood-gap datasets` lists what is published; `--ihp-version 1`
+pins a specific one, and `--ihp-dataset NAME` points at a different table
+entirely. If a dataset name is not in the catalog, the error names the real
+datasets that look like it rather than failing blankly.
 
 The cohort is pushed into the API's `$filter` so a state pull is tens of
 thousands of rows rather than millions, then **re-checked locally** on every

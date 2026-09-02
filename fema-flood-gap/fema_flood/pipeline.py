@@ -2,7 +2,8 @@
 
 import datetime
 
-from . import analysis, api, datasets, declarations as decl_mod, states
+from . import (analysis, api, catalog, datasets,
+               declarations as decl_mod, states)
 
 
 class StateReport:
@@ -136,7 +137,9 @@ class RunOptions:
     def __init__(self, state, cohort, nfip, deflator, min_year=None, max_year=None,
                  incident_types=None, flood_declarations_only=False, disasters=None,
                  match_buffer_days=3, ihp_version=None, nfip_version=None,
-                 skip_nfip=False, skip_context=False, sort="ihp_total"):
+                 declarations_version=None, ihp_dataset=None, nfip_dataset=None,
+                 declarations_dataset=None, skip_nfip=False, skip_context=False,
+                 sort="ihp_total"):
         self.state = state
         self.cohort = cohort
         self.nfip = nfip
@@ -147,8 +150,13 @@ class RunOptions:
         self.flood_declarations_only = flood_declarations_only
         self.disasters = disasters
         self.match_buffer_days = match_buffer_days
-        self.ihp_version = ihp_version or datasets.IHP[1]
-        self.nfip_version = nfip_version or datasets.NFIP[1]
+        # ``None`` means "ask the OpenFEMA catalog"; resolved in build().
+        self.ihp_version = ihp_version
+        self.nfip_version = nfip_version
+        self.declarations_version = declarations_version
+        self.ihp_dataset = ihp_dataset or datasets.IHP_DATASET
+        self.nfip_dataset = nfip_dataset or datasets.NFIP_DATASET
+        self.declarations_dataset = declarations_dataset or datasets.DECLARATIONS_DATASET
         self.skip_nfip = skip_nfip
         self.skip_context = skip_context
         self.sort = sort
@@ -165,6 +173,12 @@ class RunOptions:
             "flood_declarations_only": self.flood_declarations_only,
             "disasters": sorted(self.disasters) if self.disasters else None,
             "nfip_event_match_buffer_days": self.match_buffer_days,
+            "datasets": {
+                "ihp": "%s v%s" % (self.ihp_dataset, self.ihp_version),
+                "nfip": "%s v%s" % (self.nfip_dataset, self.nfip_version),
+                "declarations": "%s v%s" % (self.declarations_dataset,
+                                            self.declarations_version),
+            },
         }
 
 
@@ -173,13 +187,16 @@ def build(client, options):
     report = StateReport(options.state, options)
     progress = client.progress
 
+    _resolve_versions(client, options, report)
+
     # ---- declarations ------------------------------------------------------
     progress("Resolving declaration schema...")
-    decl_schema = datasets.declaration_schema(client)
+    decl_schema = datasets.declaration_schema(
+        client, options.declarations_version, options.declarations_dataset)
     report.schema_notes["declarations"] = dict(decl_schema.bindings)
     progress("Fetching disaster declarations for %s..." % options.state)
     decl_records = client.records(
-        datasets.DECLARATIONS[0], datasets.DECLARATIONS[1],
+        options.declarations_dataset, options.declarations_version,
         select=datasets.selected_fields(decl_schema),
         filter=datasets.declaration_filter(decl_schema, options.state),
         label="declarations")
@@ -196,7 +213,7 @@ def build(client, options):
 
     # ---- IHP registrations -------------------------------------------------
     progress("Resolving IHP schema...")
-    ihp_schema = datasets.ihp_schema(client)
+    ihp_schema = datasets.ihp_schema(client, options.ihp_version, options.ihp_dataset)
     report.schema_notes["ihp"] = dict(ihp_schema.bindings)
     cohort_filter = datasets.ihp_cohort_filter(
         ihp_schema, options.state,
@@ -207,7 +224,7 @@ def build(client, options):
 
     expected = None
     try:
-        expected = client.count(datasets.IHP[0], options.ihp_version, cohort_filter)
+        expected = client.count(options.ihp_dataset, options.ihp_version, cohort_filter)
         progress("  %s registrations match the cohort filter" % f"{expected:,}")
     except api.HttpError as exc:
         if exc.status != 400:
@@ -219,11 +236,11 @@ def build(client, options):
             "OpenFEMA rejected the compound cohort filter; fell back to a "
             "state-only query and applied the cohort locally.")
         cohort_filter = datasets.ihp_state_filter(ihp_schema, options.state)
-        expected = client.count(datasets.IHP[0], options.ihp_version, cohort_filter)
+        expected = client.count(options.ihp_dataset, options.ihp_version, cohort_filter)
 
     progress("Fetching IHP registrations...")
     ihp_records = client.records(
-        datasets.IHP[0], options.ihp_version,
+        options.ihp_dataset, options.ihp_version,
         select=datasets.selected_fields(ihp_schema),
         filter=cohort_filter, label="IHP registrations", expected=expected)
     disaster_years = {n: d.year for n, d in all_declarations.items()}
@@ -231,7 +248,8 @@ def build(client, options):
         ihp_records, ihp_schema, options.cohort, options.deflator,
         state=options.state, disaster_years=disaster_years,
         allowed_disasters=allowed)
-    report.vintage["ihp"] = client.metadata(datasets.IHP[0], options.ihp_version).get("lastRefresh")
+    report.vintage["ihp"] = client.metadata(
+        options.ihp_dataset, options.ihp_version).get("lastRefresh")
 
     # ---- context denominators ---------------------------------------------
     if not options.skip_context:
@@ -241,17 +259,18 @@ def build(client, options):
     # ---- NFIP claims -------------------------------------------------------
     if not options.skip_nfip:
         progress("Resolving NFIP schema...")
-        nfip_schema = datasets.nfip_schema(client)
+        nfip_schema = datasets.nfip_schema(client, options.nfip_version,
+                                           options.nfip_dataset)
         report.schema_notes["nfip"] = dict(nfip_schema.bindings)
         nfip_filter = datasets.nfip_state_filter(nfip_schema, options.state)
         try:
-            expected = client.count(datasets.NFIP[0], options.nfip_version, nfip_filter)
+            expected = client.count(options.nfip_dataset, options.nfip_version, nfip_filter)
             progress("  %s NFIP claims on file for %s" % (f"{expected:,}", options.state))
         except api.HttpError:
             expected = None
         progress("Fetching NFIP claims...")
         nfip_records = client.records(
-            datasets.NFIP[0], options.nfip_version,
+            options.nfip_dataset, options.nfip_version,
             select=datasets.selected_fields(nfip_schema),
             filter=nfip_filter, label="NFIP claims", expected=expected)
         report.nfip = analysis.aggregate_nfip(
@@ -261,10 +280,45 @@ def build(client, options):
                                                  options.match_buffer_days),
             occupancy_codes=datasets.OWNER_OCCUPANCY_CODES)
         report.vintage["nfip"] = client.metadata(
-            datasets.NFIP[0], options.nfip_version).get("lastRefresh")
+            options.nfip_dataset, options.nfip_version).get("lastRefresh")
 
     _add_warnings(report, options)
     return report
+
+
+def _resolve_versions(client, options, report):
+    """Bind each dataset to a version published by OpenFEMA right now."""
+    progress = client.progress
+    progress("Checking the OpenFEMA dataset catalog...")
+    wanted = [
+        ("ihp_version", options.ihp_dataset),
+        ("nfip_version", options.nfip_dataset),
+        ("declarations_version", options.declarations_dataset),
+    ]
+    for attribute, name in wanted:
+        if attribute == "nfip_version" and options.skip_nfip:
+            continue
+        requested = getattr(options, attribute)
+        try:
+            version, entry, note = catalog.resolve(
+                client, name, requested, datasets.NAME_HINTS.get(name))
+        except catalog.CatalogError as exc:
+            if requested is not None:
+                raise
+            fallback = datasets.FALLBACK_VERSIONS.get(name)
+            if fallback is None:
+                raise
+            report.warnings.append("%s Falling back to v%d." % (exc, fallback))
+            setattr(options, attribute, fallback)
+            continue
+        setattr(options, attribute, version)
+        report.vintage.setdefault(
+            "%s_dataset" % attribute.split("_")[0], "%s v%s%s"
+            % (name, version, (" (%s)" % catalog.describe(entry)) if entry else ""))
+        if note:
+            report.warnings.append(note)
+        progress("  %s -> v%s%s" % (name, version,
+                                    " (%s)" % catalog.describe(entry) if entry else ""))
 
 
 def _context_counts(client, ihp_schema, options):
@@ -290,7 +344,7 @@ def _context_counts(client, ihp_schema, options):
     }
     for key, query in queries.items():
         try:
-            counts[key] = client.count(datasets.IHP[0], options.ihp_version, query)
+            counts[key] = client.count(options.ihp_dataset, options.ihp_version, query)
         except api.OpenFemaError:
             counts[key] = None
 

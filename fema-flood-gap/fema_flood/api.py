@@ -12,6 +12,7 @@ import gzip
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -37,7 +38,35 @@ class HttpError(OpenFemaError):
         self.status = status
         self.url = url
         self.body = body
-        super().__init__("HTTP %s from %s%s" % (status, url, (": " + body[:400]) if body else ""))
+        super().__init__("HTTP %s from %s%s" % (status, url, (": " + body) if body else ""))
+
+
+def _error_body(exc):
+    """Readable text from an error response.
+
+    Error bodies arrive gzipped like any other (we send Accept-Encoding), and
+    are usually a full HTML error page -- printing those raw dumps either
+    binary or a screenful of markup over the user's terminal.
+    """
+    try:
+        raw = exc.read()
+    except Exception:
+        return ""
+    if not raw:
+        return ""
+    headers = getattr(exc, "headers", None)
+    if headers is not None and headers.get("Content-Encoding") == "gzip":
+        try:
+            raw = gzip.decompress(raw)
+        except (OSError, EOFError):
+            return "(unreadable compressed error body)"
+    text = raw.decode("utf-8", "replace")
+    if "<" in text and ">" in text:
+        text = re.sub(r"<[^>]+>", " ", text)
+    text = " ".join(text.split())
+    if not text:
+        return ""
+    return text[:200] + ("..." if len(text) > 200 else "")
 
 
 def quote_literal(value):
@@ -130,11 +159,7 @@ class Client:
                         raw = gzip.decompress(raw)
                     return json.loads(raw.decode("utf-8"))
             except urllib.error.HTTPError as exc:
-                body = ""
-                try:
-                    body = exc.read().decode("utf-8", "replace")
-                except Exception:
-                    pass
+                body = _error_body(exc)
                 if exc.code not in RETRY_STATUS:
                     # 400 usually means a $filter the dataset does not accept;
                     # callers catch this and retry with a simpler query.

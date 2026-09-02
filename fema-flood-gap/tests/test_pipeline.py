@@ -10,7 +10,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fixtures
 from fake_api import FakeClient
 
-from fema_flood import analysis, cpi, datasets, declarations, pipeline, report
+from fema_flood import (analysis, catalog, cpi, datasets, declarations,
+                        pipeline, report)
 
 
 def make_client(**kwargs):
@@ -34,14 +35,14 @@ def make_options(state="LA", **overrides):
 class TestSchemaBinding(unittest.TestCase):
     def test_binds_from_published_field_metadata(self):
         client = make_client()
-        resolved = datasets.ihp_schema(client)
+        resolved = datasets.ihp_schema(client, 2)
         self.assertEqual(resolved.source, "DataSetFields")
         self.assertEqual(resolved.name("floodInsurance"), "floodInsurance")
         self.assertEqual(resolved.name("state"), "damagedStateAbbreviation")
 
     def test_falls_back_to_probing_a_record(self):
         client = make_client(field_types={})
-        resolved = datasets.nfip_schema(client)
+        resolved = datasets.nfip_schema(client, 2)
         self.assertEqual(resolved.source, "record probe")
         self.assertEqual(resolved.name("buildingPaid"), "amountPaidOnBuildingClaim")
 
@@ -51,7 +52,7 @@ class TestSchemaBinding(unittest.TestCase):
                     for k, v in row.items()} for row in fixtures.NFIP_RECORDS]
         tables = dict(fixtures.TABLES, FimaNfipClaims=renamed)
         client = FakeClient(tables, field_types={})
-        resolved = datasets.nfip_schema(client)
+        resolved = datasets.nfip_schema(client, 2)
         self.assertEqual(resolved.name("buildingPaid"), "netBuildingPaymentAmount")
         self.assertEqual(resolved.name("contentsPaid"), "netContentsPaymentAmount")
 
@@ -59,7 +60,7 @@ class TestSchemaBinding(unittest.TestCase):
 class TestDeclarations(unittest.TestCase):
     def test_collapses_county_rows_and_unions_the_window(self):
         client = make_client()
-        schema = datasets.declaration_schema(client)
+        schema = datasets.declaration_schema(client, 2)
         rows = client.records("DisasterDeclarationsSummaries", 2,
                               filter="state eq 'LA'")
         collapsed = declarations.collapse(rows, schema)
@@ -70,7 +71,7 @@ class TestDeclarations(unittest.TestCase):
 
     def test_selection_by_year_and_incident_type(self):
         client = make_client()
-        schema = datasets.declaration_schema(client)
+        schema = datasets.declaration_schema(client, 2)
         collapsed = declarations.collapse(
             client.records("DisasterDeclarationsSummaries", 2, filter="state eq 'LA'"),
             schema)
@@ -349,3 +350,86 @@ class TestPagingSafety(unittest.TestCase):
         self.assertEqual(acc.percentile(50), 20.0)
         acc.add(1000.0)
         self.assertEqual(acc.percentile(50), 25.0)
+
+
+class TestCatalogResolution(unittest.TestCase):
+    """Dataset versions come from OpenFEMA's catalog, not a hard-coded guess."""
+
+    def test_picks_the_current_version_over_a_deprecated_one(self):
+        client = make_client()
+        version, entry, note = catalog.resolve(
+            client, datasets.IHP_DATASET)
+        self.assertEqual(version, 2)
+        self.assertIsNone(note)
+        self.assertEqual(entry["recordCount"], 26_000_000)
+
+    def test_report_queries_the_resolved_version(self):
+        client = make_client()
+        options = make_options()
+        pipeline.build(client, options)
+        self.assertEqual(options.ihp_version, 2)
+        self.assertTrue(any("/v2/IndividualsAndHouseholds" in url
+                            for url in client.urls))
+        self.assertFalse(any("/v1/IndividualsAndHouseholds" in url
+                             for url in client.urls))
+
+    def test_explicit_pin_is_honoured_but_flagged_as_deprecated(self):
+        version, entry, note = catalog.resolve(
+            make_client(), datasets.IHP_DATASET, requested=1)
+        self.assertEqual(version, 1)
+        self.assertIn("deprecated", note)
+
+    def test_pin_absent_from_the_catalog_is_reported(self):
+        version, entry, note = catalog.resolve(
+            make_client(), datasets.IHP_DATASET, requested=7)
+        self.assertEqual(version, 7)
+        self.assertIn("not in the catalog", note)
+        self.assertIn("v2", note)
+
+    def test_unknown_dataset_name_suggests_real_ones(self):
+        with self.assertRaises(catalog.CatalogError) as caught:
+            catalog.resolve(make_client(), "IndividualsAndHouseholdsProgramTypo",
+                            hint="Individuals")
+        message = str(caught.exception)
+        self.assertIn("no dataset named", message)
+        self.assertIn("IndividualsAndHouseholdsProgramValidRegistrations (v2)", message)
+
+    def test_falls_back_to_a_built_in_version_when_the_catalog_is_missing(self):
+        tables = dict(fixtures.TABLES)
+        del tables["DataSets"]
+        client = FakeClient(tables, field_types=fixtures.FIELD_TYPES)
+        options = make_options()
+        result = pipeline.build(client, options)
+        self.assertEqual(options.ihp_version, datasets.FALLBACK_VERSIONS[datasets.IHP_DATASET])
+        self.assertTrue(any("Falling back to v" in w for w in result.warnings))
+        # The run still produces the right answer against the fallback version.
+        self.assertEqual(result.ihp.statewide.ihp.total, 19000.0)
+
+
+class TestErrorBodies(unittest.TestCase):
+    def test_gzipped_html_error_page_is_made_readable(self):
+        import gzip
+        import io
+        import urllib.error
+        from fema_flood.api import _error_body
+
+        class Headers(dict):
+            def get(self, key, default=None):
+                return dict.get(self, key, default)
+
+        page = (b"<html><head><title>404</title></head><body><h1>Not Found</h1>"
+                b"<p>The requested resource was not found.</p></body></html>")
+        exc = urllib.error.HTTPError(
+            "u", 404, "nf", Headers({"Content-Encoding": "gzip"}),
+            io.BytesIO(gzip.compress(page)))
+        text = _error_body(exc)
+        self.assertIn("Not Found", text)
+        self.assertNotIn("<", text)
+
+    def test_plain_error_body_survives(self):
+        import io
+        import urllib.error
+        from fema_flood.api import _error_body
+
+        exc = urllib.error.HTTPError("u", 400, "bad", {}, io.BytesIO(b"bad filter"))
+        self.assertEqual(_error_body(exc), "bad filter")

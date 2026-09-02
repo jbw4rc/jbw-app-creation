@@ -5,7 +5,8 @@ import os
 import shutil
 import sys
 
-from . import analysis, api, cpi, datasets, pipeline, report as report_mod, states
+from . import (analysis, api, catalog, cpi, datasets, pipeline,
+               report as report_mod, states)
 
 
 DEFAULT_CACHE = os.path.join(
@@ -31,7 +32,14 @@ def build_parser():
     _add_report_args(run)
 
     schema = sub.add_parser("schema", help="show how dataset fields resolved")
+    _add_dataset_args(schema)
     _add_network_args(schema)
+
+    listing = sub.add_parser(
+        "datasets", help="list the datasets OpenFEMA publishes")
+    listing.add_argument("keyword", nargs="?",
+                         help="only show datasets whose name or title contains this")
+    _add_network_args(listing)
 
     cache = sub.add_parser("cache", help="inspect or clear the download cache")
     cache.add_argument("action", choices=["info", "clear"], nargs="?", default="info")
@@ -39,6 +47,27 @@ def build_parser():
 
     sub.add_parser("states", help="list recognized state and territory codes")
     return parser
+
+
+def _add_dataset_args(parser):
+    """Which OpenFEMA tables to read. Shared by `report` and `schema`."""
+    target = parser
+    target.add_argument("--ihp-version", type=int,
+                        help="pin the IHP dataset version (default: whatever "
+                             "the OpenFEMA catalog says is current)")
+    target.add_argument("--nfip-version", type=int,
+                        help="pin the NFIP claims dataset version")
+    target.add_argument("--declarations-version", type=int,
+                        help="pin the declarations dataset version")
+    target.add_argument("--ihp-dataset", default=datasets.IHP_DATASET,
+                        help="OpenFEMA dataset name for household awards "
+                             "(default: %(default)s)")
+    target.add_argument("--nfip-dataset", default=datasets.NFIP_DATASET,
+                        help="OpenFEMA dataset name for NFIP claims "
+                             "(default: %(default)s)")
+    target.add_argument("--declarations-dataset", default=datasets.DECLARATIONS_DATASET,
+                        help="OpenFEMA dataset name for declarations "
+                             "(default: %(default)s)")
 
 
 def _add_network_args(parser):
@@ -123,10 +152,7 @@ def _add_report_args(parser):
                         help="skip the comparison-cohort counts")
 
     advanced = parser.add_argument_group("advanced")
-    advanced.add_argument("--ihp-version", type=int, default=datasets.IHP[1],
-                          help="OpenFEMA API version for the IHP dataset")
-    advanced.add_argument("--nfip-version", type=int, default=datasets.NFIP[1],
-                          help="OpenFEMA API version for the NFIP claims dataset")
+    _add_dataset_args(advanced)
     advanced.add_argument("--no-percentiles", action="store_true",
                           help="skip medians/percentiles to save memory on huge pulls")
     _add_network_args(parser)
@@ -185,6 +211,9 @@ def build_options(args, state):
         disasters=set(args.disasters) if args.disasters else None,
         match_buffer_days=args.match_buffer_days,
         ihp_version=args.ihp_version, nfip_version=args.nfip_version,
+        declarations_version=args.declarations_version,
+        ihp_dataset=args.ihp_dataset, nfip_dataset=args.nfip_dataset,
+        declarations_dataset=args.declarations_dataset,
         skip_nfip=args.skip_nfip, skip_context=args.skip_context,
         sort=args.sort)
 
@@ -229,16 +258,41 @@ def cmd_report(args):
 
 def cmd_schema(args):
     client = make_client(args)
-    for label, loader in [("IHP", datasets.ihp_schema),
-                          ("NFIP claims", datasets.nfip_schema),
-                          ("Declarations", datasets.declaration_schema)]:
-        resolved = loader(client)
-        print("%s -- %s v%s (%s)"
-              % (label, resolved.dataset, resolved.version, resolved.source))
+    targets = [
+        ("IHP", datasets.ihp_schema, args.ihp_dataset, args.ihp_version),
+        ("NFIP claims", datasets.nfip_schema, args.nfip_dataset, args.nfip_version),
+        ("Declarations", datasets.declaration_schema, args.declarations_dataset,
+         args.declarations_version),
+    ]
+    for label, loader, name, pinned in targets:
+        version, entry, note = catalog.resolve(
+            client, name, pinned, datasets.NAME_HINTS.get(name))
+        resolved = loader(client, version, name)
+        detail = catalog.describe(entry)
+        print("%s -- %s v%s (%s)%s"
+              % (label, resolved.dataset, resolved.version, resolved.source,
+                 ("\n  catalog: " + detail) if detail else ""))
+        if note:
+            print("  note: %s" % note)
         for logical, actual in sorted(resolved.bindings.items()):
             declared = resolved.types.get(actual, "?") if actual else "-"
             print("  %-22s %-42s %s" % (logical, actual or "(not present)", declared))
         print()
+    return 0
+
+
+def cmd_datasets(args):
+    client = make_client(args)
+    rows = (catalog.search(client, args.keyword) if args.keyword
+            else sorted(catalog.fetch(client),
+                        key=lambda r: (r.get("name") or "")))
+    if not rows:
+        print("nothing published matches %r" % args.keyword)
+        return 1
+    for entry in rows:
+        print("%-58s v%-3s %s" % (entry.get("name"), entry.get("version"),
+                                  catalog.describe(entry)))
+    print("\n%d entries" % len(rows))
     return 0
 
 
@@ -265,7 +319,7 @@ def cmd_states(_args):
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    known = {"report", "schema", "cache", "states"}
+    known = {"report", "schema", "datasets", "cache", "states"}
     # `fema-flood-gap LA` should work without typing the subcommand.
     if argv and argv[0] not in known and not argv[0].startswith("-"):
         argv.insert(0, "report")
@@ -276,7 +330,8 @@ def main(argv=None):
 
     args = build_parser().parse_args(argv)
     handlers = {"report": cmd_report, "schema": cmd_schema,
-                "cache": cmd_cache, "states": cmd_states}
+                "datasets": cmd_datasets, "cache": cmd_cache,
+                "states": cmd_states}
     handler = handlers.get(args.command)
     if handler is None:
         build_parser().print_help()

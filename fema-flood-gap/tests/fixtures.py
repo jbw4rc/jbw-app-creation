@@ -115,7 +115,25 @@ NFIP_RECORDS = [
     _claim("c08", "2016-08-15", 70000.0, 0.0, state="TX"),
 ]
 
+def _catalog(name, version, records, deprecated=None, title=None):
+    return {"id": "%s-v%d" % (name, version), "name": name, "version": version,
+            "title": title or name, "recordCount": records,
+            "lastRefresh": "2026-01-15T00:00:00.000Z", "depDate": deprecated}
+
+
+# The IHP table is published at v2 with v1 retired -- the shape that makes a
+# hard-coded version number 404.
+CATALOG = [
+    _catalog("IndividualsAndHouseholdsProgramValidRegistrations", 2, 26_000_000),
+    _catalog("IndividualsAndHouseholdsProgramValidRegistrations", 1, 24_000_000,
+             deprecated="2025-06-30T00:00:00.000Z"),
+    _catalog("FimaNfipClaims", 2, 2_600_000),
+    _catalog("DisasterDeclarationsSummaries", 2, 68_000),
+    _catalog("IndividualAssistanceHousingRegistrantsLargeDisasters", 1, 5_000_000),
+]
+
 TABLES = {
+    "DataSets": CATALOG,
     "DisasterDeclarationsSummaries": DECLARATIONS,
     "IndividualsAndHouseholdsProgramValidRegistrations": IHP_RECORDS,
     "FimaNfipClaims": NFIP_RECORDS,

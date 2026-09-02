@@ -2,11 +2,19 @@
 
 from . import api, schema as schema_mod
 
-# (dataset name, API version). Versions are the current published ones; override
-# on the CLI if OpenFEMA publishes a new major version.
-IHP = ("IndividualsAndHouseholdsProgramValidRegistrations", 1)
-NFIP = ("FimaNfipClaims", 2)
-DECLARATIONS = ("DisasterDeclarationsSummaries", 2)
+IHP_DATASET = "IndividualsAndHouseholdsProgramValidRegistrations"
+NFIP_DATASET = "FimaNfipClaims"
+DECLARATIONS_DATASET = "DisasterDeclarationsSummaries"
+
+# Used only if the OpenFEMA catalog cannot be read; normally the version comes
+# from the catalog, because a dataset republished under a new version number
+# turns a hard-coded guess into a 404.
+FALLBACK_VERSIONS = {IHP_DATASET: 1, NFIP_DATASET: 2, DECLARATIONS_DATASET: 2}
+
+# Keywords for suggesting a replacement when a dataset name is not in the
+# catalog at all.
+NAME_HINTS = {IHP_DATASET: "Individuals", NFIP_DATASET: "Nfip",
+              DECLARATIONS_DATASET: "Declaration"}
 
 # logical name -> candidate physical names, most-preferred first.
 IHP_FIELDS = {
@@ -74,22 +82,22 @@ def bind(schema, spec, optional):
     return schema
 
 
-def load_schema(client, dataset_version, spec, optional):
-    dataset, version = dataset_version
+def load_schema(client, dataset, version, spec, optional):
     resolved = schema_mod.discover(client, dataset, version)
     return bind(resolved, spec, optional)
 
 
-def ihp_schema(client):
-    return load_schema(client, IHP, IHP_FIELDS, IHP_OPTIONAL)
+def ihp_schema(client, version, dataset=IHP_DATASET):
+    return load_schema(client, dataset, version, IHP_FIELDS, IHP_OPTIONAL)
 
 
-def nfip_schema(client):
-    return load_schema(client, NFIP, NFIP_FIELDS, NFIP_OPTIONAL)
+def nfip_schema(client, version, dataset=NFIP_DATASET):
+    return load_schema(client, dataset, version, NFIP_FIELDS, NFIP_OPTIONAL)
 
 
-def declaration_schema(client):
-    return load_schema(client, DECLARATIONS, DECLARATION_FIELDS, DECLARATION_OPTIONAL)
+def declaration_schema(client, version, dataset=DECLARATIONS_DATASET):
+    return load_schema(client, dataset, version, DECLARATION_FIELDS,
+                       DECLARATION_OPTIONAL)
 
 
 def selected_fields(schema):
