@@ -143,6 +143,8 @@ class PaBucket:
 class PaResult:
     def __init__(self, options):
         self.options = options
+        self.categories = {}           # category code -> projects seen
+        self.state_applicants = 0      # rows whose applicant classified as state
         self.by_disaster = {}
         self.matched = PaTotals()
         self.category = PaTotals()
@@ -167,6 +169,8 @@ class PaResult:
             "skipped_other_applicant": self.skipped_other_applicant,
             "skipped_other_category": self.skipped_other_category,
             "matched_projects": len(self.projects),
+            "categories_seen": dict(sorted(self.categories.items())),
+            "state_applicant_rows": self.state_applicants,
         }
 
 
@@ -194,6 +198,7 @@ def aggregate(records, schema, options, deflator, names=None, state=None,
             continue
 
         category = str(schema.get(record, "category", "")).strip().upper()
+        result.categories[category] = result.categories.get(category, 0) + 1
         if wanted_category and category[:1] != wanted_category[:1]:
             result.skipped_other_category += 1
             continue
@@ -202,7 +207,9 @@ def aggregate(records, schema, options, deflator, names=None, state=None,
         name = names.get(applicant_id)
         if name is None and applicant_id:
             result.unknown_applicants += 1
-        if options.state_applicants_only and not is_state_applicant(applicant_id, name):
+        if is_state_applicant(applicant_id, name):
+            result.state_applicants += 1
+        elif options.state_applicants_only:
             result.skipped_other_applicant += 1
             continue
 

@@ -54,6 +54,7 @@ page for sharing), `csv` (a row per declaration, for a spreadsheet), `json`
 ./fema-flood-gap FL --bundle out/fl                  # every format at once
 ./fema-flood-gap schema                              # how fields resolved
 ./fema-flood-gap values MS                           # what a column contains
+./fema-flood-gap pa MS                               # what the PA data holds
 ./fema-flood-gap cache info                          # what has been downloaded
 ```
 
@@ -163,6 +164,13 @@ keyword hits can be audited. On the HTML page the block sits inside section
 | `--pa-keyword REGEX` | replace the title patterns (repeatable) |
 | `--pa-category A` | a different damage category |
 | `--pa-all-applicants` | include local applicants too |
+
+If the block comes back empty, `./fema-flood-gap pa MS` prints what is
+actually there: the resolved fields, the category codes present, the
+applicant-id prefixes, which applicants classify as the state, and the
+largest project titles with their keyword hits marked. The report itself also
+says which of the three filters emptied the block rather than showing a
+silent zero.
 
 ### State cost share
 

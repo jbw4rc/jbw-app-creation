@@ -54,6 +54,17 @@ def build_parser():
     _add_dataset_args(values)
     _add_network_args(values)
 
+    pa_probe = sub.add_parser(
+        "pa", help="show what the Public Assistance data holds for a state")
+    pa_probe.add_argument("state", help="state postal code or name")
+    pa_probe.add_argument("--sample", type=int, default=4000,
+                          help="projects to read (default: %(default)s)")
+    pa_probe.add_argument("--pa-category", default="B",
+                          help="category to detail (default: %(default)s)")
+    pa_probe.add_argument("--titles", type=int, default=25,
+                          help="largest titles to list (default: %(default)s)")
+    _add_network_args(pa_probe)
+
     cache = sub.add_parser("cache", help="inspect or clear the download cache")
     cache.add_argument("action", choices=["info", "clear"], nargs="?", default="info")
     cache.add_argument("--cache-dir", default=DEFAULT_CACHE)
@@ -410,6 +421,109 @@ def cmd_values(args):
     return 0
 
 
+def cmd_pa(args):
+    """Diagnostic: what is actually in the PA data for this state?
+
+    Answers, in one run, the four questions an empty sheltering block raises:
+    did the state filter work, what category codes exist, which applicants
+    look like the state, and what are these projects actually called.
+    """
+    try:
+        state = states.resolve(args.state)
+    except states.UnknownState as exc:
+        sys.stderr.write("error: %s\n" % exc)
+        return 2
+    client = make_client(args)
+
+    version, entry, _note = catalog.resolve(client, datasets.PA_DATASET, None,
+                                            datasets.NAME_HINTS.get(datasets.PA_DATASET))
+    schema = datasets.pa_schema(client, version)
+    print("%s v%s (%s)" % (datasets.PA_DATASET, version, catalog.describe(entry)))
+    for logical, actual in sorted(schema.bindings.items()):
+        print("  %-16s %s" % (logical, actual or "(not present)"))
+
+    names = {}
+    try:
+        applicant_version, _e, _n = catalog.resolve(
+            client, datasets.PA_APPLICANTS_DATASET, None, "Applicants")
+        applicant_schema = datasets.pa_applicant_schema(client, applicant_version)
+        applicant_filter = None
+        if applicant_schema.name("state"):
+            applicant_filter = "%s eq %s" % (applicant_schema.name("state"),
+                                             api.quote_literal(state))
+        names = pa.applicant_names(client.records(
+            datasets.PA_APPLICANTS_DATASET, applicant_version,
+            select=datasets.selected_fields(applicant_schema),
+            filter=applicant_filter, label="applicants"), applicant_schema)
+        print("\napplicants table: %s names for %s" % (f"{len(names):,}", state))
+    except api.OpenFemaError as exc:
+        print("\napplicants table unavailable (%s)" % exc)
+
+    state_filter = "%s eq %s" % (schema.name("state"), api.quote_literal(state))
+    try:
+        total = client.count(datasets.PA_DATASET, version, state_filter)
+        print("projects for %s: %s" % (state, f"{total:,}"))
+    except api.OpenFemaError as exc:
+        print("could not count projects (%s)" % exc)
+
+    rows = []
+    for index, record in enumerate(client.records(
+            datasets.PA_DATASET, version, select=datasets.selected_fields(schema),
+            filter=state_filter, label="PA projects")):
+        rows.append(record)
+        if index + 1 >= args.sample:
+            break
+    print("read %s projects\n" % f"{len(rows):,}")
+    if not rows:
+        print("Nothing came back. The state filter is %r -- check the value in a "
+              "sample row." % state_filter)
+        return 1
+
+    from collections import Counter
+    categories = Counter(str(schema.get(r, "category", "")).strip().upper() for r in rows)
+    print("category codes present:")
+    for code, n in categories.most_common():
+        print("  %-6s %s" % (code or "(blank)", f"{n:,}"))
+
+    wanted = (args.pa_category or "").strip().upper()[:1]
+    in_category = [r for r in rows
+                   if str(schema.get(r, "category", "")).strip().upper()[:1] == wanted]
+    print("\ncategory %s: %s projects" % (args.pa_category, f"{len(in_category):,}"))
+
+    prefixes = Counter(str(schema.get(r, "applicantId", "") or "")[:3] for r in rows)
+    print("\napplicant-id prefixes (000 should mean statewide):")
+    for prefix, n in prefixes.most_common(8):
+        print("  %-6s %s" % (prefix or "(blank)", f"{n:,}"))
+
+    state_rows = [r for r in in_category
+                  if pa.is_state_applicant(schema.get(r, "applicantId"),
+                                           names.get(str(schema.get(r, "applicantId", "") or "").strip()))]
+    print("\nclassified as state / state-agency applicants: %s of %s in category %s"
+          % (f"{len(state_rows):,}", f"{len(in_category):,}", args.pa_category))
+    applicants = Counter(
+        names.get(str(schema.get(r, "applicantId", "") or "").strip())
+        or str(schema.get(r, "applicantId", "") or "")
+        for r in in_category)
+    print("\ntop applicants in category %s:" % args.pa_category)
+    for name, n in applicants.most_common(12):
+        flag = "STATE" if pa.is_state_applicant(None, name) else "     "
+        print("  %s %-52s %s" % (flag, str(name)[:52], f"{n:,}"))
+
+    options = pa.PaOptions(category=args.pa_category)
+    pool = state_rows or in_category
+    label = "state applicants" if state_rows else "ALL applicants (none classified as state)"
+    print("\nlargest category-%s titles, %s:" % (args.pa_category, label))
+    pool.sort(key=lambda r: -(schema.get(r, "totalObligated") or 0))
+    for record in pool[:args.titles]:
+        title = str(schema.get(record, "title", "") or "")
+        total = schema.get(record, "totalObligated") or 0
+        print("  %s $%14s  %s" % ("MATCH" if options.matches(title) else "     ",
+                                  format(float(total), ",.0f"), title[:70]))
+    hits = sum(1 for r in pool if options.matches(str(schema.get(r, "title", "") or "")))
+    print("\nkeyword matches in that pool: %s of %s" % (f"{hits:,}", f"{len(pool):,}"))
+    return 0
+
+
 def cmd_datasets(args):
     client = make_client(args)
     rows = (catalog.search(client, args.keyword) if args.keyword
@@ -448,7 +562,7 @@ def cmd_states(_args):
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    known = {"report", "schema", "datasets", "values", "cache", "states"}
+    known = {"report", "schema", "datasets", "values", "pa", "cache", "states"}
     # `fema-flood-gap LA` should work without typing the subcommand.
     if argv and argv[0] not in known and not argv[0].startswith("-"):
         argv.insert(0, "report")
@@ -459,7 +573,7 @@ def main(argv=None):
 
     args = build_parser().parse_args(argv)
     handlers = {"report": cmd_report, "schema": cmd_schema,
-                "datasets": cmd_datasets, "values": cmd_values,
+                "datasets": cmd_datasets, "values": cmd_values, "pa": cmd_pa,
                 "cache": cmd_cache,
                 "states": cmd_states}
     handler = handlers.get(args.command)

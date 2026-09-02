@@ -577,8 +577,26 @@ def _pull_public_assistance(client, options, report, disaster_years, allowed):
             records, pa_schema, options.pa, options.deflator, names=names,
             state=options.state, disaster_years=disaster_years,
             allowed_disasters=allowed)
+        pa_result = report.pa
         progress("  %d sheltering projects matched (state applicants), %s obligated"
-                 % (report.pa.matched.projects, f"{report.pa.matched.total:,.0f}"))
+                 % (pa_result.matched.projects, f"{pa_result.matched.total:,.0f}"))
+        if pa_result.matched.projects == 0:
+            # An empty block is a result a reader will act on, so say which of
+            # the three filters emptied it rather than showing a silent zero.
+            report.warnings.append(
+                "No Public Assistance sheltering projects matched. Of %s projects "
+                "read for %s: %s were in category %s, %s had a state or "
+                "state-agency applicant, and %s of those had a title matching the "
+                "sheltering keywords. Categories present: %s. Run "
+                "`fema-flood-gap pa %s` to see the applicants and titles, then "
+                "adjust --pa-category, --pa-keyword or --pa-all-applicants."
+                % (f"{pa_result.records_seen:,}", options.state,
+                   f"{sum(v for k, v in pa_result.categories.items() if k[:1] == (options.pa.category or '')[:1].upper()):,}",
+                   options.pa.category, f"{pa_result.state_applicants:,}",
+                   f"{pa_result.matched.projects:,}",
+                   ", ".join("%s (%s)" % (k or "blank", f"{v:,}")
+                             for k, v in sorted(pa_result.categories.items())) or "none",
+                   options.state))
     except api.OpenFemaError as exc:
         report.warnings.append(
             "Public Assistance sheltering could not be pulled (%s); the IHP "

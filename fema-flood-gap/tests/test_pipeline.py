@@ -1714,6 +1714,39 @@ class TestCliEndToEnd(unittest.TestCase):
         self.assertEqual(options.cost_share.ona_state_share, 0.25)
 
     def test_schema_and_values_commands_run(self):
-        for argv in (["schema"], ["values", "LA"], ["datasets", "Nfip"]):
+        for argv in (["schema"], ["values", "LA"], ["datasets", "Nfip"],
+                     ["pa", "LA"]):
             code, _, err = self.run_cli(*argv)
             self.assertEqual(code, 0, "%s: %s" % (argv, err))
+
+
+    def test_pa_diagnostic_reports_the_shape_of_the_data(self):
+        code, out, err = self.run_cli("pa", "LA")
+        self.assertEqual(code, 0, err)
+        self.assertIn("category codes present", out)
+        self.assertIn("applicant-id prefixes", out)
+        self.assertIn("classified as state / state-agency applicants", out)
+        self.assertIn("MATCH", out)                       # a keyword hit is shown
+        self.assertIn("East Baton Rouge Parish", out)     # and a non-state applicant
+
+
+class TestEmptyPaBlockExplainsItself(unittest.TestCase):
+    """A zero is a result a reader acts on, so it must say which filter caused it."""
+
+    def test_warning_names_the_counts_behind_the_zero(self):
+        projects = [dict(row, applicantId="033-U0003-00")
+                    for row in fixtures.PA_PROJECTS]
+        tables = dict(fixtures.TABLES,
+                      PublicAssistanceFundedProjectsDetails=projects)
+        built = pipeline.build(FakeClient(tables, field_types=fixtures.FIELD_TYPES),
+                               make_options())
+        self.assertEqual(built.pa.matched.projects, 0)
+        warning = next(w for w in built.warnings if "No Public Assistance" in w)
+        self.assertIn("had a state or state-agency applicant", warning)
+        self.assertIn("Categories present:", warning)
+        self.assertIn("fema-flood-gap pa LA", warning)
+
+    def test_no_warning_when_projects_do_match(self):
+        built = pipeline.build(make_client(), make_options())
+        self.assertGreater(built.pa.matched.projects, 0)
+        self.assertFalse(any("No Public Assistance" in w for w in built.warnings))
