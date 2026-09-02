@@ -117,6 +117,19 @@ def event_windows(declarations, buffer_days=0):
     return windows
 
 
+def non_housing(declarations):
+    """Disaster numbers whose incident type is not a housing event.
+
+    COVID-19 declarations are typed "Biological" and account for most
+    Category B spending in every state; counting them as a cost of uninsured
+    homes would be plainly wrong.
+    """
+    from .pa import NON_HOUSING_INCIDENT_TYPES
+    return {number for number, entry in declarations.items()
+            if (entry.incident_type or "").strip().lower()
+            in NON_HOUSING_INCIDENT_TYPES}
+
+
 def select(declarations, min_year=None, max_year=None, incident_types=None,
            disasters=None, flood_only=False):
     """Filter the declaration map down to the disasters in scope."""

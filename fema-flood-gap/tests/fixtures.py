@@ -66,6 +66,8 @@ DECLARATIONS = [
                  "2016-08-11", "2016-08-31", "East Baton Rouge"),
     _declaration("d02", 4277, "Severe Storms and Flooding", "Flood",
                  "2016-08-12", "2016-08-31", "Livingston"),
+    _declaration("d05", 4528, "COVID-19 Pandemic", "Biological",
+                 "2020-01-20", "2023-05-11", "Statewide"),
     _declaration("d03", 1603, "Hurricane Katrina", "Hurricane",
                  "2005-08-29", "2005-10-01", "Orleans"),
     _declaration("d04", 1603, "Hurricane Katrina", "Hurricane",
@@ -210,6 +212,11 @@ PA_PROJECTS = [
         "B", 100_000.0, 75_000.0),
     _pa("p8", 4277, "000-U0001-00", "Bridge approach steps and railing repair",
         "B", 50_000.0, 37_500.0),                                  # "steps" != STEP
+    # COVID: a state applicant, category B, and a title that matches on
+    # "non-congregate sheltering" -- but not a housing cost, so excluded.
+    _pa("p9", 4528, "000-U0001-00",
+        "Non-congregate sheltering - COVID-19 medical staffing", "B",
+        90_000_000.0, 90_000_000.0),
 ]
 
 TABLES = {

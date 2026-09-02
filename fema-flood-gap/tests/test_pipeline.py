@@ -85,7 +85,7 @@ class TestDeclarations(unittest.TestCase):
         rows = client.records("DisasterDeclarationsSummaries", 2,
                               filter="state eq 'LA'")
         collapsed = declarations.collapse(rows, schema)
-        self.assertEqual(set(collapsed), {4277, 1603})
+        self.assertEqual(set(collapsed), {4277, 1603, 4528})
         self.assertEqual(collapsed[4277].begin, "2016-08-11")
         self.assertEqual(collapsed[1603].end, "2005-10-01")
         self.assertEqual(collapsed[1603].year, 2005)
@@ -96,11 +96,12 @@ class TestDeclarations(unittest.TestCase):
         collapsed = declarations.collapse(
             client.records("DisasterDeclarationsSummaries", 2, filter="state eq 'LA'"),
             schema)
-        self.assertEqual(set(declarations.select(collapsed, min_year=2010)), {4277})
+        self.assertEqual(set(declarations.select(collapsed, min_year=2010)),
+                         {4277, 4528})
         self.assertEqual(
             set(declarations.select(collapsed, incident_types=["Hurricane"])), {1603})
         self.assertEqual(set(declarations.select(collapsed, flood_only=True)),
-                         {4277, 1603})
+                         {4277, 1603})            # COVID is not a flood incident
 
 
 class TestReportNumbers(unittest.TestCase):
@@ -1798,3 +1799,51 @@ class TestDatasetsWithoutAnIdField(unittest.TestCase):
         stale = Schema("X", 1, ["id", "name"], primary_key="goneAway")
         self.assertEqual(stale.key_field(), "id")
         self.assertIsNone(Schema("X", 1, ["name"]).key_field())
+
+
+
+class TestCovidIsNotAHousingCost(unittest.TestCase):
+    """Biological declarations dominate Category B and are not housing.
+
+    A live Mississippi run showed the largest state-applicant Category B
+    projects were COVID-19 medical staffing, PPE and vaccination under
+    DR-4528. Counting those as a cost of uninsured homes would be plainly
+    wrong -- and one of them even matches the sheltering keywords.
+    """
+
+    def test_covid_projects_are_excluded_by_default(self):
+        built = pipeline.build(make_client(), make_options())
+        self.assertEqual(built.pa.skipped_non_housing, 1)
+        self.assertNotIn(4528, built.pa.by_disaster)
+        self.assertEqual(built.pa.matched.total, 6_500_000.0)
+        titles = [p["title"] for p in built.pa.projects]
+        self.assertFalse(any("COVID" in t for t in titles))
+
+    def test_a_covid_title_would_otherwise_have_matched(self):
+        from fema_flood.pa import PaOptions
+        self.assertTrue(PaOptions().matches(
+            "Non-congregate sheltering - COVID-19 medical staffing"))
+
+    def test_including_covid_is_possible_but_opt_in(self):
+        from fema_flood.pa import PaOptions
+        built = pipeline.build(
+            make_client(),
+            make_options(pa=PaOptions(exclude_non_housing=False)))
+        self.assertIn(4528, built.pa.by_disaster)
+        self.assertEqual(built.pa.matched.total, 96_500_000.0)
+
+    def test_the_exclusion_is_stated_in_the_definition(self):
+        built = pipeline.build(make_client(), make_options())
+        self.assertIn("excluding biological", built.pa.options.describe())
+        payload = json.loads(report.render(built, "json"))
+        self.assertIn("excluding biological",
+                      payload["public_assistance_sheltering"]["definition"])
+
+    def test_declarations_module_identifies_them(self):
+        from fema_flood import declarations as decl_mod
+        client = make_client()
+        schema = datasets.declaration_schema(client, 2)
+        collapsed = decl_mod.collapse(client.records(
+            "DisasterDeclarationsSummaries", 2, filter="state eq 'LA'",
+            key=schema.key_field()), schema)
+        self.assertEqual(decl_mod.non_housing(collapsed), {4528})

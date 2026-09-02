@@ -16,6 +16,7 @@ class StateReport:
         self.generated = datetime.datetime.now(datetime.timezone.utc).replace(
             microsecond=0).isoformat()
         self.declarations = {}
+        self.all_declarations = {}
         self.ihp = None
         self.home_insurance = None
         self.pa = None
@@ -346,6 +347,7 @@ def build(client, options):
         filter=datasets.declaration_filter(decl_schema, options.state),
         label="declarations", key=decl_schema.key_field())
     all_declarations = decl_mod.collapse(decl_records, decl_schema)
+    report.all_declarations = all_declarations
     report.declarations = decl_mod.select(
         all_declarations, options.min_year, options.max_year,
         options.incident_types, options.disasters, options.flood_declarations_only)
@@ -580,7 +582,8 @@ def _pull_public_assistance(client, options, report, disaster_years, allowed):
         report.pa = pa_mod.aggregate(
             records, pa_schema, options.pa, options.deflator, names=names,
             state=options.state, disaster_years=disaster_years,
-            allowed_disasters=allowed)
+            allowed_disasters=allowed,
+            non_housing_disasters=decl_mod.non_housing(report.all_declarations))
         pa_result = report.pa
         progress("  %d sheltering projects matched (state applicants), %s obligated"
                  % (pa_result.matched.projects, f"{pa_result.matched.total:,.0f}"))

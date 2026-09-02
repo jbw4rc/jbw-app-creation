@@ -66,13 +66,20 @@ LOCAL_NAME_PATTERN = re.compile(
     r"school district|municipal|tribe|tribal|nation)\b", re.I)
 
 
+# Incident types that are not housing events. COVID-19 declarations dominate
+# Category B in every state -- medical staffing, PPE, vaccination -- and have
+# nothing to do with uninsured homes, so they are excluded by default.
+NON_HOUSING_INCIDENT_TYPES = {"biological"}
+
+
 class PaOptions:
     def __init__(self, enabled=True, keywords=None, category="B",
-                 state_applicants_only=True):
+                 state_applicants_only=True, exclude_non_housing=True):
         self.enabled = enabled
         self.keywords = list(keywords) if keywords else list(DEFAULT_KEYWORDS)
         self.category = category
         self.state_applicants_only = state_applicants_only
+        self.exclude_non_housing = exclude_non_housing
         self._pattern = re.compile(
             r"\b(?:" + "|".join(self.keywords) + r")\b", re.I)
 
@@ -80,10 +87,12 @@ class PaOptions:
         return bool(title) and bool(self._pattern.search(str(title)))
 
     def describe(self):
-        return ("Public Assistance category %s, %s, titles matching: %s"
+        return ("Public Assistance category %s, %s%s, titles matching: %s"
                 % (self.category,
                    "state or state-agency applicants only"
                    if self.state_applicants_only else "all applicants",
+                   ", excluding biological (COVID-19) declarations"
+                   if self.exclude_non_housing else "",
                    ", ".join(k.replace("\\w*", "*").replace("-?", "-")
                              for k in self.keywords)))
 
@@ -145,6 +154,7 @@ class PaResult:
         self.options = options
         self.categories = {}           # category code -> projects seen
         self.state_applicants = 0      # rows whose applicant classified as state
+        self.skipped_non_housing = 0   # COVID and other non-housing incidents
         self.by_disaster = {}
         self.matched = PaTotals()
         self.category = PaTotals()
@@ -171,6 +181,7 @@ class PaResult:
             "matched_projects": len(self.projects),
             "categories_seen": dict(sorted(self.categories.items())),
             "state_applicant_rows": self.state_applicants,
+            "skipped_non_housing_incidents": self.skipped_non_housing,
         }
 
 
@@ -185,7 +196,8 @@ def applicant_names(records, schema):
 
 
 def aggregate(records, schema, options, deflator, names=None, state=None,
-              disaster_years=None, allowed_disasters=None):
+              disaster_years=None, allowed_disasters=None,
+              non_housing_disasters=None):
     """Fold PA projects into per-declaration sheltering totals."""
     result = PaResult(options)
     names = names or {}
@@ -220,6 +232,10 @@ def aggregate(records, schema, options, deflator, names=None, state=None,
             disaster_number = None
         if allowed_disasters is not None and disaster_number not in allowed_disasters:
             result.skipped_filtered += 1
+            continue
+        if (options.exclude_non_housing and non_housing_disasters
+                and disaster_number in non_housing_disasters):
+            result.skipped_non_housing += 1
             continue
 
         year = disaster_years.get(disaster_number)

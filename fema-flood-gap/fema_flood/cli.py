@@ -57,8 +57,8 @@ def build_parser():
     pa_probe = sub.add_parser(
         "pa", help="show what the Public Assistance data holds for a state")
     pa_probe.add_argument("state", help="state postal code or name")
-    pa_probe.add_argument("--sample", type=int, default=4000,
-                          help="projects to read (default: %(default)s)")
+    pa_probe.add_argument("--sample", type=int, default=0,
+                          help="projects to read; 0 reads all (default: all)")
     pa_probe.add_argument("--pa-category", default="B",
                           help="category to detail (default: %(default)s)")
     pa_probe.add_argument("--titles", type=int, default=25,
@@ -161,6 +161,10 @@ def _add_report_args(parser):
     pa_group.add_argument("--pa-category", default="B",
                           help="PA damage category to include (default: %(default)s, "
                                "emergency protective measures)")
+    pa_group.add_argument("--pa-include-covid", action="store_true",
+                          help="include biological (COVID-19) declarations, "
+                               "which are not housing events and dominate "
+                               "Category B in every state")
     pa_group.add_argument("--pa-all-applicants", action="store_true",
                           help="include local applicants, not only the state and "
                                "its agencies")
@@ -286,7 +290,8 @@ def build_options(args, state):
     public_assistance = pa.PaOptions(
         enabled=not args.skip_pa, keywords=args.pa_keywords,
         category=args.pa_category,
-        state_applicants_only=not args.pa_all_applicants)
+        state_applicants_only=not args.pa_all_applicants,
+        exclude_non_housing=not args.pa_include_covid)
 
     return pipeline.RunOptions(
         state=state, cohort=cohort, nfip=nfip, deflator=deflator,
@@ -479,7 +484,7 @@ def cmd_pa(args):
             filter=state_filter, label="PA projects",
             key=schema.key_field())):
         rows.append(record)
-        if index + 1 >= args.sample:
+        if args.sample and index + 1 >= args.sample:
             break
     print("read %s projects\n" % f"{len(rows):,}")
     if not rows:
@@ -503,9 +508,54 @@ def cmd_pa(args):
     for prefix, n in prefixes.most_common(8):
         print("  %-6s %s" % (prefix or "(blank)", f"{n:,}"))
 
+    # Join declarations so the diagnostic can say which disasters this money
+    # belongs to -- the question that decides whether any of it is housing.
+    declarations = {}
+    try:
+        decl_version, _e, _n = catalog.resolve(
+            client, datasets.DECLARATIONS_DATASET, None, "Declaration")
+        decl_schema = datasets.declaration_schema(client, decl_version)
+        from . import declarations as decl_mod
+        declarations = decl_mod.collapse(client.records(
+            datasets.DECLARATIONS_DATASET, decl_version,
+            select=datasets.selected_fields(decl_schema),
+            filter=datasets.declaration_filter(decl_schema, state),
+            label="declarations", key=decl_schema.key_field()), decl_schema)
+    except api.OpenFemaError as exc:
+        print("\ncould not read declarations (%s)" % exc)
+
+    def disaster_of(record):
+        try:
+            return int(schema.get(record, "disasterNumber"))
+        except (TypeError, ValueError):
+            return None
+
+    def label_for(number):
+        entry = declarations.get(number)
+        if not entry:
+            return "DR-%s" % number
+        return "DR-%s %s (%s, %s)" % (number, (entry.title or "")[:34],
+                                      entry.incident_type or "?", entry.year or "?")
+
     state_rows = [r for r in in_category
                   if pa.is_state_applicant(schema.get(r, "applicantId"),
                                            names.get(str(schema.get(r, "applicantId", "") or "").strip()))]
+
+    by_disaster = Counter()
+    dollars = {}
+    for record in state_rows:
+        number = disaster_of(record)
+        by_disaster[number] += 1
+        dollars[number] = dollars.get(number, 0.0) + float(
+            schema.get(record, "totalObligated") or 0)
+    print("\ncategory-%s dollars by declaration, state applicants:" % args.pa_category)
+    for number, _n in sorted(dollars.items(), key=lambda kv: -kv[1])[:12]:
+        housing = (declarations.get(number)
+                   and (declarations[number].incident_type or "").strip().lower()
+                   in pa.NON_HOUSING_INCIDENT_TYPES)
+        print("  %s $%14s  %-3s  %s" % ("NOT HOUSING" if housing else "           ",
+                                        format(dollars[number], ",.0f"),
+                                        by_disaster[number], label_for(number)))
     print("\nclassified as state / state-agency applicants: %s of %s in category %s"
           % (f"{len(state_rows):,}", f"{len(in_category):,}", args.pa_category))
     applicants = Counter(
@@ -518,8 +568,16 @@ def cmd_pa(args):
         print("  %s %-52s %s" % (flag, str(name)[:52], f"{n:,}"))
 
     options = pa.PaOptions(category=args.pa_category)
-    pool = state_rows or in_category
-    label = "state applicants" if state_rows else "ALL applicants (none classified as state)"
+    from . import declarations as _decl
+    non_housing = _decl.non_housing(declarations) if declarations else set()
+    housing_rows = [r for r in state_rows if disaster_of(r) not in non_housing]
+    print("\nexcluding biological (COVID-19) declarations: %s of %s projects remain"
+          % (f"{len(housing_rows):,}", f"{len(state_rows):,}"))
+
+    pool = housing_rows or state_rows or in_category
+    label = ("state applicants, housing-relevant declarations" if housing_rows
+             else "state applicants" if state_rows
+             else "ALL applicants (none classified as state)")
     print("\nlargest category-%s titles, %s:" % (args.pa_category, label))
     pool.sort(key=lambda r: -(schema.get(r, "totalObligated") or 0))
     for record in pool[:args.titles]:
