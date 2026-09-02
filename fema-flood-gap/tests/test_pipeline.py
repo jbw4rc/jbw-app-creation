@@ -1549,7 +1549,7 @@ class TestPublicAssistanceSheltering(unittest.TestCase):
         self.assertEqual(by_title["Transitional Sheltering Assistance (TSA)"]["applicant"],
                          "State of Louisiana - GOHSEP")
         self.assertEqual(by_title["Non-congregate sheltering - medical needs"]
-                         ["non_federal_obligated"], 25_000.0)
+                         ["non_federal_adjusted"], 25_000.0)
 
     def test_year_filter_applies(self):
         recent = pipeline.build(make_client(), make_options(min_year=2016))
@@ -1599,7 +1599,16 @@ class TestPublicAssistanceSheltering(unittest.TestCase):
         self.assertIn("STEP - Sheltering and Temporary Essential Power", titles)
         self.assertNotIn("Shelter Operations", titles)             # parish, excluded
         first = dict(zip(rows[0], rows[1]))                          # largest first
-        self.assertEqual(first["observed_non_federal_share"], "0.1")
+        self.assertEqual(first["title"],
+                         "STEP - Sheltering and Temporary Essential Power")
+        # Katrina-era STEP was funded at 90% federal, and the data says so.
+        self.assertEqual(first["observed_federal_ratio"], "0.9")
+        # Nominal columns tie out against FEMA's own CSV; adjusted ones are
+        # what the report totals, so both must be present and different.
+        self.assertEqual(float(first["whole_nominal"]), 5_000_000.0)
+        self.assertEqual(float(first["non_federal_nominal"]), 500_000.0)
+        self.assertEqual(first["non_federal_basis_field"], "totalObligated")
+        self.assertIn("nominal", first["dollars"])
 
     def test_text_and_markdown_carry_both_tiers(self):
         for fmt in ("text", "md"):
@@ -1917,3 +1926,58 @@ class TestPaAcrossStates(unittest.TestCase):
                                make_options(pa=PaOptions(enabled=False)))
         self.assertIsNone(built.pa_share_of_ihp())
         self.assertIsNone(report.pa_summary(built))
+
+
+class TestNonFederalBasisIsAnAssumption(unittest.TestCase):
+    """`whole minus federal` is only the state's share if `whole` is the whole.
+
+    OpenFEMA's totalObligated may be a federal-side figure (federal share plus
+    management costs) rather than the total project cost. If it is, this
+    subtraction yields management costs and the reported state share is
+    meaningless. The assumption is therefore named, switchable, and checked
+    against the data rather than left implicit.
+    """
+
+    def test_the_basis_is_switchable_and_changes_the_answer(self):
+        from fema_flood.pa import PaOptions
+        # projectAmount equals totalObligated in the fixtures, so the totals
+        # match; what must differ is the field the report says it used.
+        for basis, field in (("total-obligated", "totalObligated"),
+                             ("project-amount", "projectAmount")):
+            built = pipeline.build(
+                make_client(), make_options(pa=PaOptions(non_federal_basis=basis)))
+            self.assertEqual(built.pa.options.total_field, field)
+            self.assertIn(field, report.pa_basis_caveat(built))
+
+    def test_an_unknown_basis_is_refused(self):
+        from fema_flood.pa import PaOptions
+        with self.assertRaises(ValueError):
+            PaOptions(non_federal_basis="whatever")
+
+    def test_the_ratio_profile_reads_a_federal_side_column(self):
+        from fema_flood.pa import federal_ratio_profile
+        federal_side = federal_ratio_profile([1.0, 0.99, 1.0, 0.97, 1.0])
+        self.assertIn("federal-side", federal_side["reading"])
+        whole_cost = federal_ratio_profile([0.75, 0.75, 0.9, 0.75, 0.9])
+        self.assertIn("whole-cost", whole_cost["reading"])
+        self.assertIsNone(federal_ratio_profile([]))
+
+    def test_the_caveat_travels_with_the_figure(self):
+        built = pipeline.build(make_client(), make_options())
+        caveat = report.pa_basis_caveat(built)
+        self.assertIn("Verify that", caveat)
+        self.assertIn("--pa-non-federal-basis", caveat)
+        for fmt in ("text", "md", "html"):
+            output = " ".join(report.render(built, fmt).split())
+            self.assertIn("minus federalShareObligated", output, fmt)
+
+    def test_json_records_the_basis_and_the_profile(self):
+        built = pipeline.build(make_client(), make_options())
+        block = json.loads(report.render(built, "json"))["public_assistance_sheltering"]
+        self.assertEqual(block["non_federal_basis"], "total-obligated")
+        self.assertIn("Verify that", block["basis_caveat"])
+        profile = block["federal_ratio_profile"]
+        # Every category-B state-applicant project feeds the check, not only
+        # the keyword matches: a bigger sample reads the column more reliably.
+        self.assertEqual(profile["projects"], 6)
+        self.assertIn("reading", profile)

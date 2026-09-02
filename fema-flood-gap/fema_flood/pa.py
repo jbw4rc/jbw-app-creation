@@ -30,13 +30,24 @@ PA_FIELDS = {
     "title": ["applicationTitle", "projectTitle", "title"],
     "applicantId": ["applicantId"],
     "category": ["damageCategoryCode", "dcc", "damageCategory"],
-    "totalObligated": ["totalObligated", "projectAmount"],
+    "totalObligated": ["totalObligated"],
     "federalObligated": ["federalShareObligated", "federalShare"],
     "projectAmount": ["projectAmount"],
     "county": ["county"],
     "pwNumber": ["pwNumber"],
 }
-PA_OPTIONAL = {"projectAmount", "county", "pwNumber"}
+PA_OPTIONAL = {"projectAmount", "totalObligated", "county", "pwNumber"}
+
+# Which column stands for the whole cost of a project, so that
+# whole-minus-federal is the non-federal share. This is an assumption about
+# OpenFEMA's semantics, not a fact the data announces, and it decides whether
+# the reported state cost is right or meaningless -- so it is named, switchable,
+# and checkable against the data (see `federal_ratio_profile`).
+NON_FEDERAL_BASES = {
+    "total-obligated": "totalObligated",
+    "project-amount": "projectAmount",
+}
+DEFAULT_NON_FEDERAL_BASIS = "total-obligated"
 
 PA_APPLICANT_FIELDS = {
     "applicantId": ["applicantId"],
@@ -74,17 +85,32 @@ NON_HOUSING_INCIDENT_TYPES = {"biological"}
 
 class PaOptions:
     def __init__(self, enabled=True, keywords=None, category="B",
-                 state_applicants_only=True, exclude_non_housing=True):
+                 state_applicants_only=True, exclude_non_housing=True,
+                 non_federal_basis=DEFAULT_NON_FEDERAL_BASIS):
         self.enabled = enabled
         self.keywords = list(keywords) if keywords else list(DEFAULT_KEYWORDS)
         self.category = category
         self.state_applicants_only = state_applicants_only
         self.exclude_non_housing = exclude_non_housing
+        if non_federal_basis not in NON_FEDERAL_BASES:
+            raise ValueError("unknown non-federal basis %r (choose from %s)"
+                             % (non_federal_basis, ", ".join(sorted(NON_FEDERAL_BASES))))
+        self.non_federal_basis = non_federal_basis
+        self.total_field = NON_FEDERAL_BASES[non_federal_basis]
         self._pattern = re.compile(
             r"\b(?:" + "|".join(self.keywords) + r")\b", re.I)
 
     def matches(self, title):
         return bool(title) and bool(self._pattern.search(str(title)))
+
+    def basis_note(self):
+        return ("Non-federal share = %s minus federalShareObligated. Verify that "
+                "%s is the whole project cost in the OpenFEMA data dictionary for "
+                "your vintage; if it is a federal-side figure, this understates "
+                "or misstates the state's share. `--pa-non-federal-basis` switches "
+                "it, and `fema-flood-gap pa <state>` reports which reading the "
+                "data supports."
+                % (self.total_field, self.total_field))
 
     def describe(self):
         return ("Public Assistance category %s, %s%s, titles matching: %s"
@@ -155,6 +181,7 @@ class PaResult:
         self.categories = {}           # category code -> projects seen
         self.state_applicants = 0      # rows whose applicant classified as state
         self.skipped_non_housing = 0   # COVID and other non-housing incidents
+        self.federal_ratios = []       # federal / whole, per project
         self.by_disaster = {}
         self.matched = PaTotals()
         self.category = PaTotals()
@@ -182,7 +209,45 @@ class PaResult:
             "categories_seen": dict(sorted(self.categories.items())),
             "state_applicant_rows": self.state_applicants,
             "skipped_non_housing_incidents": self.skipped_non_housing,
+            "non_federal_basis": self.options.non_federal_basis,
+            "basis_caveat": self.options.basis_note(),
+            "federal_ratio_profile": federal_ratio_profile(self.federal_ratios),
         }
+
+
+def federal_ratio_profile(ratios):
+    """How federal share relates to the chosen whole, across projects.
+
+    This is the empirical check on the basis assumption. If the whole really
+    is the total project cost, the ratio clusters near the statutory federal
+    share -- 0.75, or 0.90 and 1.00 where adjusted. If it clusters at or above
+    0.95 the column is a federal-side figure, and subtracting from it yields
+    management costs rather than the state's share.
+    """
+    if not ratios:
+        return None
+    ordered = sorted(ratios)
+    buckets = {"<=0.80": 0, "0.80-0.95": 0, "0.95-1.00": 0, ">1.00": 0}
+    for ratio in ordered:
+        if ratio <= 0.80:
+            buckets["<=0.80"] += 1
+        elif ratio <= 0.95:
+            buckets["0.80-0.95"] += 1
+        elif ratio <= 1.0000001:
+            buckets["0.95-1.00"] += 1
+        else:
+            buckets[">1.00"] += 1
+    near_whole = buckets["0.95-1.00"] + buckets[">1.00"]
+    return {
+        "projects": len(ordered),
+        "median": round(ordered[len(ordered) // 2], 4),
+        "buckets": buckets,
+        "reading": ("federal-side: the chosen column looks like a federal figure, "
+                    "so the derived non-federal share is not the state's share"
+                    if near_whole > len(ordered) * 0.5 else
+                    "whole-cost: the chosen column looks like a total cost, so "
+                    "whole minus federal is a plausible non-federal share"),
+    }
 
 
 def applicant_names(records, schema):
@@ -239,8 +304,12 @@ def aggregate(records, schema, options, deflator, names=None, state=None,
             continue
 
         year = disaster_years.get(disaster_number)
-        total = deflator.adjust(number(schema.get(record, "totalObligated")) or 0.0, year)
-        federal = deflator.adjust(number(schema.get(record, "federalObligated")) or 0.0, year)
+        raw_total = number(schema.get(record, options.total_field)) or 0.0
+        raw_federal = number(schema.get(record, "federalObligated")) or 0.0
+        total = deflator.adjust(raw_total, year)
+        federal = deflator.adjust(raw_federal, year)
+        if raw_total and raw_federal:
+            result.federal_ratios.append(raw_federal / raw_total)
         title = schema.get(record, "title", "")
 
         bucket = result.bucket(disaster_number)
@@ -258,10 +327,15 @@ def aggregate(records, schema, options, deflator, names=None, state=None,
                 "category": category,
                 "pw_number": schema.get(record, "pwNumber", ""),
                 "county": schema.get(record, "county", ""),
-                "total_obligated": total,
-                "federal_obligated": federal,
-                "non_federal_obligated": total - federal,
+                "basis_field": options.total_field,
+                "whole_nominal": raw_total,
+                "federal_nominal": raw_federal,
+                "project_amount_nominal": number(schema.get(record, "projectAmount")),
+                "total_obligated_nominal": number(schema.get(record, "totalObligated")),
+                "whole_adjusted": total,
+                "federal_adjusted": federal,
+                "non_federal_adjusted": total - federal,
             })
 
-    result.projects.sort(key=lambda p: -p["total_obligated"])
+    result.projects.sort(key=lambda p: -p["whole_adjusted"])
     return result

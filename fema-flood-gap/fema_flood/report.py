@@ -162,6 +162,8 @@ def render_text(report, limit=25, width=100):
                 pct(totals.non_federal_share)))
         w("\n" + _wrap(pa_summary(report), width - 2, indent="  ", initial="  ") + "\n")
         w("\n" + _wrap(PA_NOTE, width - 2, indent="  ", initial="  ") + "\n")
+        w("\n" + _wrap(pa_basis_caveat(report), width - 2,
+                        indent="  ", initial="  ") + "\n")
 
     rows = report.cost_share_table()
     if rows:
@@ -290,6 +292,18 @@ PA_NOTE = (
     "adjustment to 90% or 100% federal."
 )
 
+
+def pa_basis_caveat(report):
+    """The derivation, spelled out wherever the figure appears."""
+    if not report.pa:
+        return None
+    profile = report.pa.to_dict().get("federal_ratio_profile") or {}
+    reading = (" Across the matched projects the federal share is a median %s of "
+               "that column, which reads as %s."
+               % (profile.get("median"), profile.get("reading", "").split(":")[0])
+               if profile.get("median") is not None else "")
+    return report.pa.options.basis_note() + reading
+
 COST_SHARE_NOTE = (
     "Under the Stafford Act the state already funds 25% of Other Needs "
     "Assistance (sec. 408(g), 42 U.S.C. 5174(g)); Housing Assistance under "
@@ -414,7 +428,8 @@ def render_markdown(report, limit=25):
                 label, count(totals.projects), money(totals.total),
                 money(totals.federal), money(totals.non_federal),
                 pct(totals.non_federal_share)))
-        w("\n%s\n\n_%s_\n" % (pa_summary(report), PA_NOTE))
+        w("\n%s\n\n_%s_\n\n_%s_\n"
+          % (pa_summary(report), PA_NOTE, pa_basis_caveat(report)))
 
     rows = report.cost_share_table()
     if rows:
@@ -559,25 +574,40 @@ def render_home_insurance_csv(report):
 
 
 def render_pa_csv(report):
-    """Every matched PA project, so the keyword hits can be audited."""
+    """Every matched PA project, raw and adjusted, so it reconciles.
+
+    Both the nominal figures straight from OpenFEMA and the inflation-adjusted
+    ones are written: a reader comparing against FEMA's own CSV download needs
+    the nominal columns to tie out, and the adjusted ones are what the report
+    totals.
+    """
     out = io.StringIO()
     writer = csv.writer(out, lineterminator="\n")
     writer.writerow([
         "state", "disaster_number", "year", "pw_number", "applicant_id", "applicant",
-        "title", "category", "county", "total_obligated", "federal_obligated",
-        "non_federal_obligated", "observed_non_federal_share",
+        "title", "category", "county",
+        "projectAmount_nominal", "totalObligated_nominal",
+        "federalShareObligated_nominal",
+        "non_federal_basis_field", "whole_nominal", "non_federal_nominal",
+        "whole_adjusted", "federal_adjusted", "non_federal_adjusted",
+        "observed_federal_ratio", "dollars",
     ])
     if not report.pa:
         return out.getvalue()
+    basis = report.options.deflator.label()
     for project in report.pa.projects:
-        share = (project["non_federal_obligated"] / project["total_obligated"]
-                 if project["total_obligated"] else None)
+        whole, federal = project["whole_nominal"], project["federal_nominal"]
         writer.writerow([
             report.state, project["disaster_number"], project["year"],
             project["pw_number"], project["applicant_id"], project["applicant"],
             project["title"], project["category"], project["county"],
-            _num(project["total_obligated"]), _num(project["federal_obligated"]),
-            _num(project["non_federal_obligated"]), _num(share, 4),
+            _num(project["project_amount_nominal"]),
+            _num(project["total_obligated_nominal"]),
+            _num(federal),
+            project["basis_field"], _num(whole), _num(whole - federal),
+            _num(project["whole_adjusted"]), _num(project["federal_adjusted"]),
+            _num(project["non_federal_adjusted"]),
+            _num(federal / whole, 4) if whole else "", basis,
         ])
     return out.getvalue()
 
@@ -773,7 +803,8 @@ def _pa_block(report):
             "<th class=\"n\">Federal</th><th class=\"n\">Non-federal</th>"
             "<th class=\"n\">Observed share</th></tr></thead><tbody id=\"pabody\">%s"
             "</tbody></table></div><p class=\"caption\">%s</p>"
-            % ("".join(rows), e(PA_NOTE)))
+            "<p class=\"caption\">%s</p>"
+            % ("".join(rows), e(PA_NOTE), e(pa_basis_caveat(report))))
 
 
 def _pot_rows(cells):

@@ -165,6 +165,12 @@ def _add_report_args(parser):
                           help="include biological (COVID-19) declarations, "
                                "which are not housing events and dominate "
                                "Category B in every state")
+    pa_group.add_argument("--pa-non-federal-basis",
+                          choices=sorted(pa.NON_FEDERAL_BASES),
+                          default=pa.DEFAULT_NON_FEDERAL_BASIS,
+                          help="which column is the whole project cost, so that "
+                               "whole minus federalShareObligated is the "
+                               "non-federal share (default: %(default)s)")
     pa_group.add_argument("--pa-all-applicants", action="store_true",
                           help="include local applicants, not only the state and "
                                "its agencies")
@@ -291,7 +297,8 @@ def build_options(args, state):
         enabled=not args.skip_pa, keywords=args.pa_keywords,
         category=args.pa_category,
         state_applicants_only=not args.pa_all_applicants,
-        exclude_non_housing=not args.pa_include_covid)
+        exclude_non_housing=not args.pa_include_covid,
+        non_federal_basis=args.pa_non_federal_basis)
 
     return pipeline.RunOptions(
         state=state, cohort=cohort, nfip=nfip, deflator=deflator,
@@ -571,6 +578,29 @@ def cmd_pa(args):
     from . import declarations as _decl
     non_housing = _decl.non_housing(declarations) if declarations else set()
     housing_rows = [r for r in state_rows if disaster_of(r) not in non_housing]
+    # Which column is the whole cost? Let the ratios answer rather than the
+    # docstring: a federal-side column sits at ~1.0, a true total at ~0.75/0.90.
+    print("\nfederal share as a fraction of each candidate whole-cost column:")
+    for basis, field in sorted(pa.NON_FEDERAL_BASES.items()):
+        ratios = []
+        for record in in_category:
+            whole = schema.get(record, field)
+            federal = schema.get(record, "federalObligated")
+            try:
+                whole, federal = float(whole), float(federal)
+            except (TypeError, ValueError):
+                continue
+            if whole:
+                ratios.append(federal / whole)
+        profile = pa.federal_ratio_profile(ratios)
+        if not profile:
+            print("  %-16s (%s) no usable values" % (basis, field))
+            continue
+        print("  %-16s (%s) median %.3f  %s"
+              % (basis, field, profile["median"],
+                 " ".join("%s:%s" % (k, v) for k, v in profile["buckets"].items())))
+        print("  %-16s -> %s" % ("", profile["reading"]))
+
     print("\nexcluding biological (COVID-19) declarations: %s of %s projects remain"
           % (f"{len(housing_rows):,}", f"{len(state_rows):,}"))
 
