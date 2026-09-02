@@ -151,21 +151,15 @@ def ihp_cohort_filter(schema, state, owner_only=True, flood_damage=True,
                 *["%s eq %s" % (schema.name("ownRent"), lit) for lit in literals]))
 
     if flood_damage:
-        literals = _matching_literals(
-            vocabulary.get("floodDamage"), lambda v: schema_mod.truthy(v) is True)
-        if literals:
-            parts.append(api.or_filters(
-                *["%s eq %s" % (schema.name("floodDamage"), lit) for lit in literals]))
+        literal = probe.flag_literal(vocabulary.get("floodDamage"), True)
+        if literal:
+            parts.append("%s eq %s" % (schema.name("floodDamage"), literal))
 
     if insurance in ("insured", "uninsured"):
-        want = insurance == "insured"
-        literals = _matching_literals(
-            vocabulary.get("floodInsurance"),
-            lambda v: schema_mod.truthy(v) is want)
-        if literals:
-            parts.append(api.or_filters(
-                *["%s eq %s" % (schema.name("floodInsurance"), lit)
-                  for lit in literals]))
+        literal = probe.flag_literal(vocabulary.get("floodInsurance"),
+                                     insurance == "insured")
+        if literal:
+            parts.append("%s eq %s" % (schema.name("floodInsurance"), literal))
 
     return api.and_filters(*parts)
 

@@ -90,6 +90,28 @@ def quote_literal(value):
     return "'" + str(value).replace("'", "''") + "'"
 
 
+def format_literal(value, quote_numbers=False):
+    """Render a Python value as a ``$filter`` literal of the right type.
+
+    Quoting is not cosmetic: OpenFEMA rejects a quoted literal against a
+    numeric column outright, so the id used for keyset paging has to be
+    written as the type the column actually is.
+    """
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)) and not quote_numbers:
+        return repr(value) if isinstance(value, float) else str(value)
+    return quote_literal(value)
+
+
+def _sorts_before(left, right):
+    """``left <= right`` without blowing up on mixed types."""
+    try:
+        return left <= right
+    except TypeError:
+        return str(left) <= str(right)
+
+
 def or_filters(*parts):
     """OR a set of predicates, for a column with several matching values."""
     clean = [p for p in parts if p]
@@ -245,10 +267,13 @@ class Client:
         cursor = None
         skip = 0
         label = label or dataset
+        quote_ids = False        # flipped if OpenFEMA rejects the literal's type
 
         while True:
             if mode == "cursor":
-                page_filter = and_filters(filter, "id gt %s" % quote_literal(cursor) if cursor else None)
+                page_filter = and_filters(
+                    filter,
+                    "id gt %s" % format_literal(cursor, quote_ids) if cursor else None)
                 params = {"$top": self.page_size, "$filter": page_filter,
                           "$select": select_clause, "$orderby": "id"}
             else:
@@ -259,6 +284,12 @@ class Client:
             try:
                 rows = self.extract_records(self.get(url))
             except HttpError as exc:
+                if mode == "cursor" and exc.status == 400 and cursor is not None \
+                        and not quote_ids and "data type" in (exc.body or "").lower():
+                    # The id column is not the type we guessed from its value.
+                    self.progress("  retrying the page cursor as a quoted literal")
+                    quote_ids = True
+                    continue
                 if mode == "cursor" and exc.status == 400 and seen == 0:
                     # Dataset rejected keyset paging (no comparable id); restart
                     # on $skip rather than failing the whole run.
@@ -270,7 +301,8 @@ class Client:
             if not rows:
                 break
 
-            if mode == "cursor" and cursor is not None and rows[0].get("id", "") <= cursor:
+            if mode == "cursor" and cursor is not None \
+                    and _sorts_before(rows[0].get("id", ""), cursor):
                 # The server returned rows at or before the cursor, meaning it
                 # ignored the `id gt` predicate. Yielding these would duplicate
                 # what we already emitted, so switch to offset paging from the

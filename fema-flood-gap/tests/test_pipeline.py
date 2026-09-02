@@ -625,3 +625,85 @@ class TestVocabulary(unittest.TestCase):
         result = pipeline.build(make_client(), make_options())
         values = result.schema_notes["ihp_values"]
         self.assertEqual(set(values["ownRent"]), {"O", "R"})
+
+
+class TestRareFlagValues(unittest.TestCase):
+    """A flag absent from the sample must not drop the predicate."""
+
+    def test_all_false_sample_still_filters_for_true(self):
+        from collections import Counter
+        client = make_client()
+        schema = datasets.ihp_schema(client, 2)
+        # What Mississippi actually returned: 1,000 rows, every one False.
+        vocabulary = {"ownRent": Counter({"O": 75, "R": 925}),
+                      "floodDamage": Counter({False: 1000}),
+                      "floodInsurance": Counter({False: 957, True: 43})}
+        cohort = datasets.ihp_cohort_filter(
+            schema, "MS", insurance="uninsured", vocabulary=vocabulary)
+        self.assertIn("floodDamage eq true", cohort)
+        self.assertIn("floodInsurance eq false", cohort)
+        self.assertIn("ownRent eq 'O'", cohort)
+
+    def test_integer_flags_infer_the_integer_literal(self):
+        from collections import Counter
+        client = make_client()
+        schema = datasets.ihp_schema(client, 2)
+        cohort = datasets.ihp_cohort_filter(
+            schema, "MS", insurance="uninsured",
+            vocabulary={"ownRent": Counter({"O": 10}),
+                        "floodDamage": Counter({0: 1000}),
+                        "floodInsurance": Counter({0: 990, 1: 10})})
+        self.assertIn("floodDamage eq 1", cohort)
+        self.assertIn("floodInsurance eq 0", cohort)
+
+    def test_unknown_string_vocabulary_drops_the_predicate_rather_than_guessing(self):
+        from collections import Counter
+        client = make_client()
+        schema = datasets.ihp_schema(client, 2)
+        cohort = datasets.ihp_cohort_filter(
+            schema, "MS", vocabulary={"floodDamage": Counter({"No": 1000})})
+        self.assertNotIn("floodDamage", cohort)
+
+
+class TestNumericIdPaging(unittest.TestCase):
+    """`id` is numeric in some datasets; quoting it is rejected outright."""
+
+    def _numeric_tables(self):
+        claims = [dict(row, id=1000 + index)
+                  for index, row in enumerate(fixtures.NFIP_RECORDS)]
+        return dict(fixtures.TABLES, FimaNfipClaims=claims)
+
+    def test_numeric_ids_page_unquoted(self):
+        class StrictNumericId(FakeClient):
+            def _fetch(self, url):
+                if "id%20gt%20%27" in url:      # id gt '...'
+                    raise api_mod.HttpError(
+                        400, url,
+                        '{"error":[{"code":"OF_OQP_002","message":"Invalid data '
+                        'type of: String for id"}]}')
+                return super()._fetch(url)
+
+        client = StrictNumericId(self._numeric_tables(),
+                                 field_types=fixtures.FIELD_TYPES, page_size=2)
+        rows = list(client.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
+        self.assertEqual(len(rows), 7)
+        self.assertEqual(len({r["id"] for r in rows}), 7)
+
+    def test_quoted_retry_when_the_column_is_really_text(self):
+        """JSON can hand back a number for a column the API treats as text."""
+
+        class StrictTextId(FakeClient):
+            def _fetch(self, url):
+                if "id%20gt%20" in url and "id%20gt%20%27" not in url:
+                    raise api_mod.HttpError(
+                        400, url, '{"message":"Invalid data type of: Number for id"}')
+                return super()._fetch(url)
+
+        messages = []
+        client = StrictTextId(self._numeric_tables(),
+                              field_types=fixtures.FIELD_TYPES, page_size=2,
+                              progress=messages.append)
+        rows = list(client.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
+        self.assertEqual(len(rows), 7)
+        self.assertEqual(len({r["id"] for r in rows}), 7)
+        self.assertTrue(any("quoted literal" in m for m in messages))

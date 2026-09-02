@@ -46,11 +46,37 @@ def literal(value):
     """Render a sampled value as a ``$filter`` literal of its own type."""
     from . import api
 
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, (int, float)):
-        return repr(value) if isinstance(value, float) else str(value)
-    return api.quote_literal(value)
+    return api.format_literal(value)
+
+
+def flag_literal(counter, want):
+    """Literal meaning ``want`` for a yes/no column, inferred from its type.
+
+    Value sampling alone is not enough here. A flood-damage flag is rare in a
+    state whose registrations are mostly wind, so a thousand-row sample can
+    contain only ``False`` -- and treating that absence as "no true value
+    exists" drops the predicate and silently widens the cohort. The sample is
+    used for the column's *type*; the two possible values of a flag are known.
+    """
+    from . import api
+    from .schema import truthy
+
+    if not counter:
+        return None
+    for value in counter:
+        if value is None:
+            continue
+        if truthy(value) is want:
+            return literal(value)           # an observed value is best
+    for value in counter:                   # otherwise infer from the type
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            return "true" if want else "false"
+        if isinstance(value, (int, float)):
+            return "1" if want else "0"
+        return None      # a string vocabulary we have not seen both sides of
+    return None
 
 
 def describe(counter):
