@@ -26,15 +26,17 @@ NFIP_FIELDS = {
     "ratedFloodZone": "text", "countyCode": "text",
 }
 
+# Public Assistance carries no `id` column -- the client must discover that
+# and fall back to offset paging rather than assuming one exists.
 PA_FIELDS = {
-    "id": "text", "disasterNumber": "smallint", "stateCode": "text",
+    "disasterNumber": "smallint", "stateAbbreviation": "text",
     "applicantId": "text", "applicationTitle": "text", "damageCategoryCode": "text",
     "projectAmount": "decimal(12,2)", "federalShareObligated": "decimal(12,2)",
     "totalObligated": "decimal(12,2)", "county": "text", "pwNumber": "integer",
 }
 
 PA_APPLICANT_FIELDS = {
-    "id": "text", "applicantId": "text", "applicantName": "text", "stateCode": "text",
+    "applicantId": "text", "applicantName": "text", "stateCode": "text",
 }
 
 FIELD_TYPES = {
@@ -162,7 +164,7 @@ CATALOG = [
 def _pa(row_id, disaster, applicant_id, title, category, total, federal,
         state="LA", county="Statewide"):
     return {
-        "id": row_id, "disasterNumber": disaster, "stateCode": state,
+        "disasterNumber": disaster, "stateAbbreviation": state,
         "applicantId": applicant_id, "applicationTitle": title,
         "damageCategoryCode": category, "projectAmount": total,
         "federalShareObligated": federal, "totalObligated": total,
@@ -175,16 +177,16 @@ def _pa(row_id, disaster, applicant_id, title, category, total, federal,
 # name path is exercised too. One local applicant (the parish) must be
 # excluded even though its title is squarely sheltering.
 PA_APPLICANTS = [
-    {"id": "a1", "applicantId": "000-U0001-00",
+    {"applicantId": "000-U0001-00",
      "applicantName": "State of Louisiana - GOHSEP", "stateCode": "LA"},
-    {"id": "a2", "applicantId": "000-U0002-00",
+    {"applicantId": "000-U0002-00",
      "applicantName": "Louisiana Department of Children and Family Services",
      "stateCode": "LA"},
-    {"id": "a3", "applicantId": "033-U0003-00",
+    {"applicantId": "033-U0003-00",
      "applicantName": "East Baton Rouge Parish", "stateCode": "LA"},
-    {"id": "a4", "applicantId": "000-U0004-00",
+    {"applicantId": "000-U0004-00",
      "applicantName": "Louisiana GOHSEP", "stateCode": "LA"},
-    {"id": "a5", "applicantId": "045-U0009-00",
+    {"applicantId": "045-U0009-00",
      "applicantName": "Louisiana Department of Health", "stateCode": "LA"},
 ]
 

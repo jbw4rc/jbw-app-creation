@@ -251,8 +251,12 @@ record — a filter the API interprets differently than expected can't silently
 widen the cohort, and the JSON output reports exactly how many records were
 rejected and why.
 
-Paging uses a keyset cursor (`$orderby=id` plus `id gt <last id>`) rather than
-`$skip`, which degrades and can repeat or drop rows deep into a large table.
+Paging uses a keyset cursor (`$orderby=<key>` plus `<key> gt <last value>`)
+rather than `$skip`, which degrades and can repeat or drop rows deep into a
+large table. The key is **discovered**, not assumed: it comes from the
+dataset's published primary key, falling back to `id` where one exists. The
+Public Assistance tables have no `id` at all, and a dataset without a key
+pages on `$skip` instead.
 Records are aggregated as they stream, so memory stays flat regardless of
 state size. Every response is cached under `~/.cache/fema-flood-gap`, so
 re-running with a different cohort definition or output format downloads

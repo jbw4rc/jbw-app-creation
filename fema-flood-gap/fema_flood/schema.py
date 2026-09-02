@@ -21,7 +21,8 @@ class SchemaError(api.OpenFemaError):
 class Schema:
     """Resolved field names and types for one dataset."""
 
-    def __init__(self, dataset, version, fields, types=None, source="probe"):
+    def __init__(self, dataset, version, fields, types=None, source="probe",
+                 primary_key=None):
         self.dataset = dataset
         self.version = version
         self.fields = list(fields)
@@ -29,6 +30,21 @@ class Schema:
         self.source = source
         self._lower = {f.lower(): f for f in self.fields}
         self.bindings = {}
+        self.primary_key = primary_key
+
+    def key_field(self):
+        """A field to order and page on, or None if the dataset has none.
+
+        Not every OpenFEMA dataset carries an ``id``: the Public Assistance
+        tables do not. Assuming one breaks the row count, the ``$select`` and
+        the keyset cursor at once, so the key is discovered rather than
+        assumed, and callers fall back to offset paging when there is none.
+        """
+        if self.primary_key and self.has(self.primary_key):
+            return self._lower[self.primary_key.lower()]
+        if self.has("id"):
+            return self._lower["id"]
+        return None
 
     def has(self, name):
         return name.lower() in self._lower
@@ -137,12 +153,12 @@ def _from_dataset_fields(client, dataset, version):
         "$top": 500,
         "$filter": "openFemaDataSet eq %s and datasetVersion eq %s"
                    % (api.quote_literal(dataset), version),
-        "$select": "name,type",
+        "$select": "name,type,primaryKey",
     })
     rows = client.extract_records(client.get(url))
     if not rows:
         raise api.OpenFemaError("no field metadata for %s v%s" % (dataset, version))
-    names, types = [], {}
+    names, types, primary_key = [], {}, None
     for row in rows:
         field = row.get("name")
         if not field:
@@ -150,7 +166,10 @@ def _from_dataset_fields(client, dataset, version):
         names.append(field)
         if row.get("type"):
             types[field] = row["type"]
-    return Schema(dataset, version, names, types, source="DataSetFields")
+        if row.get("primaryKey") in (True, "true", "True", 1, "1", "Y", "yes"):
+            primary_key = primary_key or field
+    return Schema(dataset, version, names, types, source="DataSetFields",
+                  primary_key=primary_key)
 
 
 def _from_probe(client, dataset, version):
@@ -173,4 +192,5 @@ def _from_probe(client, dataset, version):
             types[key] = "number"
         elif value is not None:
             types[key] = "text"
-    return Schema(dataset, version, record.keys(), types, source="record probe")
+    return Schema(dataset, version, record.keys(), types, source="record probe",
+                  primary_key="id" if "id" in record else None)

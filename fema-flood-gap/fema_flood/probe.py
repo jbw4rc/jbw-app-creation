@@ -9,7 +9,7 @@ assuming, read a page of records and see what is in the column.
 from collections import Counter
 
 
-def sample(client, dataset, version, fields, filter=None, limit=1000):
+def sample(client, dataset, version, fields, filter=None, limit=1000, key=None):
     """Return ``{field: Counter(value -> occurrences)}`` from one page.
 
     One page is plenty for the low-cardinality columns this is used on
@@ -20,9 +20,10 @@ def sample(client, dataset, version, fields, filter=None, limit=1000):
     fields = [f for f in fields if f]
     if not fields:
         return {}
+    selected = set(fields) | ({key} if key else set())
     url = client.build_url(dataset, version, {
         "$top": limit,
-        "$select": ",".join(sorted(set(fields) | {"id"})),
+        "$select": ",".join(sorted(selected)),
         "$filter": filter,
     })
     rows = client.extract_records(client.get(url))

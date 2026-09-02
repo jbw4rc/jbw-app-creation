@@ -265,9 +265,11 @@ class Client:
         """Row count for a query, via ``$inlinecount`` on a one-row page.
 
         OpenFEMA follows OData here: the value is ``allpages``, not ``all``.
+        No ``$select`` is sent: naming a column here bought nothing (the page
+        is one row) and failed outright on datasets without an ``id``.
         """
         url = self.build_url(dataset, version, {
-            "$inlinecount": "allpages", "$top": 1, "$select": "id", "$filter": filter,
+            "$inlinecount": "allpages", "$top": 1, "$filter": filter,
         })
         payload = self.get(url)
         meta = payload.get("metadata") or {}
@@ -280,10 +282,19 @@ class Client:
         return (self.get(url).get("metadata") or {})
 
     def records(self, dataset, version, select=None, filter=None, label=None,
-                expected=None):
-        """Yield every record matching ``filter``, one page at a time."""
-        select_clause = ",".join(sorted(set(select) | {"id"})) if select else None
-        mode = self.paging
+                expected=None, key="id"):
+        """Yield every record matching ``filter``, one page at a time.
+
+        ``key`` is the field to order and page on -- pass
+        ``schema.key_field()``, which is ``None`` for a dataset with no
+        identifier. Without a key there is nothing to build a cursor from, so
+        paging falls back to ``$skip``.
+        """
+        if key:
+            select_clause = ",".join(sorted(set(select) | {key})) if select else None
+        else:
+            select_clause = ",".join(sorted(set(select))) if select else None
+        mode = self.paging if key else "skip"
         seen = 0
         cursor = None
         skip = 0
@@ -295,12 +306,13 @@ class Client:
             if mode == "cursor":
                 page_filter = and_filters(
                     filter,
-                    "id gt %s" % format_literal(cursor, quote_ids) if cursor else None)
+                    "%s gt %s" % (key, format_literal(cursor, quote_ids))
+                    if cursor else None)
                 params = {"$top": page_size, "$filter": page_filter,
-                          "$select": select_clause, "$orderby": "id"}
+                          "$select": select_clause, "$orderby": key}
             else:
                 params = {"$top": page_size, "$skip": skip, "$filter": filter,
-                          "$select": select_clause, "$orderby": "id"}
+                          "$select": select_clause, "$orderby": key}
             url = self.build_url(dataset, version, params)
 
             try:
@@ -335,7 +347,7 @@ class Client:
                 break
 
             if mode == "cursor" and cursor is not None \
-                    and _sorts_before(rows[0].get("id", ""), cursor):
+                    and _sorts_before(rows[0].get(key, ""), cursor):
                 # The server returned rows at or before the cursor, meaning it
                 # ignored the `id gt` predicate. Yielding these would duplicate
                 # what we already emitted, so switch to offset paging from the
@@ -355,7 +367,7 @@ class Client:
             if len(rows) < page_size:
                 break
             if mode == "cursor":
-                next_cursor = rows[-1].get("id")
+                next_cursor = rows[-1].get(key)
                 if not next_cursor or next_cursor == cursor:
                     self.progress("  cursor stalled, falling back to $skip")
                     mode, skip = "skip", seen

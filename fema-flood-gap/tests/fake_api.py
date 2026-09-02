@@ -107,8 +107,13 @@ class FakeClient(api.Client):
             raise api.HttpError(400, url, "compound filter not supported")
 
         rows = [r for r in rows if matches(r, filter_string)]
-        if params.get("$orderby") == "id":
-            rows = sorted(rows, key=lambda r: r["id"])
+        order_by = params.get("$orderby")
+        if order_by:
+            if any(order_by not in row for row in rows):
+                raise api.HttpError(400, url, '{"error":[{"code":"OF_OQP_003",'
+                                    '"type":"$orderby criteria error","message":'
+                                    '"Criteria includes field not in the data model."}]}')
+            rows = sorted(rows, key=lambda r: r[order_by])
 
         count = len(rows)
         skip = int(params.get("$skip", 0))
@@ -118,6 +123,17 @@ class FakeClient(api.Client):
         select = params.get("$select")
         if select:
             keep = set(select.split(","))
+            known = set()
+            for row in rows or self.tables.get(dataset) or []:
+                known |= set(row)
+            missing = sorted(k for k in keep if known and k not in known)
+            if missing:
+                # The real API rejects this outright (OF_OQP_003), which is how
+                # the id-on-every-dataset assumption stayed hidden.
+                raise api.HttpError(400, url, '{"error":[{"code":"OF_OQP_003",'
+                                    '"type":"$select criteria error","message":'
+                                    '"Criteria includes field \\"%s\\" not found '
+                                    'in the data model."}]}' % missing[0])
             page = [{k: v for k, v in row.items() if k in keep} for row in page]
 
         metadata = {"lastRefresh": self.last_refresh}

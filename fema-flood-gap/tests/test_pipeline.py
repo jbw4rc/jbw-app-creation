@@ -1750,3 +1750,51 @@ class TestEmptyPaBlockExplainsItself(unittest.TestCase):
         built = pipeline.build(make_client(), make_options())
         self.assertGreater(built.pa.matched.projects, 0)
         self.assertFalse(any("No Public Assistance" in w for w in built.warnings))
+
+
+class TestDatasetsWithoutAnIdField(unittest.TestCase):
+    """Not every OpenFEMA dataset has an `id`; the Public Assistance ones don't.
+
+    Assuming one broke three things at once on a live run -- the row count's
+    `$select`, the record `$select`, and the keyset cursor -- each returning
+    OF_OQP_003. The fake now rejects a `$select` or `$orderby` naming a column
+    the table lacks, so that assumption cannot come back unnoticed.
+    """
+
+    def test_key_is_discovered_not_assumed(self):
+        client = make_client()
+        pa_schema = datasets.pa_schema(client, 1)
+        self.assertIsNone(pa_schema.key_field())
+        ihp_schema = datasets.ihp_schema(client, 2)
+        self.assertEqual(ihp_schema.key_field(), "id")
+
+    def test_a_keyless_dataset_pages_and_aggregates(self):
+        built = pipeline.build(make_client(), make_options())
+        self.assertEqual(built.pa.matched.projects, 4)
+        self.assertEqual(built.pa.matched.total, 6_500_000.0)
+
+    def test_no_select_or_orderby_names_a_missing_column(self):
+        client = make_client()
+        pipeline.build(client, make_options())
+        pa_urls = [u for u in client.urls if "PublicAssistance" in u]
+        self.assertTrue(pa_urls)
+        for url in pa_urls:
+            self.assertNotIn("orderby=id", url)
+            self.assertNotIn("%2Cid%2C", url)      # id inside a $select list
+
+    def test_count_sends_no_select_at_all(self):
+        client = make_client()
+        client.count("FimaNfipClaims", 2, "state eq 'LA'")
+        counting = [u for u in client.urls if "inlinecount" in u]
+        self.assertTrue(counting)
+        for url in counting:
+            self.assertNotIn("select", url)
+
+    def test_primary_key_from_metadata_wins_over_a_bare_id(self):
+        from fema_flood.schema import Schema
+        keyed = Schema("X", 1, ["rowKey", "id", "name"], primary_key="rowKey")
+        self.assertEqual(keyed.key_field(), "rowKey")
+        # A primary key the table does not actually carry is ignored.
+        stale = Schema("X", 1, ["id", "name"], primary_key="goneAway")
+        self.assertEqual(stale.key_field(), "id")
+        self.assertIsNone(Schema("X", 1, ["name"]).key_field())

@@ -439,6 +439,8 @@ def cmd_pa(args):
                                             datasets.NAME_HINTS.get(datasets.PA_DATASET))
     schema = datasets.pa_schema(client, version)
     print("%s v%s (%s)" % (datasets.PA_DATASET, version, catalog.describe(entry)))
+    print("  paging key: %s" % (schema.key_field() or
+                                "(none - offset paging)"))
     for logical, actual in sorted(schema.bindings.items()):
         print("  %-16s %s" % (logical, actual or "(not present)"))
 
@@ -454,8 +456,13 @@ def cmd_pa(args):
         names = pa.applicant_names(client.records(
             datasets.PA_APPLICANTS_DATASET, applicant_version,
             select=datasets.selected_fields(applicant_schema),
-            filter=applicant_filter, label="applicants"), applicant_schema)
-        print("\napplicants table: %s names for %s" % (f"{len(names):,}", state))
+            filter=applicant_filter, label="applicants",
+            key=applicant_schema.key_field()), applicant_schema)
+        if names:
+            print("\napplicants table: %s names for %s" % (f"{len(names):,}", state))
+        else:
+            print("\napplicants table returned no rows for %s; state agencies will "
+                  "be identified from applicant IDs alone." % state)
     except api.OpenFemaError as exc:
         print("\napplicants table unavailable (%s)" % exc)
 
@@ -469,7 +476,8 @@ def cmd_pa(args):
     rows = []
     for index, record in enumerate(client.records(
             datasets.PA_DATASET, version, select=datasets.selected_fields(schema),
-            filter=state_filter, label="PA projects")):
+            filter=state_filter, label="PA projects",
+            key=schema.key_field())):
         rows.append(record)
         if index + 1 >= args.sample:
             break

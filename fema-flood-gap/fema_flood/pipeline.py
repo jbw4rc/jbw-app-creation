@@ -344,7 +344,7 @@ def build(client, options):
         options.declarations_dataset, options.declarations_version,
         select=datasets.selected_fields(decl_schema),
         filter=datasets.declaration_filter(decl_schema, options.state),
-        label="declarations")
+        label="declarations", key=decl_schema.key_field())
     all_declarations = decl_mod.collapse(decl_records, decl_schema)
     report.declarations = decl_mod.select(
         all_declarations, options.min_year, options.max_year,
@@ -437,7 +437,8 @@ def build(client, options):
     ihp_records = client.records(
         options.ihp_dataset, options.ihp_version,
         select=datasets.selected_fields(ihp_schema),
-        filter=cohort_filter, label="IHP registrations", expected=expected)
+        filter=cohort_filter, label="IHP registrations", expected=expected,
+        key=ihp_schema.key_field())
     disaster_years = {n: d.year for n, d in all_declarations.items()}
     report.ihp = analysis.aggregate_ihp(
         ihp_records, ihp_schema, options.cohort, options.deflator,
@@ -482,7 +483,7 @@ def build(client, options):
                 options.ihp_dataset, options.ihp_version,
                 select=datasets.selected_fields(ihp_schema),
                 filter=uninsured_filter, label="uninsured homeowners",
-                expected=expected_ho)
+                expected=expected_ho, key=ihp_schema.key_field())
             report.home_insurance = analysis.aggregate_home_insurance(
                 ho_records, ihp_schema, options.home_insurance, options.deflator,
                 state=options.state, disaster_years=disaster_years,
@@ -512,7 +513,8 @@ def build(client, options):
         nfip_records = client.records(
             options.nfip_dataset, options.nfip_version,
             select=datasets.selected_fields(nfip_schema),
-            filter=nfip_filter, label="NFIP claims", expected=expected)
+            filter=nfip_filter, label="NFIP claims", expected=expected,
+            key=nfip_schema.key_field())
         report.nfip = analysis.aggregate_nfip(
             nfip_records, nfip_schema, options.nfip, options.deflator,
             state=options.state,
@@ -555,7 +557,8 @@ def _pull_public_assistance(client, options, report, disaster_years, allowed):
             names = pa_mod.applicant_names(client.records(
                 datasets.PA_APPLICANTS_DATASET, options.pa_applicants_version,
                 select=datasets.selected_fields(applicant_schema),
-                filter=applicant_filter, label="PA applicants"), applicant_schema)
+                filter=applicant_filter, label="PA applicants",
+                key=applicant_schema.key_field()), applicant_schema)
         except api.OpenFemaError as exc:
             report.warnings.append(
                 "Could not read the PA applicants table (%s); state agencies were "
@@ -572,7 +575,8 @@ def _pull_public_assistance(client, options, report, disaster_years, allowed):
         records = client.records(
             datasets.PA_DATASET, options.pa_version,
             select=datasets.selected_fields(pa_schema),
-            filter=state_filter, label="PA projects", expected=expected)
+            filter=state_filter, label="PA projects", expected=expected,
+            key=pa_schema.key_field())
         report.pa = pa_mod.aggregate(
             records, pa_schema, options.pa, options.deflator, names=names,
             state=options.state, disaster_years=disaster_years,
