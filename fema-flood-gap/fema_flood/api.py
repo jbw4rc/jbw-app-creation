@@ -1,0 +1,256 @@
+"""Minimal OpenFEMA API client: cursor paging, retries, on-disk cache.
+
+Stdlib only, on purpose -- this needs to run on an analyst's laptop with no
+`pip install` step. The one non-obvious piece is paging: OpenFEMA's ``$skip``
+degrades badly past a few hundred thousand rows and can repeat or drop records
+while the underlying table is being refreshed, so we page on a keyset cursor
+(``$orderby=id`` plus ``id gt <last id>``) and fall back to ``$skip`` only if a
+dataset does not cooperate.
+"""
+
+import gzip
+import hashlib
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+BASE_URL = "https://www.fema.gov/api/open"
+USER_AGENT = "fema-flood-gap/1.0 (+https://www.fema.gov/about/openfema/api)"
+
+# OpenFEMA caps $top at 10,000. 5,000 keeps individual responses ~10-20 MB for
+# the wide NFIP rows, which is a friendlier retry unit on a flaky connection.
+DEFAULT_PAGE_SIZE = 5000
+
+RETRY_STATUS = {408, 425, 429, 500, 502, 503, 504}
+
+
+class OpenFemaError(RuntimeError):
+    """Any non-recoverable failure talking to OpenFEMA."""
+
+
+class HttpError(OpenFemaError):
+    def __init__(self, status, url, body=""):
+        self.status = status
+        self.url = url
+        self.body = body
+        super().__init__("HTTP %s from %s%s" % (status, url, (": " + body[:400]) if body else ""))
+
+
+def quote_literal(value):
+    """Quote a string for an OData-ish ``$filter`` literal."""
+    return "'" + str(value).replace("'", "''") + "'"
+
+
+def and_filters(*parts):
+    clean = [p for p in parts if p]
+    if not clean:
+        return None
+    if len(clean) == 1:
+        return clean[0]
+    return " and ".join("(%s)" % p for p in clean)
+
+
+class Client:
+    """Fetches OpenFEMA pages, caching each response body on disk.
+
+    The cache is keyed on the full request URL, so re-running a report with a
+    different cohort definition costs nothing as long as the underlying query
+    is unchanged -- which matters when a single state's registration pull is
+    hundreds of pages.
+    """
+
+    def __init__(self, cache_dir=None, refresh=False, use_cache=True,
+                 page_size=DEFAULT_PAGE_SIZE, timeout=180, max_retries=5,
+                 paging="cursor", progress=None):
+        self.cache_dir = cache_dir
+        self.refresh = refresh
+        self.use_cache = use_cache and bool(cache_dir)
+        self.page_size = max(1, min(int(page_size), 10000))
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.paging = paging
+        self.progress = progress if progress is not None else _stderr_progress
+        self.requests_made = 0
+        self.cache_hits = 0
+        if self.use_cache:
+            os.makedirs(self.cache_dir, exist_ok=True)
+
+    # ---------------------------------------------------------------- plumbing
+
+    def build_url(self, dataset, version, params):
+        query = [(k, v) for k, v in params.items() if v is not None]
+        return "%s/v%s/%s?%s" % (
+            BASE_URL, version, dataset,
+            urllib.parse.urlencode(query, quote_via=urllib.parse.quote),
+        )
+
+    def _cache_path(self, url):
+        digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:40]
+        return os.path.join(self.cache_dir, digest + ".json.gz")
+
+    def get(self, url):
+        """GET a URL, returning parsed JSON, using and filling the disk cache."""
+        path = self._cache_path(url) if self.use_cache else None
+        if path and not self.refresh and os.path.exists(path):
+            try:
+                with gzip.open(path, "rt", encoding="utf-8") as fh:
+                    payload = json.load(fh)
+                self.cache_hits += 1
+                return payload
+            except (OSError, ValueError):
+                # A truncated cache entry (interrupted run) should not be fatal.
+                os.remove(path)
+
+        payload = self._fetch(url)
+        if path:
+            tmp = path + ".tmp"
+            with gzip.open(tmp, "wt", encoding="utf-8") as fh:
+                json.dump(payload, fh)
+            os.replace(tmp, path)
+        return payload
+
+    def _fetch(self, url):
+        delay = 2.0
+        last_error = None
+        for attempt in range(1, self.max_retries + 1):
+            request = urllib.request.Request(url, headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/json",
+                "Accept-Encoding": "gzip",
+            })
+            try:
+                self.requests_made += 1
+                with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                    raw = response.read()
+                    if response.headers.get("Content-Encoding") == "gzip":
+                        raw = gzip.decompress(raw)
+                    return json.loads(raw.decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                body = ""
+                try:
+                    body = exc.read().decode("utf-8", "replace")
+                except Exception:
+                    pass
+                if exc.code not in RETRY_STATUS:
+                    # 400 usually means a $filter the dataset does not accept;
+                    # callers catch this and retry with a simpler query.
+                    raise HttpError(exc.code, url, body)
+                last_error = HttpError(exc.code, url, body)
+                retry_after = exc.headers.get("Retry-After") if exc.headers else None
+                if retry_after and str(retry_after).isdigit():
+                    delay = max(delay, float(retry_after))
+            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
+                last_error = OpenFemaError("%s while fetching %s" % (exc, url))
+
+            if attempt < self.max_retries:
+                self.progress("  retry %d/%d in %.0fs (%s)"
+                              % (attempt, self.max_retries - 1, delay, last_error))
+                time.sleep(delay)
+                delay = min(delay * 2, 60)
+        raise last_error
+
+    @staticmethod
+    def extract_records(payload):
+        """Pull the record array out of a response body.
+
+        OpenFEMA names the array after the dataset, so we take whichever key
+        isn't ``metadata``.
+        """
+        for key, value in payload.items():
+            if key != "metadata" and isinstance(value, list):
+                return value
+        return []
+
+    # ------------------------------------------------------------------ public
+
+    def count(self, dataset, version, filter=None):
+        """Row count for a query, via ``$inlinecount`` on a one-row page."""
+        url = self.build_url(dataset, version, {
+            "$inlinecount": "all", "$top": 1, "$select": "id", "$filter": filter,
+        })
+        payload = self.get(url)
+        meta = payload.get("metadata") or {}
+        if meta.get("count") is None:
+            raise OpenFemaError("no count in metadata for %s" % url)
+        return int(meta["count"])
+
+    def metadata(self, dataset, version):
+        url = self.build_url(dataset, version, {"$top": 1})
+        return (self.get(url).get("metadata") or {})
+
+    def records(self, dataset, version, select=None, filter=None, label=None,
+                expected=None):
+        """Yield every record matching ``filter``, one page at a time."""
+        select_clause = ",".join(sorted(set(select) | {"id"})) if select else None
+        mode = self.paging
+        seen = 0
+        cursor = None
+        skip = 0
+        label = label or dataset
+
+        while True:
+            if mode == "cursor":
+                page_filter = and_filters(filter, "id gt %s" % quote_literal(cursor) if cursor else None)
+                params = {"$top": self.page_size, "$filter": page_filter,
+                          "$select": select_clause, "$orderby": "id"}
+            else:
+                params = {"$top": self.page_size, "$skip": skip, "$filter": filter,
+                          "$select": select_clause, "$orderby": "id"}
+            url = self.build_url(dataset, version, params)
+
+            try:
+                rows = self.extract_records(self.get(url))
+            except HttpError as exc:
+                if mode == "cursor" and exc.status == 400 and seen == 0:
+                    # Dataset rejected keyset paging (no comparable id); restart
+                    # on $skip rather than failing the whole run.
+                    self.progress("  keyset paging rejected, falling back to $skip")
+                    mode = "skip"
+                    continue
+                raise
+
+            if not rows:
+                break
+
+            if mode == "cursor" and cursor is not None and rows[0].get("id", "") <= cursor:
+                # The server returned rows at or before the cursor, meaning it
+                # ignored the `id gt` predicate. Yielding these would duplicate
+                # what we already emitted, so switch to offset paging from the
+                # exact point we reached instead.
+                self.progress("  keyset predicate not honoured, switching to $skip")
+                mode, skip, cursor = "skip", seen, None
+                continue
+
+            for row in rows:
+                yield row
+            seen += len(rows)
+            self.progress("  %s: %s rows%s" % (
+                label, f"{seen:,}",
+                " of ~%s" % f"{expected:,}" if expected else "",
+            ))
+
+            if len(rows) < self.page_size:
+                break
+            if mode == "cursor":
+                next_cursor = rows[-1].get("id")
+                if not next_cursor or next_cursor == cursor:
+                    self.progress("  cursor stalled, falling back to $skip")
+                    mode, skip = "skip", seen
+                    cursor = None
+                    continue
+                cursor = next_cursor
+            else:
+                skip += len(rows)
+
+
+def _stderr_progress(message):
+    sys.stderr.write(message + "\n")
+    sys.stderr.flush()
+
+
+def silent_progress(message):
+    pass

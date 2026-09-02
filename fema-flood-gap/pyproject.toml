@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fema-flood-gap"
+version = "1.0.0"
+description = "Compare FEMA IHP awards to uninsured flooded homeowners against NFIP payouts, state by state, from OpenFEMA."
+requires-python = ">=3.8"
+dependencies = []          # standard library only, by design
+classifiers = ["Programming Language :: Python :: 3"]
+
+[project.scripts]
+fema-flood-gap = "fema_flood.cli:main"
+
+[tool.setuptools]
+packages = ["fema_flood"]
