@@ -1641,3 +1641,79 @@ class TestPublicAssistanceOnThePage(TestPageScriptArithmetic):
         page = report.render(built, "html")
         self.assertNotIn('id="pabody"', page)
         self.assertIn('"hasPa": false', page)
+
+
+
+class TestCliEndToEnd(unittest.TestCase):
+    """Run the command the user actually types, against the fake API.
+
+    Every other test calls pipeline.build directly with hand-built options,
+    so nothing exercised argument parsing, cli.build_options, the renderers'
+    dispatch, or the bundle writer. A missing import in build_options
+    therefore crashed every real run while the suite stayed green.
+    """
+
+    def setUp(self):
+        from fema_flood import cli
+        self.cli = cli
+        self._make_client = cli.make_client
+        cli.make_client = lambda args: make_client()
+        self.addCleanup(setattr, cli, "make_client", self._make_client)
+
+    def run_cli(self, *argv):
+        import contextlib
+        import io as io_mod
+        out, err = io_mod.StringIO(), io_mod.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = self.cli.main(list(argv))
+        return code, out.getvalue(), err.getvalue()
+
+    def test_default_report_runs(self):
+        code, out, _ = self.run_cli("LA", "--quiet")
+        self.assertEqual(code, 0)
+        self.assertIn("LOUISIANA", out)
+        self.assertIn("BEYOND IHP", out)
+
+    def test_bundle_writes_every_file(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            target = os.path.join(tmp, "la")
+            code, _, _ = self.run_cli("LA", "--quiet", "--bundle", target)
+            self.assertEqual(code, 0)
+            for name, _fmt in self.cli.BUNDLE_FORMATS:
+                path = os.path.join(target, name)
+                self.assertTrue(os.path.exists(path), name)
+                self.assertTrue(os.path.getsize(path) > 0, name)
+
+    def test_the_documented_flags_all_build(self):
+        """Every flag in the README's example command, in one run."""
+        code, out, err = self.run_cli(
+            "LA", "--quiet", "--adjust-to", "2024", "--nfip-owner-occupied",
+            "--since", "2005", "--flood-declarations-only",
+            "--unknown-insurance", "uninsured", "--home-insurance-unknown", "uninsured",
+            "--ona-state-share", "0.5", "--pa-category", "B",
+            "--pa-keyword", "shelter\\w*", "--review-note", "Per the Council.",
+            "--format", "json")
+        self.assertEqual(code, 0, err)
+        payload = json.loads(out)
+        self.assertEqual(payload["state"], "LA")
+        self.assertIn("Per the Council.", json.dumps(payload["parameters"]))
+
+    def test_skip_flags_build(self):
+        for flag in ("--skip-pa", "--skip-nfip", "--skip-home-insurance",
+                     "--skip-context", "--no-toggle", "--no-scenarios",
+                     "--no-percentiles"):
+            code, _, err = self.run_cli("LA", "--quiet", flag, "--format", "json")
+            self.assertEqual(code, 0, "%s: %s" % (flag, err))
+
+    def test_build_options_binds_every_name_it_uses(self):
+        args = self.cli.build_parser().parse_args(["report", "LA"])
+        options = self.cli.build_options(args, "LA")
+        self.assertTrue(options.pa.enabled)
+        self.assertTrue(options.home_insurance.enabled)
+        self.assertEqual(options.cost_share.ona_state_share, 0.25)
+
+    def test_schema_and_values_commands_run(self):
+        for argv in (["schema"], ["values", "LA"], ["datasets", "Nfip"]):
+            code, _, err = self.run_cli(*argv)
+            self.assertEqual(code, 0, "%s: %s" % (argv, err))

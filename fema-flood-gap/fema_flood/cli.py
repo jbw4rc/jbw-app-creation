@@ -5,8 +5,8 @@ import os
 import shutil
 import sys
 
-from . import (analysis, api, catalog, costshare, cpi, datasets, pipeline,
-               probe, report as report_mod, states)
+from . import (analysis, api, catalog, costshare, cpi, datasets, pa,
+               pipeline, probe, report as report_mod, states)
 
 
 DEFAULT_CACHE = os.path.join(

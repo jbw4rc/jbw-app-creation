@@ -311,6 +311,7 @@ class RunOptions:
             "home_insurance_cohort": (self.home_insurance.describe()
                                       if self.home_insurance.enabled else None),
             "public_assistance": self.pa.describe() if self.pa.enabled else None,
+            "review_note": self.review_note,
             "min_year": self.min_year,
             "max_year": self.max_year,
             "incident_types": self.incident_types,
