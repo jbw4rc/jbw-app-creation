@@ -9,12 +9,17 @@ DECLARATIONS_DATASET = "DisasterDeclarationsSummaries"
 # Used only if the OpenFEMA catalog cannot be read; normally the version comes
 # from the catalog, because a dataset republished under a new version number
 # turns a hard-coded guess into a 404.
-FALLBACK_VERSIONS = {IHP_DATASET: 1, NFIP_DATASET: 2, DECLARATIONS_DATASET: 2}
+PA_DATASET = "PublicAssistanceFundedProjectsDetails"
+PA_APPLICANTS_DATASET = "PublicAssistanceApplicants"
+
+FALLBACK_VERSIONS = {IHP_DATASET: 1, NFIP_DATASET: 2, DECLARATIONS_DATASET: 2,
+                     PA_DATASET: 1, PA_APPLICANTS_DATASET: 1}
 
 # Keywords for suggesting a replacement when a dataset name is not in the
 # catalog at all.
 NAME_HINTS = {IHP_DATASET: "Individuals", NFIP_DATASET: "Nfip",
-              DECLARATIONS_DATASET: "Declaration"}
+              DECLARATIONS_DATASET: "Declaration",
+              PA_DATASET: "PublicAssistance", PA_APPLICANTS_DATASET: "Applicants"}
 
 # logical name -> candidate physical names, most-preferred first.
 IHP_FIELDS = {
@@ -96,6 +101,17 @@ def ihp_schema(client, version, dataset=IHP_DATASET):
 
 def nfip_schema(client, version, dataset=NFIP_DATASET):
     return load_schema(client, dataset, version, NFIP_FIELDS, NFIP_OPTIONAL)
+
+
+def pa_schema(client, version, dataset=PA_DATASET):
+    from . import pa
+    return load_schema(client, dataset, version, pa.PA_FIELDS, pa.PA_OPTIONAL)
+
+
+def pa_applicant_schema(client, version, dataset=PA_APPLICANTS_DATASET):
+    from . import pa
+    return load_schema(client, dataset, version, pa.PA_APPLICANT_FIELDS,
+                       pa.PA_APPLICANT_OPTIONAL)
 
 
 def declaration_schema(client, version, dataset=DECLARATIONS_DATASET):

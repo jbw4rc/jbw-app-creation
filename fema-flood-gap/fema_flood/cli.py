@@ -16,6 +16,7 @@ DEFAULT_CACHE = os.path.join(
 BUNDLE_FORMATS = [("report.txt", "text"), ("report.md", "md"),
                   ("report.html", "html"), ("by-declaration.csv", "csv"),
                   ("uninsured-homeowners.csv", "home-insurance-csv"),
+                  ("pa-sheltering-projects.csv", "pa-csv"),
                   ("report.json", "json")]
 
 
@@ -139,6 +140,20 @@ def _add_report_args(parser):
                             help="how to treat registrations with no "
                                  "homeowners-insurance value (default: %(default)s)")
 
+    pa_group = parser.add_argument_group("Public Assistance sheltering")
+    pa_group.add_argument("--skip-pa", action="store_true",
+                          help="skip the PA sheltering / shelter-in-home pull")
+    pa_group.add_argument("--pa-keyword", dest="pa_keywords", action="append",
+                          metavar="REGEX",
+                          help="title pattern that counts as sheltering "
+                               "(repeatable; replaces the built-in list)")
+    pa_group.add_argument("--pa-category", default="B",
+                          help="PA damage category to include (default: %(default)s, "
+                               "emergency protective measures)")
+    pa_group.add_argument("--pa-all-applicants", action="store_true",
+                          help="include local applicants, not only the state and "
+                               "its agencies")
+
     nfip = parser.add_argument_group("NFIP claim selection")
     nfip.add_argument("--nfip-owner-occupied", action="store_true",
                       help="restrict claims to single-family/owner-occupied "
@@ -257,10 +272,15 @@ def build_options(args, state):
         keep_values=keep_values,
         enabled=not args.skip_home_insurance)
 
+    public_assistance = pa.PaOptions(
+        enabled=not args.skip_pa, keywords=args.pa_keywords,
+        category=args.pa_category,
+        state_applicants_only=not args.pa_all_applicants)
+
     return pipeline.RunOptions(
         state=state, cohort=cohort, nfip=nfip, deflator=deflator,
         cost_share=shares, home_insurance=home_insurance,
-        review_note=args.review_note,
+        review_note=args.review_note, pa=public_assistance,
         min_year=args.min_year, max_year=args.max_year,
         incident_types=args.incident_types,
         flood_declarations_only=args.flood_declarations_only,

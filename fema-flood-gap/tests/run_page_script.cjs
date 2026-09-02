@@ -50,6 +50,8 @@ const nodes = {
   footerbasis: new Node('footerbasis'),
   lede: new Node('lede'),
   sharebody: new Node('sharebody'),
+  pabody: new Node('pabody'),
+  paintro: new Node('paintro'),
   hosharebody: new Node('hosharebody'),
   tablebody: new Node('tablebody'),
   tablecaption: new Node('tablecaption'),
@@ -77,6 +79,11 @@ const cards = [];
 for (const pot of ['flood', 'other', 'both']) {
   for (const key of ['households', 'awarded', 'ihpTotal', 'haTotal', 'onaTotal']) {
     cards.push(new Node(null, {'data-cell': pot + '.' + key}));
+  }
+}
+for (const tier of ['m', 'c']) {
+  for (const key of ['projects', 'total', 'federal', 'nonFederal', 'share']) {
+    cards.push(new Node(null, {'data-cell': 'pa.' + tier + '.' + key}));
   }
 }
 for (const key of ['households', 'ihpTotal', 'ihpMean', 'nfipMean',
@@ -112,6 +119,7 @@ const out = {basis: nodes.basis.textContent, lede: nodes.lede.textContent,
              comparecaption: nodes.comparecaption.textContent,
              shareintro: nodes.shareintro.textContent,
              hointro: nodes.hointro.textContent, reading: nodes.reading.textContent,
+             paintro: nodes.paintro.textContent,
              barIhpWidth: nodes.barIhp.style.width, barNfipWidth: nodes.barNfip.style.width,
              barIhpVal: nodes.barIhpVal.textContent, barNfipVal: nodes.barNfipVal.textContent,
              barIhpAria: nodes.barIhp.getAttribute('aria-label'),

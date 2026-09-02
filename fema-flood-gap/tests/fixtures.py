@@ -26,7 +26,20 @@ NFIP_FIELDS = {
     "ratedFloodZone": "text", "countyCode": "text",
 }
 
+PA_FIELDS = {
+    "id": "text", "disasterNumber": "smallint", "stateCode": "text",
+    "applicantId": "text", "applicationTitle": "text", "damageCategoryCode": "text",
+    "projectAmount": "decimal(12,2)", "federalShareObligated": "decimal(12,2)",
+    "totalObligated": "decimal(12,2)", "county": "text", "pwNumber": "integer",
+}
+
+PA_APPLICANT_FIELDS = {
+    "id": "text", "applicantId": "text", "applicantName": "text", "stateCode": "text",
+}
+
 FIELD_TYPES = {
+    "PublicAssistanceFundedProjectsDetails": PA_FIELDS,
+    "PublicAssistanceApplicants": PA_APPLICANT_FIELDS,
     "DisasterDeclarationsSummaries": DECLARATION_FIELDS,
     "IndividualsAndHouseholdsProgramValidRegistrations": IHP_FIELDS,
     "FimaNfipClaims": NFIP_FIELDS,
@@ -142,10 +155,65 @@ CATALOG = [
     _catalog("FimaNfipClaims", 2, 2_600_000),
     _catalog("DisasterDeclarationsSummaries", 2, 68_000),
     _catalog("IndividualAssistanceHousingRegistrantsLargeDisasters", 1, 5_000_000),
+    _catalog("PublicAssistanceFundedProjectsDetails", 1, 780_000),
+    _catalog("PublicAssistanceApplicants", 1, 120_000),
+]
+
+def _pa(row_id, disaster, applicant_id, title, category, total, federal,
+        state="LA", county="Statewide"):
+    return {
+        "id": row_id, "disasterNumber": disaster, "stateCode": state,
+        "applicantId": applicant_id, "applicationTitle": title,
+        "damageCategoryCode": category, "projectAmount": total,
+        "federalShareObligated": federal, "totalObligated": total,
+        "county": county, "pwNumber": int(row_id[1:]),
+    }
+
+
+# Applicant IDs lead with the county code; 000 is a statewide / state-agency
+# applicant. One state agency (Dept of Health) carries a county code, so the
+# name path is exercised too. One local applicant (the parish) must be
+# excluded even though its title is squarely sheltering.
+PA_APPLICANTS = [
+    {"id": "a1", "applicantId": "000-U0001-00",
+     "applicantName": "State of Louisiana - GOHSEP", "stateCode": "LA"},
+    {"id": "a2", "applicantId": "000-U0002-00",
+     "applicantName": "Louisiana Department of Children and Family Services",
+     "stateCode": "LA"},
+    {"id": "a3", "applicantId": "033-U0003-00",
+     "applicantName": "East Baton Rouge Parish", "stateCode": "LA"},
+    {"id": "a4", "applicantId": "000-U0004-00",
+     "applicantName": "Louisiana GOHSEP", "stateCode": "LA"},
+    {"id": "a5", "applicantId": "045-U0009-00",
+     "applicantName": "Louisiana Department of Health", "stateCode": "LA"},
+]
+
+# Keyword floor (state applicants): p1 p2 p6 p7 -> $6,500,000 total,
+# $5,685,000 federal, $815,000 non-federal. All category B with a state
+# applicant adds p5 -> $6,800,000 / $5,910,000 / $890,000.
+PA_PROJECTS = [
+    _pa("p1", 4277, "000-U0001-00", "Transitional Sheltering Assistance (TSA)",
+        "B", 1_000_000.0, 750_000.0),
+    _pa("p2", 4277, "000-U0002-00", "Emergency Shelter Operations - Mass Care",
+        "B", 400_000.0, 360_000.0),
+    _pa("p3", 4277, "033-U0003-00", "Shelter Operations", "B",
+        200_000.0, 150_000.0, county="East Baton Rouge"),        # local applicant
+    _pa("p4", 4277, "000-U0001-00", "Debris Removal - State Highways", "A",
+        900_000.0, 675_000.0),                                     # wrong category
+    _pa("p5", 4277, "000-U0001-00", "EOC Operations and Staffing", "B",
+        300_000.0, 225_000.0),                                     # B, not sheltering
+    _pa("p6", 1603, "000-U0004-00", "STEP - Sheltering and Temporary Essential Power",
+        "B", 5_000_000.0, 4_500_000.0),
+    _pa("p7", 4277, "045-U0009-00", "Non-congregate sheltering - medical needs",
+        "B", 100_000.0, 75_000.0),
+    _pa("p8", 4277, "000-U0001-00", "Bridge approach steps and railing repair",
+        "B", 50_000.0, 37_500.0),                                  # "steps" != STEP
 ]
 
 TABLES = {
     "DataSets": CATALOG,
+    "PublicAssistanceFundedProjectsDetails": PA_PROJECTS,
+    "PublicAssistanceApplicants": PA_APPLICANTS,
     "DisasterDeclarationsSummaries": DECLARATIONS,
     "IndividualsAndHouseholdsProgramValidRegistrations": IHP_RECORDS,
     "FimaNfipClaims": NFIP_RECORDS,

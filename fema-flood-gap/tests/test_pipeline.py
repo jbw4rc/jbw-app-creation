@@ -1485,3 +1485,159 @@ class TestStoryArithmetic(TestPageScriptArithmetic):
         self.assertEqual(page["heroGap"], report.money(self.real.gap_per_household()))
         self.assertEqual(page["sinceLabel"], "all years")
 
+
+
+
+class TestPublicAssistanceSheltering(unittest.TestCase):
+    """PA sheltering / shelter-in-home projects with a state applicant."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.report = pipeline.build(make_client(), make_options())
+
+    def test_state_applicants_are_identified_by_id_prefix_or_name(self):
+        from fema_flood.pa import is_state_applicant
+        self.assertTrue(is_state_applicant("000-U0001-00", None))
+        self.assertTrue(is_state_applicant("045-U0009-00", "Louisiana Department of Health"))
+        self.assertFalse(is_state_applicant("033-U0003-00", "East Baton Rouge Parish"))
+        self.assertFalse(is_state_applicant("033-U0003-00", "City of Baker"))
+        self.assertFalse(is_state_applicant("033-U0003-00", None))
+
+    def test_keywords_respect_word_boundaries(self):
+        from fema_flood.pa import PaOptions
+        opts = PaOptions()
+        self.assertTrue(opts.matches("STEP - Sheltering and Temporary Essential Power"))
+        self.assertTrue(opts.matches("Transitional Sheltering Assistance (TSA)"))
+        self.assertTrue(opts.matches("Non-congregate sheltering"))
+        self.assertFalse(opts.matches("Bridge approach steps and railing repair"))
+        self.assertFalse(opts.matches("EOC Operations and Staffing"))
+
+    def test_keyword_floor_totals(self):
+        pa = self.report.pa
+        self.assertEqual(pa.matched.projects, 4)                  # p1 p2 p6 p7
+        self.assertEqual(pa.matched.total, 6_500_000.0)
+        self.assertEqual(pa.matched.federal, 5_685_000.0)
+        self.assertEqual(pa.matched.non_federal, 815_000.0)
+
+    def test_category_ceiling_totals(self):
+        pa = self.report.pa
+        self.assertEqual(pa.category.projects, 6)                 # + p5, p8
+        self.assertEqual(pa.category.total, 6_850_000.0)
+        self.assertEqual(pa.category.non_federal, 902_500.0)
+
+    def test_local_applicant_and_wrong_category_are_excluded(self):
+        pa = self.report.pa
+        self.assertEqual(pa.skipped_other_applicant, 1)          # p3
+        self.assertEqual(pa.skipped_other_category, 1)           # p4
+        titles = [p["title"] for p in pa.projects]
+        self.assertNotIn("Shelter Operations", titles)
+        self.assertNotIn("Debris Removal - State Highways", titles)
+
+    def test_observed_cost_share_not_the_statutory_default(self):
+        """STEP after Katrina was funded at 90%; the data says so, and so must we."""
+        pa = self.report.pa
+        katrina = pa.by_disaster[1603].matched
+        self.assertAlmostEqual(katrina.non_federal_share, 0.10)
+        self.assertAlmostEqual(pa.by_disaster[4277].matched.non_federal_share,
+                               315_000.0 / 1_500_000.0)
+
+    def test_audit_list_carries_every_matched_project_with_its_applicant(self):
+        projects = self.report.pa.projects
+        self.assertEqual(len(projects), 4)
+        by_title = {p["title"]: p for p in projects}
+        self.assertEqual(by_title["Transitional Sheltering Assistance (TSA)"]["applicant"],
+                         "State of Louisiana - GOHSEP")
+        self.assertEqual(by_title["Non-congregate sheltering - medical needs"]
+                         ["non_federal_obligated"], 25_000.0)
+
+    def test_year_filter_applies(self):
+        recent = pipeline.build(make_client(), make_options(min_year=2016))
+        self.assertEqual(recent.pa.matched.total, 1_500_000.0)
+        self.assertEqual(recent.pa.matched.non_federal, 315_000.0)
+
+    def test_inflation_adjusts_pa_dollars_by_declaration_year(self):
+        adjusted = pipeline.build(make_client(),
+                                  make_options(deflator=cpi.Deflator(2024)))
+        katrina = adjusted.pa.by_disaster[1603].matched.total
+        self.assertAlmostEqual(katrina, 5_000_000.0 * cpi.CPI_U[2024] / cpi.CPI_U[2005])
+
+    def test_all_applicants_option_admits_the_parish(self):
+        from fema_flood.pa import PaOptions
+        wide = pipeline.build(make_client(),
+                              make_options(pa=PaOptions(state_applicants_only=False)))
+        self.assertEqual(wide.pa.matched.projects, 5)
+        self.assertEqual(wide.pa.matched.total, 6_700_000.0)
+
+    def test_can_be_skipped(self):
+        from fema_flood.pa import PaOptions
+        built = pipeline.build(make_client(), make_options(pa=PaOptions(enabled=False)))
+        self.assertIsNone(built.pa)
+
+    def test_missing_dataset_warns_instead_of_failing(self):
+        tables = {k: v for k, v in fixtures.TABLES.items()
+                  if not k.startswith("PublicAssistance")}
+        built = pipeline.build(FakeClient(tables, field_types=fixtures.FIELD_TYPES),
+                               make_options())
+        self.assertIsNone(built.pa)
+        self.assertEqual(built.ihp.statewide.ihp.total, 19000.0)
+        self.assertTrue(any("Public Assistance" in w for w in built.warnings))
+
+    def test_json_reports_both_tiers(self):
+        payload = json.loads(report.render(self.report, "json"))
+        block = payload["public_assistance_sheltering"]
+        self.assertEqual(block["keyword_floor"]["non_federal_obligated"], 815_000.0)
+        self.assertEqual(block["all_category_b_state_applicants"]["projects"], 6)
+
+
+    def test_audit_csv_lists_matched_projects_only(self):
+        import csv as csv_module
+        rows = list(csv_module.reader(io.StringIO(report.render(self.report, "pa-csv"))))
+        self.assertEqual(len(rows), 1 + 4)
+        self.assertTrue(all(len(r) == len(rows[0]) for r in rows))
+        titles = {dict(zip(rows[0], r))["title"] for r in rows[1:]}
+        self.assertIn("STEP - Sheltering and Temporary Essential Power", titles)
+        self.assertNotIn("Shelter Operations", titles)             # parish, excluded
+        first = dict(zip(rows[0], rows[1]))                          # largest first
+        self.assertEqual(first["observed_non_federal_share"], "0.1")
+
+    def test_text_and_markdown_carry_both_tiers(self):
+        for fmt in ("text", "md"):
+            output = " ".join(report.render(self.report, fmt).split())
+            self.assertIn("$815,000", output, fmt)       # keyword floor, non-federal
+            self.assertIn("$902,500", output, fmt)       # category ceiling
+            self.assertIn("floor", output.lower(), fmt)
+
+
+class TestPublicAssistanceOnThePage(TestPageScriptArithmetic):
+    """The section-2 PA block follows the slider and the dollar basis."""
+
+    def test_default_view_matches_the_pipeline(self):
+        page = self.run_page()
+        pa = self.real.pa
+        self.assertEqual(page["cell:pa.m.projects"], "4")
+        self.assertEqual(page["cell:pa.m.total"], report.money(pa.matched.total))
+        self.assertEqual(page["cell:pa.m.nonFederal"], report.money(pa.matched.non_federal))
+        self.assertEqual(page["cell:pa.c.total"], report.money(pa.category.total))
+        self.assertEqual(page["cell:pa.c.share"], report.pct(pa.category.non_federal_share))
+        self.assertIn(report.money(pa.matched.non_federal), page["paintro"])
+        self.assertIn("floor", page["paintro"])
+
+    def test_follows_the_slider(self):
+        equivalent = pipeline.build(
+            make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))
+        page = self.run_page("2016")
+        self.assertEqual(page["cell:pa.m.projects"], "3")
+        self.assertEqual(page["cell:pa.m.total"], report.money(equivalent.pa.matched.total))
+        self.assertIn("since 2016", page["paintro"])
+
+    def test_switches_dollar_basis(self):
+        page = self.run_page("", "toggle")
+        self.assertEqual(page["cell:pa.m.total"], report.money(self.nominal.pa.matched.total))
+        self.assertEqual(page["cell:pa.m.total"], "$6,500,000")
+
+    def test_block_absent_when_pa_skipped(self):
+        from fema_flood.pa import PaOptions
+        built = pipeline.build(make_client(), make_options(pa=PaOptions(enabled=False)))
+        page = report.render(built, "html")
+        self.assertNotIn('id="pabody"', page)
+        self.assertIn('"hasPa": false', page)

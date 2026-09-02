@@ -133,6 +133,37 @@ flood file, since the two overlap and must not be summed.
 | `--skip-home-insurance` | omit the cohort entirely |
 | `--home-insurance-unknown uninsured` | count registrations with no homeowners-insurance value as uninsured |
 
+### Beyond IHP: Public Assistance sheltering
+
+IHP is not the only line on which a state pays for uninsured homes. Hotel
+sheltering (Transitional Sheltering Assistance), mass-care shelters, and the
+STEP / PREPS shelter-in-home repair programs run through **Public
+Assistance** under Stafford Act sec. 403, Category B, with a non-federal
+share. The tool pulls `PublicAssistanceFundedProjectsDetails` for the state,
+keeps projects whose **applicant is the state or a state agency** (applicant
+IDs lead with the county code, and `000` means statewide; the applicants
+table supplies names as a second check), and reports two tiers:
+
+- **Keyword floor** -- Category B projects whose title names sheltering,
+  hotel sheltering, or a shelter-in-home program. Titles are free text, so
+  this undercounts.
+- **Category ceiling** -- every Category B project with a state applicant,
+  which bounds the same costs from above.
+
+The non-federal share is what the data shows was obligated (total minus
+federal share), so it reflects any adjustment to 90% or 100% federal rather
+than assuming the statutory 25%. Every matched project is written to
+`pa-sheltering-projects.csv` with its applicant, title and amounts so the
+keyword hits can be audited. On the HTML page the block sits inside section
+2 and follows the year slider and the dollar toggle.
+
+| Flag | Effect |
+| --- | --- |
+| `--skip-pa` | omit the block |
+| `--pa-keyword REGEX` | replace the title patterns (repeatable) |
+| `--pa-category A` | a different damage category |
+| `--pa-all-applicants` | include local applicants too |
+
 ### State cost share
 
 Under the Stafford Act the state already funds **25% of Other Needs
@@ -195,6 +226,7 @@ Three OpenFEMA datasets:
 | Household awards | `IndividualsAndHouseholdsProgramValidRegistrations` |
 | Insurance payouts | `FimaNfipClaims` |
 | Disaster names, types, incident dates | `DisasterDeclarationsSummaries` |
+| Sheltering / shelter-in-home projects | `PublicAssistanceFundedProjectsDetails`, `PublicAssistanceApplicants` |
 
 **Versions are not hard-coded.** OpenFEMA republishes a table under a new
 version number and retires the old one, and the version sits in the URL path,

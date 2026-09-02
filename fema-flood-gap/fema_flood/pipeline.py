@@ -3,7 +3,7 @@
 import datetime
 
 from . import (analysis, api, catalog, costshare, datasets,
-               declarations as decl_mod, probe, states)
+               declarations as decl_mod, pa as pa_mod, probe, states)
 
 
 class StateReport:
@@ -18,6 +18,7 @@ class StateReport:
         self.declarations = {}
         self.ihp = None
         self.home_insurance = None
+        self.pa = None
         self.nfip = None
         self.context = {}
         self.vintage = {}
@@ -102,6 +103,30 @@ class StateReport:
             return []
         stats = self.ihp.statewide
         return self.options.cost_share.table(stats.ha.total, stats.ona.total)
+
+    def pa_rows(self):
+        """Per-declaration PA sheltering totals, both tiers, for the page."""
+        if not self.pa:
+            return []
+        rows = []
+        for number_, bucket in self.pa.by_disaster.items():
+            declaration = self.declarations.get(number_)
+            rows.append({
+                "disaster": number_,
+                "title": (declaration.title if declaration else None)
+                         or "(no declaration record)",
+                "year": declaration.year if declaration else None,
+                "matched_projects": bucket.matched.projects,
+                "matched_total": bucket.matched.total,
+                "matched_federal": bucket.matched.federal,
+                "matched_non_federal": bucket.matched.non_federal,
+                "category_projects": bucket.category.projects,
+                "category_total": bucket.category.total,
+                "category_federal": bucket.category.federal,
+                "category_non_federal": bucket.category.non_federal,
+            })
+        rows.sort(key=lambda r: -r["matched_total"])
+        return rows
 
     def home_insurance_rows(self, limit=None):
         """Per-declaration rows for the uninsured-homeowner cohort."""
@@ -201,6 +226,7 @@ class StateReport:
                 other_peril_scenarios=self.non_flood_cost_share_table(),
                 combined_state_share_both_pots=_r(self.combined_state_share()),
             ) if self.home_insurance else None),
+            "public_assistance_sheltering": self.pa.to_dict() if self.pa else None,
             "state_cost_share": {
                 "scope": "the non-federal share of ONA paid to this cohort, "
                          "not the state's whole IHP caseload",
@@ -233,7 +259,8 @@ class RunOptions:
     """Every knob the CLI exposes, in one place."""
 
     def __init__(self, state, cohort, nfip, deflator, cost_share=None,
-                 home_insurance=None, review_note=None, min_year=None, max_year=None,
+                 home_insurance=None, review_note=None, pa=None,
+                 min_year=None, max_year=None,
                  incident_types=None, flood_declarations_only=False, disasters=None,
                  match_buffer_days=3, ihp_version=None, nfip_version=None,
                  declarations_version=None, ihp_dataset=None, nfip_dataset=None,
@@ -246,6 +273,9 @@ class RunOptions:
         self.cost_share = cost_share or costshare.CostShare()
         self.home_insurance = home_insurance or analysis.HomeInsuranceOptions()
         self.review_note = review_note
+        self.pa = pa or pa_mod.PaOptions()
+        self.pa_version = None
+        self.pa_applicants_version = None
         self.min_year = min_year
         self.max_year = max_year
         # A year range applies to both sides unless the caller narrowed the
@@ -280,6 +310,7 @@ class RunOptions:
             "cost_share": self.cost_share.describe(),
             "home_insurance_cohort": (self.home_insurance.describe()
                                       if self.home_insurance.enabled else None),
+            "public_assistance": self.pa.describe() if self.pa.enabled else None,
             "min_year": self.min_year,
             "max_year": self.max_year,
             "incident_types": self.incident_types,
@@ -488,8 +519,69 @@ def build(client, options):
                                                  options.match_buffer_days),
             occupancy_codes=datasets.OWNER_OCCUPANCY_CODES)
 
+    # ---- Public Assistance sheltering, state applicants --------------------
+    if options.pa.enabled:
+        _pull_public_assistance(client, options, report, disaster_years, allowed)
+
     _add_warnings(report, options)
     return report
+
+
+def _pull_public_assistance(client, options, report, disaster_years, allowed):
+    """Sheltering and shelter-in-home PA projects with a state applicant.
+
+    Failures here are reported and skipped rather than fatal: this block is
+    context for the IHP figures, and a state's report should not die because
+    a secondary dataset was unavailable.
+    """
+    progress = client.progress
+    try:
+        progress("Resolving Public Assistance schema...")
+        pa_schema = datasets.pa_schema(client, options.pa_version)
+        report.schema_notes["public_assistance"] = dict(pa_schema.bindings)
+        state_filter = "%s eq %s" % (pa_schema.name("state"),
+                                     api.quote_literal(options.state))
+
+        names = {}
+        try:
+            applicant_schema = datasets.pa_applicant_schema(
+                client, options.pa_applicants_version)
+            applicant_filter = None
+            if applicant_schema.name("state"):
+                applicant_filter = "%s eq %s" % (applicant_schema.name("state"),
+                                                 api.quote_literal(options.state))
+            progress("Fetching Public Assistance applicants...")
+            names = pa_mod.applicant_names(client.records(
+                datasets.PA_APPLICANTS_DATASET, options.pa_applicants_version,
+                select=datasets.selected_fields(applicant_schema),
+                filter=applicant_filter, label="PA applicants"), applicant_schema)
+        except api.OpenFemaError as exc:
+            report.warnings.append(
+                "Could not read the PA applicants table (%s); state agencies were "
+                "identified from applicant IDs alone." % exc)
+
+        expected = None
+        try:
+            expected = client.count(datasets.PA_DATASET, options.pa_version, state_filter)
+            progress("  %s Public Assistance projects on file for %s"
+                     % (f"{expected:,}", options.state))
+        except api.OpenFemaError:
+            pass
+        progress("Fetching Public Assistance projects...")
+        records = client.records(
+            datasets.PA_DATASET, options.pa_version,
+            select=datasets.selected_fields(pa_schema),
+            filter=state_filter, label="PA projects", expected=expected)
+        report.pa = pa_mod.aggregate(
+            records, pa_schema, options.pa, options.deflator, names=names,
+            state=options.state, disaster_years=disaster_years,
+            allowed_disasters=allowed)
+        progress("  %d sheltering projects matched (state applicants), %s obligated"
+                 % (report.pa.matched.projects, f"{report.pa.matched.total:,.0f}"))
+    except api.OpenFemaError as exc:
+        report.warnings.append(
+            "Public Assistance sheltering could not be pulled (%s); the IHP "
+            "figures are unaffected." % exc)
 
 
 def _resolve_versions(client, options, report):
@@ -500,9 +592,13 @@ def _resolve_versions(client, options, report):
         ("ihp_version", options.ihp_dataset),
         ("nfip_version", options.nfip_dataset),
         ("declarations_version", options.declarations_dataset),
+        ("pa_version", datasets.PA_DATASET),
+        ("pa_applicants_version", datasets.PA_APPLICANTS_DATASET),
     ]
     for attribute, name in wanted:
         if attribute == "nfip_version" and options.skip_nfip:
+            continue
+        if attribute.startswith("pa_") and not options.pa.enabled:
             continue
         requested = getattr(options, attribute)
         try:

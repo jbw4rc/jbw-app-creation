@@ -148,6 +148,20 @@ def render_text(report, limit=25, width=100):
                               money(report.combined_state_share())))
         w("\n" + _wrap(HOME_INSURANCE_NOTE, width - 2, indent="  ", initial="  ") + "\n")
 
+    pa = report.pa
+    if pa:
+        w("\n%s\n%s\n" % ("BEYOND IHP: PA SHELTERING, STATE APPLICANTS", "-" * width))
+        w("  %-46s %9s %15s %15s %13s %7s\n" % (
+            "", "Projects", "Obligated", "Federal", "Non-federal", "Share"))
+        w("  " + "-" * (width - 2) + "\n")
+        for label, totals in [("Sheltering / shelter-in-home (keyword floor)", pa.matched),
+                              ("All Category B, state applicants", pa.category)]:
+            w("  %-46s %9s %15s %15s %13s %7s\n" % (
+                label, count(totals.projects), money(totals.total),
+                money(totals.federal), money(totals.non_federal),
+                pct(totals.non_federal_share)))
+        w("\n" + _wrap(PA_NOTE, width - 2, indent="  ", initial="  ") + "\n")
+
     rows = report.cost_share_table()
     if rows:
         w("\n%s\n%s\n" % ("STATE COST SHARE: CURRENT LAW AND ALTERNATIVES",
@@ -263,6 +277,18 @@ HOME_INSURANCE_NOTE = (
     "figure alongside the NFIP comparison above."
 )
 
+PA_NOTE = (
+    "Public Assistance projects under Stafford Act sec. 403 (Category B, "
+    "emergency protective measures) where the applicant is the state or a state "
+    "agency, so the non-federal share is the state's rather than a locality's. "
+    "The keyword row counts projects whose title names sheltering, hotel "
+    "sheltering, or a shelter-in-home repair program; titles are free text, so "
+    "it is a floor. The category row counts every Category B project with a "
+    "state applicant, a ceiling for the same costs. The non-federal share is "
+    "what the data shows was obligated, not the statutory 25%: it reflects any "
+    "adjustment to 90% or 100% federal."
+)
+
 COST_SHARE_NOTE = (
     "Under the Stafford Act the state already funds 25% of Other Needs "
     "Assistance (sec. 408(g), 42 U.S.C. 5174(g)); Housing Assistance under "
@@ -375,6 +401,19 @@ def render_markdown(report, limit=25):
         w("| State's share across both disjoint pots | %s |\n"
           % money(report.combined_state_share()))
         w("\n_%s_\n" % HOME_INSURANCE_NOTE)
+
+    pa = report.pa
+    if pa:
+        w("\n## Beyond IHP: Public Assistance sheltering, state applicants\n\n")
+        w("| | Projects | Obligated | Federal | Non-federal | Share |\n"
+          "| --- | ---: | ---: | ---: | ---: | ---: |\n")
+        for label, totals in [("**Sheltering / shelter-in-home (keyword floor)**", pa.matched),
+                              ("All Category B, state applicants", pa.category)]:
+            w("| %s | %s | %s | %s | %s | %s |\n" % (
+                label, count(totals.projects), money(totals.total),
+                money(totals.federal), money(totals.non_federal),
+                pct(totals.non_federal_share)))
+        w("\n_%s_\n" % PA_NOTE)
 
     rows = report.cost_share_table()
     if rows:
@@ -518,6 +557,30 @@ def render_home_insurance_csv(report):
     return out.getvalue()
 
 
+def render_pa_csv(report):
+    """Every matched PA project, so the keyword hits can be audited."""
+    out = io.StringIO()
+    writer = csv.writer(out, lineterminator="\n")
+    writer.writerow([
+        "state", "disaster_number", "year", "pw_number", "applicant_id", "applicant",
+        "title", "category", "county", "total_obligated", "federal_obligated",
+        "non_federal_obligated", "observed_non_federal_share",
+    ])
+    if not report.pa:
+        return out.getvalue()
+    for project in report.pa.projects:
+        share = (project["non_federal_obligated"] / project["total_obligated"]
+                 if project["total_obligated"] else None)
+        writer.writerow([
+            report.state, project["disaster_number"], project["year"],
+            project["pw_number"], project["applicant_id"], project["applicant"],
+            project["title"], project["category"], project["county"],
+            _num(project["total_obligated"]), _num(project["federal_obligated"]),
+            _num(project["non_federal_obligated"]), _num(share, 4),
+        ])
+    return out.getvalue()
+
+
 def _num(value, digits=2):
     return "" if value is None else round(value, digits)
 
@@ -592,7 +655,16 @@ def page_payload(report):
             "otherOnaTotal": row["other_ona_total"],
         })
 
+    pa_rows = [{
+        "dr": r["disaster"], "year": r["year"],
+        "mProjects": r["matched_projects"], "mTotal": r["matched_total"],
+        "mFederal": r["matched_federal"],
+        "cProjects": r["category_projects"], "cTotal": r["category_total"],
+        "cFederal": r["category_federal"],
+    } for r in report.pa_rows()]
+
     return {
+        "pa": pa_rows,
         "reviewNote": getattr(report.options, "review_note", None) or DEFAULT_REVIEW_NOTE,
         "homeInsurance": home,
         "basis": _basis_text(report.options.deflator),
@@ -645,6 +717,27 @@ def _section(step, title, inner, intro=None, section_id=None):
     return ("<section%s>%s<h2>%s</h2>%s%s</section>"
             % (" id=\"%s\"" % section_id if section_id else "", eyebrow,
                html.escape(title), lead, inner))
+
+
+def _pa_block(report):
+    """The 'beyond IHP' table inside section 2: PA sheltering, state applicants."""
+    e = html.escape
+    cells = ["projects", "total", "federal", "nonFederal", "share"]
+    rows = []
+    for tier, label in (("m", "Sheltering / shelter-in-home (keyword floor)"),
+                        ("c", "All Category B, state applicants")):
+        tds = "".join("<td class=\"n\" data-cell=\"pa.%s.%s\">-</td>" % (tier, key)
+                      for key in cells)
+        rows.append("<tr%s><td>%s</td>%s</tr>"
+                    % (' class="today"' if tier == "m" else "", e(label), tds))
+    return ("<h3>Beyond IHP: sheltering and shelter-in-home repairs the state "
+            "co-funded</h3><p class=\"intro\" id=\"paintro\"></p>"
+            "<div class=\"scroll\"><table><thead><tr><th>Public Assistance, state "
+            "applicants</th><th class=\"n\">Projects</th><th class=\"n\">Obligated</th>"
+            "<th class=\"n\">Federal</th><th class=\"n\">Non-federal</th>"
+            "<th class=\"n\">Observed share</th></tr></thead><tbody id=\"pabody\">%s"
+            "</tbody></table></div><p class=\"caption\">%s</p>"
+            % ("".join(rows), e(PA_NOTE)))
 
 
 def _pot_rows(cells):
@@ -728,9 +821,11 @@ def render_html(report, limit=40, alternate=None):
         "<th class=\"n\">Flood pot</th><th class=\"n\">Non-flood pot</th>"
         "<th class=\"n\">Both</th><th class=\"n\">vs. today</th></tr></thead>"
         "<tbody id=\"sharebody\"></tbody></table></div>"
-        "<p class=\"caption\">%s</p>" % e(
-            "Only the first row is current law. Scope: the non-federal share of ONA "
-            "paid to these two pots, not the state's whole IHP caseload. " + COST_SHARE_NOTE),
+        "<p class=\"caption\">%s</p>%s" % (
+            e("Only the first row is current law. Scope: the non-federal share of ONA "
+              "paid to these two pots, not the state's whole IHP caseload. "
+              + COST_SHARE_NOTE),
+            _pa_block(report) if report.pa else ""),
         intro=("shareintro", "")))
 
     # 3 -- aid versus insurance: both pots as aid, NFIP as the comparator
@@ -825,6 +920,7 @@ def render_html(report, limit=40, alternate=None):
         "payloads": payloads,
         "hasAlternate": alternate is not None,
         "hasHome": has_home,
+        "hasPa": bool(report.pa),
         "altShortBasis": (_short_basis(alternate.options.deflator)
                           if alternate else None),
         "primaryShortBasis": _short_basis(report.options.deflator),
@@ -867,9 +963,9 @@ PAGE_SCRIPT = """
     return value === null || value === undefined
       ? 'n/a' : Math.round(value).toLocaleString('en-US');
   }
-  function pct(value) {
+  function pct(value, digits) {
     return value === null || value === undefined ? 'n/a'
-      : (value * 100).toFixed(0) + '%';
+      : (value * 100).toFixed(digits || 0) + '%';
   }
   function households(n) {
     return count(n) + (Math.round(n) === 1 ? ' household' : ' households');
@@ -961,6 +1057,45 @@ PAGE_SCRIPT = """
     sum.other = config.hasHome ? otherPot(payload) : null;
     sum.combinedShare = sum.stateShare + (sum.other ? sum.other.stateShare : 0);
     return sum;
+  }
+
+  /* PA sheltering with a state applicant: the keyword floor (m) and the
+     all-category-B ceiling (c), summed over the declarations in range. */
+  function paTotals(payload) {
+    var sum = {m: {projects: 0, total: 0, federal: 0},
+               c: {projects: 0, total: 0, federal: 0}};
+    (payload.pa || []).forEach(function (r) {
+      if (!showingAllYears() && !(r.year && r.year >= since)) return;
+      sum.m.projects += r.mProjects; sum.m.total += r.mTotal; sum.m.federal += r.mFederal;
+      sum.c.projects += r.cProjects; sum.c.total += r.cTotal; sum.c.federal += r.cFederal;
+    });
+    return sum;
+  }
+
+  function renderPa(payload) {
+    if (!config.hasPa || !byId('pabody')) return;
+    var sum = paTotals(payload);
+    ['m', 'c'].forEach(function (tier) {
+      var t = sum[tier];
+      var non = t.total - t.federal;
+      setCell('pa.' + tier + '.projects', count(t.projects));
+      setCell('pa.' + tier + '.total', money(t.total));
+      setCell('pa.' + tier + '.federal', money(t.federal));
+      setCell('pa.' + tier + '.nonFederal', money(non));
+      /* One decimal: this is the share actually obligated, and 10.0% vs
+         12.7% is the difference between a 90/10 event and a mix. */
+      setCell('pa.' + tier + '.share', t.total ? pct(non / t.total, 1) : 'n/a');
+    });
+    var non = sum.m.total - sum.m.federal;
+    setText('paintro',
+      'IHP is not the only line. Sheltering displaced households in hotels and ' +
+      'shelters, and shelter-in-home repair programs, run through Public ' +
+      'Assistance with a non-federal share. Where the state itself was the ' +
+      'applicant' + periodPhrase() + ', ' + count(sum.m.projects) +
+      ' projects whose titles name sheltering were obligated at ' +
+      money(sum.m.total) + ', of which ' + money(non) +
+      ' was the state\u2019s share as actually obligated. That is a floor: ' +
+      'titles are free text, and the wider category-B row bounds it from above.');
   }
 
   function costFor(scenario, haTotal, onaTotal) {
@@ -1191,6 +1326,7 @@ PAGE_SCRIPT = """
     var sum = totals(payload);
     renderCohortTable(sum);
     renderShare(payload, sum);
+    renderPa(payload);
     renderChart(sum);
     renderHero(payload, sum);
     renderCards(sum);
@@ -1374,6 +1510,7 @@ RENDERERS = {
     "json": render_json,
     "csv": render_csv,
     "home-insurance-csv": render_home_insurance_csv,
+    "pa-csv": render_pa_csv,
     "html": render_html,
 }
 
@@ -1383,7 +1520,7 @@ def render(report, fmt, limit=25, alternate=None):
     if renderer is None:
         raise ValueError("unknown format %r (choose from %s)"
                          % (fmt, ", ".join(sorted(RENDERERS))))
-    if fmt in ("json", "csv", "home-insurance-csv"):
+    if fmt in ("json", "csv", "home-insurance-csv", "pa-csv"):
         return renderer(report)
     if fmt == "html":
         return renderer(report, limit, alternate)
