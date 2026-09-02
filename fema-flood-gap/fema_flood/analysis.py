@@ -320,6 +320,109 @@ def aggregate_ihp(records, schema, options, deflator, state=None,
     return result
 
 
+# ------------------------------------------------- homeowners-insurance gap
+
+class HomeInsuranceOptions:
+    """Owner-occupants with no homeowners insurance of any kind.
+
+    Split by whether the damage was flood, because that decides whether the
+    counterfactual holds: a homeowners policy would ordinarily have covered
+    wind, fire, hail or a fallen tree, but every standard HO form excludes
+    flood. Only the non-flood side supports "insurance would have paid for
+    this instead of FEMA".
+    """
+
+    def __init__(self, owner_only=True, unknown_insurance="exclude",
+                 flood_basis="damage", keep_values=True, enabled=True):
+        self.owner_only = owner_only
+        self.unknown_insurance = unknown_insurance
+        self.flood_basis = flood_basis
+        self.keep_values = keep_values
+        self.enabled = enabled
+
+    def describe(self):
+        parts = ["owner-occupant" if self.owner_only else "owner or renter",
+                 "no homeowners insurance"]
+        parts.append({
+            "exclude": "unknown insurance status excluded",
+            "uninsured": "unknown insurance status counted as uninsured",
+            "insured": "unknown insurance status counted as insured",
+        }[self.unknown_insurance])
+        return "; ".join(parts)
+
+
+class HomeInsuranceResult:
+    """The cohort, and the two halves the counterfactual splits it into."""
+
+    def __init__(self, options):
+        self.options = options
+        self.all = IhpResult(options)
+        self.flood_damaged = IhpResult(options)     # HO would not have paid
+        self.other_peril = IhpResult(options)       # HO ordinarily would have
+        self.rejections = Rejections()
+        self.records_seen = 0
+
+    def to_dict(self):
+        return {
+            "cohort": self.options.describe(),
+            "households": self.all.statewide.households,
+            "statewide": self.all.statewide.to_dict(),
+            "flood_damaged": self.flood_damaged.statewide.to_dict(),
+            "other_peril": self.other_peril.statewide.to_dict(),
+            "records_examined": self.records_seen,
+            "records_rejected": self.rejections.to_dict(),
+        }
+
+
+def aggregate_home_insurance(records, schema, options, deflator, state=None,
+                             disaster_years=None, allowed_disasters=None):
+    """Fold uninsured-homeowner registrations into the cohort and its halves."""
+    result = HomeInsuranceResult(options)
+    disaster_years = disaster_years or {}
+
+    for record in records:
+        result.records_seen += 1
+
+        if state and str(schema.get(record, "state", "")).upper() != state:
+            result.rejections.wrong_state += 1
+            continue
+
+        if options.owner_only and is_owner(schema.get(record, "ownRent")) is not True:
+            result.rejections.not_owner += 1
+            continue
+
+        insured = truthy(schema.get(record, "homeOwnersInsurance"))
+        if insured is True:
+            result.rejections.insured += 1
+            continue
+        if insured is None:
+            if options.unknown_insurance == "exclude":
+                result.rejections.unknown_insurance += 1
+                continue
+            if options.unknown_insurance == "insured":
+                result.rejections.insured += 1
+                continue
+
+        raw = schema.get(record, "disasterNumber")
+        try:
+            disaster_number = int(raw) if raw is not None else None
+        except (TypeError, ValueError):
+            disaster_number = None
+
+        if allowed_disasters is not None and disaster_number not in allowed_disasters:
+            result.rejections.filtered_by_disaster += 1
+            continue
+
+        year = disaster_years.get(disaster_number)
+        flooded = _flooded(schema, record, options.flood_basis)
+        for target in (result.all,
+                       result.flood_damaged if flooded else result.other_peril):
+            target.bucket(disaster_number).add(schema, record, deflator, year)
+            target.statewide.add(schema, record, deflator, year)
+
+    return result
+
+
 # ---------------------------------------------------------------- NFIP claims
 
 class NfipOptions:

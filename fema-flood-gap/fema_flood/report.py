@@ -93,9 +93,37 @@ def render_text(report, limit=25, width=100):
         w("  %-44s %s\n" % (label, value))
     w("\n  Note: IHP is the sum of HA and ONA, not a third separate award.\n")
 
+    home = report.home_insurance
+    if home:
+        stats = home.all.statewide
+        flood = home.flood_damaged.statewide
+        other = home.other_peril.statewide
+        w("\n%s\n%s\n" % ("OWNER-OCCUPANTS WITH NO HOMEOWNERS INSURANCE", "-" * width))
+        for label, value in [
+            ("Households (registrations)", count(stats.households)),
+            ("Total IHP awarded", money(stats.ihp.total)),
+            ("  of which Housing Assistance (HA)", money(stats.ha.total)),
+            ("  of which Other Needs Assistance (ONA)", money(stats.ona.total)),
+            ("Average IHP per household", money(stats.ihp.mean)),
+            ("State's share of that ONA",
+             money(report.options.cost_share.state_cost(stats.ha.total, stats.ona.total))),
+        ]:
+            w("  %-44s %s\n" % (label, value))
+        w("\n  %-44s %9s %14s %12s\n" % ("Split by peril", "Households", "IHP total", "Avg IHP"))
+        w("  " + "-" * (width - 2) + "\n")
+        for label, bucket in [
+            ("Other perils - HO would ordinarily cover", other),
+            ("Flood damage - HO policies exclude flood", flood),
+        ]:
+            w("  %-44s %9s %14s %12s\n" % (
+                label, count(bucket.households), money(bucket.ihp.total),
+                money(bucket.ihp.mean)))
+        w("\n" + _wrap(HOME_INSURANCE_NOTE, width - 2, indent="  ", initial="  ") + "\n")
+
     rows = report.cost_share_table()
     if rows:
-        w("\n%s\n%s\n" % ("WHAT THE STATE ALREADY PAYS", "-" * width))
+        w("\n%s\n%s\n" % ("STATE COST SHARE: CURRENT LAW AND ALTERNATIVES",
+                        "-" * width))
         w("  %-52s %14s %10s\n" % ("Funding arrangement", "State cost", "vs today"))
         w("  " + "-" * (width - 2) + "\n")
         for row in rows:
@@ -182,6 +210,16 @@ def render_text(report, limit=25, width=100):
     return out.getvalue()
 
 
+HOME_INSURANCE_NOTE = (
+    "Every standard homeowners policy excludes flood, so the two halves answer "
+    "different questions. For the non-flood share -- wind, hail, fire, a fallen "
+    "tree -- a homeowners policy would ordinarily have paid, and IHP stepped in "
+    "where private cover was absent. For the flood-damaged share it would not "
+    "have: that loss needed an NFIP policy, not a homeowners one. Read the "
+    "non-flood figure as the cost of missing homeowners cover, and the flood "
+    "figure alongside the NFIP comparison above."
+)
+
 COST_SHARE_NOTE = (
     "Under the Stafford Act the state already funds 25% of Other Needs "
     "Assistance (sec. 408(g), 42 U.S.C. 5174(g)); Housing Assistance under "
@@ -260,9 +298,38 @@ def render_markdown(report, limit=25):
         ]:
             w("| %s | %s |\n" % (label, value))
 
+    home = report.home_insurance
+    if home:
+        stats = home.all.statewide
+        w("\n## Owner-occupants with no homeowners insurance\n\n")
+        w("| Measure | Value |\n| --- | ---: |\n")
+        for label, value in [
+            ("Households (registrations)", count(stats.households)),
+            ("Total IHP awarded", money(stats.ihp.total)),
+            ("&nbsp;&nbsp;of which HA", money(stats.ha.total)),
+            ("&nbsp;&nbsp;of which ONA", money(stats.ona.total)),
+            ("Average IHP per household", money(stats.ihp.mean)),
+            ("State's share of that ONA",
+             money(report.options.cost_share.state_cost(
+                 stats.ha.total, stats.ona.total))),
+        ]:
+            w("| %s | %s |\n" % (label, value))
+        w("\n| Split by peril | Households | IHP total | Avg IHP |\n"
+          "| --- | ---: | ---: | ---: |\n")
+        for label, bucket in [
+            ("**Other perils - a homeowners policy would ordinarily cover**",
+             home.other_peril.statewide),
+            ("Flood damage - homeowners policies exclude flood",
+             home.flood_damaged.statewide),
+        ]:
+            w("| %s | %s | %s | %s |\n" % (
+                label, count(bucket.households), money(bucket.ihp.total),
+                money(bucket.ihp.mean)))
+        w("\n_%s_\n" % HOME_INSURANCE_NOTE)
+
     rows = report.cost_share_table()
     if rows:
-        w("\n## What the state already pays\n\n")
+        w("\n## State cost share: current law and alternatives\n\n")
         w("| Funding arrangement | State cost | vs. today |\n| --- | ---: | ---: |\n")
         for row in rows:
             marker = "**" if row["key"] == "today" else ""
@@ -354,6 +421,48 @@ def render_csv(report):
     return out.getvalue()
 
 
+def render_home_insurance_csv(report):
+    """Per-declaration rows for the uninsured-homeowner cohort.
+
+    Kept in its own file rather than as extra columns on the flood CSV: they
+    are different cohorts over different populations, and a single wide row
+    invites summing across them.
+    """
+    out = io.StringIO()
+    writer = csv.writer(out, lineterminator="\n")
+    writer.writerow([
+        "state", "disaster_number", "declaration_title", "year", "households",
+        "ihp_total", "ihp_mean", "ha_total", "ona_total", "ona_state_share",
+        "flood_damaged_households", "flood_damaged_ihp_total",
+        "other_peril_households", "other_peril_ihp_total",
+    ])
+    if not report.home_insurance:
+        return out.getvalue()
+    for row in report.home_insurance_rows():
+        writer.writerow([
+            report.state, row["disaster"], row["title"], row["year"],
+            row["households"], _num(row["ihp_total"]), _num(row["ihp_mean"]),
+            _num(row["ha_total"]), _num(row["ona_total"]),
+            _num(row["ona_state_share"]),
+            row["flood_households"], _num(row["flood_ihp_total"]),
+            row["other_households"], _num(row["other_ihp_total"]),
+        ])
+    home = report.home_insurance
+    writer.writerow([
+        report.state, "TOTAL", "All declarations in scope", "",
+        home.all.statewide.households,
+        _num(home.all.statewide.ihp.total), _num(home.all.statewide.ihp.mean),
+        _num(home.all.statewide.ha.total), _num(home.all.statewide.ona.total),
+        _num(report.options.cost_share.state_cost(
+            home.all.statewide.ha.total, home.all.statewide.ona.total)),
+        home.flood_damaged.statewide.households,
+        _num(home.flood_damaged.statewide.ihp.total),
+        home.other_peril.statewide.households,
+        _num(home.other_peril.statewide.ihp.total),
+    ])
+    return out.getvalue()
+
+
 def _num(value, digits=2):
     return "" if value is None else round(value, digits)
 
@@ -411,7 +520,20 @@ def page_payload(report):
                                   "total": round(acc.total, 2),
                                   "paidTotal": round(acc.total_positive, 2)}
 
+    home = []
+    for row in report.home_insurance_rows():
+        home.append({
+            "dr": row["disaster"], "title": row["title"], "year": row["year"],
+            "households": row["households"], "ihpTotal": row["ihp_total"],
+            "haTotal": row["ha_total"], "onaTotal": row["ona_total"],
+            "floodHouseholds": row["flood_households"],
+            "floodIhpTotal": row["flood_ihp_total"],
+            "otherHouseholds": row["other_households"],
+            "otherIhpTotal": row["other_ihp_total"],
+        })
+
     return {
+        "homeInsurance": home,
         "basis": _basis_text(report.options.deflator),
         "basisClass": "real" if report.options.deflator.active else "nominal",
         "shortBasis": _short_basis(report.options.deflator),
@@ -423,6 +545,18 @@ def page_payload(report):
         "stateName": report.state_name,
     }
 
+
+HO_CARD_SPECS = [
+    ("hoHouseholds", "Uninsured-homeowner households",
+     "owner-occupants with no homeowners policy"),
+    ("hoIhpTotal", "Total IHP paid to them", "Housing Assistance plus Other Needs"),
+    ("hoOther", "IHP for perils a homeowners policy covers",
+     "wind, hail, fire, fallen trees - private cover was absent"),
+    ("hoFlood", "IHP for flood damage",
+     "homeowners policies exclude flood; this needed NFIP, not HO"),
+    ("hoStateShare", "State's share of that ONA",
+     "the 25% non-federal share on this cohort's Other Needs Assistance"),
+]
 
 CARD_SPECS = [
     ("households", "Uninsured flooded owner households",
@@ -489,6 +623,22 @@ def render_html(report, limit=40, alternate=None):
             "<p class=\"note\" data-note=\"%s\">%s</p></div>"
             % (e(label), key, key, e(note)))
     body.append("</section>")
+
+    if report.home_insurance:
+        body.append(
+            "<section id=\"hosection\"><h2>Owner-occupants with no homeowners "
+            "insurance</h2><p class=\"caption\">%s</p>"
+            "<div class=\"cards\">" % e(
+                "A separate cohort: owner-occupants carrying no homeowners "
+                "policy at all, whether or not the damage was flood."))
+        for key, label, note in HO_CARD_SPECS:
+            body.append(
+                "<div class=\"card%s\"><p class=\"label\">%s</p>"
+                "<p class=\"value\" data-card=\"%s\">-</p>"
+                "<p class=\"note\" data-note=\"%s\">%s</p></div>"
+                % (" lead" if key == "hoOther" else "", e(label), key, key, e(note)))
+        body.append("</div><p class=\"caption\">%s</p></section>"
+                    % e(HOME_INSURANCE_NOTE))
 
     body.append(
         "<section><h2>State cost share: current law and alternatives</h2>"
@@ -588,6 +738,28 @@ PAGE_SCRIPT = """
             mean: paidClaims ? paidTotal / paidClaims : null};
   }
 
+  function homeTotals(payload) {
+    var rows = (payload.homeInsurance || []).filter(function (d) {
+      return showingAllYears() || (d.year && d.year >= since);
+    });
+    var sum = {households: 0, ihpTotal: 0, haTotal: 0, onaTotal: 0,
+               floodIhp: 0, otherIhp: 0, floodHouseholds: 0, otherHouseholds: 0};
+    rows.forEach(function (d) {
+      sum.households += d.households;
+      sum.ihpTotal += d.ihpTotal;
+      sum.haTotal += d.haTotal;
+      sum.onaTotal += d.onaTotal;
+      sum.floodIhp += d.floodIhpTotal;
+      sum.otherIhp += d.otherIhpTotal;
+      sum.floodHouseholds += d.floodHouseholds;
+      sum.otherHouseholds += d.otherHouseholds;
+    });
+    var today = payload.scenarios[0];
+    sum.stateShare = sum.onaTotal * today.ona + sum.haTotal * today.ha;
+    sum.rows = rows;
+    return sum;
+  }
+
   function totals(payload) {
     var rows = selectedDisasters(payload);
     var sum = {households: 0, ihpTotal: 0, ihpPaid: 0, haTotal: 0, onaTotal: 0};
@@ -635,8 +807,19 @@ PAGE_SCRIPT = """
       ihpMean: count(sum.ihpPaid) + ' of ' + count(sum.households) +
         ' households received an award'
     };
+    var home = homeTotals(activePayload());
+    values.hoHouseholds = count(home.households);
+    values.hoIhpTotal = money(home.ihpTotal);
+    values.hoOther = money(home.otherIhp);
+    values.hoFlood = money(home.floodIhp);
+    values.hoStateShare = money(home.stateShare);
+    notes.hoOther = count(home.otherHouseholds) +
+      ' households, no homeowners policy, damage a policy would ordinarily cover';
+    notes.hoFlood = count(home.floodHouseholds) +
+      ' households - a homeowners policy would not have paid for this';
     document.querySelectorAll('[data-card]').forEach(function (node) {
-      node.textContent = values[node.getAttribute('data-card')];
+      var key = node.getAttribute('data-card');
+      if (key in values) node.textContent = values[key];
     });
     document.querySelectorAll('[data-note]').forEach(function (node) {
       var key = node.getAttribute('data-note');
@@ -803,6 +986,8 @@ white-space:normal;max-width:44ch}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;
 margin-top:32px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card.lead{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+#hosection .cards{margin-top:6px;margin-bottom:14px}
 .card .label{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.06em;
 color:var(--muted)}
 .card .value{margin:8px 0 6px;font-size:28px;font-weight:650;letter-spacing:-.02em;
@@ -832,6 +1017,7 @@ RENDERERS = {
     "markdown": render_markdown,
     "json": render_json,
     "csv": render_csv,
+    "home-insurance-csv": render_home_insurance_csv,
     "html": render_html,
 }
 
@@ -841,7 +1027,7 @@ def render(report, fmt, limit=25, alternate=None):
     if renderer is None:
         raise ValueError("unknown format %r (choose from %s)"
                          % (fmt, ", ".join(sorted(RENDERERS))))
-    if fmt in ("json", "csv"):
+    if fmt in ("json", "csv", "home-insurance-csv"):
         return renderer(report)
     if fmt == "html":
         return renderer(report, limit, alternate)

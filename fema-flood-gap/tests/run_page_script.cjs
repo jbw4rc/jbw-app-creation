@@ -55,7 +55,9 @@ const nodes = {
 // Card and note placeholders, mirroring what the renderer emits.
 const cards = [];
 for (const key of ['households', 'ihpTotal', 'ihpMean', 'nfipMean',
-                   'stateShare', 'gap', 'aggregateGap']) {
+                   'stateShare', 'gap', 'aggregateGap',
+                   'hoHouseholds', 'hoIhpTotal', 'hoOther', 'hoFlood',
+                   'hoStateShare']) {
   cards.push(new Node(null, {'data-card': key}));
   cards.push(new Node(null, {'data-note': key}));
 }

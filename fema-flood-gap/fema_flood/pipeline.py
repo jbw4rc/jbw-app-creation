@@ -17,6 +17,7 @@ class StateReport:
             microsecond=0).isoformat()
         self.declarations = {}
         self.ihp = None
+        self.home_insurance = None
         self.nfip = None
         self.context = {}
         self.vintage = {}
@@ -77,6 +78,36 @@ class StateReport:
         stats = self.ihp.statewide
         return self.options.cost_share.table(stats.ha.total, stats.ona.total)
 
+    def home_insurance_rows(self, limit=None):
+        """Per-declaration rows for the uninsured-homeowner cohort."""
+        if not self.home_insurance:
+            return []
+        share = self.options.cost_share
+        rows = []
+        result = self.home_insurance
+        for number, bucket in result.all.by_disaster.items():
+            declaration = self.declarations.get(number)
+            flood = result.flood_damaged.by_disaster.get(number)
+            other = result.other_peril.by_disaster.get(number)
+            rows.append({
+                "disaster": number,
+                "title": (declaration.title if declaration else None)
+                         or "(no declaration record)",
+                "year": declaration.year if declaration else None,
+                "households": bucket.households,
+                "ihp_total": bucket.ihp.total,
+                "ihp_mean": bucket.ihp.mean,
+                "ha_total": bucket.ha.total,
+                "ona_total": bucket.ona.total,
+                "ona_state_share": share.state_cost(bucket.ha.total, bucket.ona.total),
+                "flood_households": flood.households if flood else 0,
+                "flood_ihp_total": flood.ihp.total if flood else 0.0,
+                "other_households": other.households if other else 0,
+                "other_ihp_total": other.ihp.total if other else 0.0,
+            })
+        rows.sort(key=lambda r: -r["ihp_total"])
+        return rows[:limit] if limit else rows
+
     def disaster_rows(self, sort="ihp_total", limit=None):
         """Per-disaster rows joined to declaration metadata and matched NFIP stats."""
         rows = []
@@ -130,6 +161,8 @@ class StateReport:
             },
             "nfip": self.nfip.to_dict() if self.nfip else None,
             "context": self.context,
+            "uninsured_homeowners": (self.home_insurance.to_dict()
+                                     if self.home_insurance else None),
             "state_cost_share": {
                 "scope": "the non-federal share of ONA paid to this cohort, "
                          "not the state's whole IHP caseload",
@@ -162,7 +195,7 @@ class RunOptions:
     """Every knob the CLI exposes, in one place."""
 
     def __init__(self, state, cohort, nfip, deflator, cost_share=None,
-                 min_year=None, max_year=None,
+                 home_insurance=None, min_year=None, max_year=None,
                  incident_types=None, flood_declarations_only=False, disasters=None,
                  match_buffer_days=3, ihp_version=None, nfip_version=None,
                  declarations_version=None, ihp_dataset=None, nfip_dataset=None,
@@ -173,6 +206,7 @@ class RunOptions:
         self.nfip = nfip
         self.deflator = deflator
         self.cost_share = cost_share or costshare.CostShare()
+        self.home_insurance = home_insurance or analysis.HomeInsuranceOptions()
         self.min_year = min_year
         self.max_year = max_year
         # A year range applies to both sides unless the caller narrowed the
@@ -205,6 +239,8 @@ class RunOptions:
             "nfip_claim_filter": self.nfip.describe(),
             "dollars": self.deflator.label(),
             "cost_share": self.cost_share.describe(),
+            "home_insurance_cohort": (self.home_insurance.describe()
+                                      if self.home_insurance.enabled else None),
             "min_year": self.min_year,
             "max_year": self.max_year,
             "incident_types": self.incident_types,
@@ -257,10 +293,12 @@ def build(client, options):
     vocabulary = probe.sample(
         client, options.ihp_dataset, options.ihp_version,
         [ihp_schema.name("ownRent"), ihp_schema.name("floodDamage"),
-         ihp_schema.name("floodInsurance")],
+         ihp_schema.name("floodInsurance"),
+         ihp_schema.name("homeOwnersInsurance")],
         filter=datasets.ihp_state_filter(ihp_schema, options.state))
     vocabulary = {logical: vocabulary.get(ihp_schema.name(logical), None)
-                  for logical in ("ownRent", "floodDamage", "floodInsurance")}
+                  for logical in ("ownRent", "floodDamage", "floodInsurance",
+                                  "homeOwnersInsurance")}
     for logical, counter in vocabulary.items():
         progress("  %s: %s" % (logical, probe.describe(counter)))
         report.schema_notes.setdefault("ihp_values", {})[logical] = {
@@ -334,6 +372,50 @@ def build(client, options):
         ihp_records, ihp_schema, options.cohort, options.deflator,
         state=options.state, disaster_years=disaster_years,
         allowed_disasters=allowed)
+
+    # ---- uninsured homeowners ---------------------------------------------
+    if options.home_insurance.enabled:
+        if not ihp_schema.name("homeOwnersInsurance"):
+            report.warnings.append(
+                "This dataset has no homeowners-insurance field, so the "
+                "uninsured-homeowner cohort was skipped.")
+        else:
+            uninsured_filter = datasets.uninsured_owner_filter(
+                ihp_schema, options.state,
+                owner_only=options.home_insurance.owner_only,
+                vocabulary=vocabulary,
+                filter_insurance=(
+                    options.home_insurance.unknown_insurance != "uninsured"))
+            expected_ho = None
+            try:
+                expected_ho = client.count(options.ihp_dataset,
+                                           options.ihp_version, uninsured_filter)
+                progress("  %s registrations from owners with no homeowners "
+                         "insurance" % f"{expected_ho:,}")
+            except api.OpenFemaError as exc:
+                # Same recovery as the flood cohort: only a complaint about the
+                # filter is worth widening for, and the cohort is re-applied
+                # locally either way.
+                if (isinstance(exc, api.HttpError) and exc.status == 400
+                        and api.looks_like_filter_rejection(exc)):
+                    report.warnings.append(
+                        "OpenFEMA rejected the uninsured-homeowner filter; fell "
+                        "back to a state-only query and applied the cohort "
+                        "locally.")
+                    uninsured_filter = datasets.ihp_state_filter(
+                        ihp_schema, options.state)
+                else:
+                    progress("  could not pre-count uninsured homeowners (%s)" % exc)
+            progress("Fetching uninsured-homeowner registrations...")
+            ho_records = client.records(
+                options.ihp_dataset, options.ihp_version,
+                select=datasets.selected_fields(ihp_schema),
+                filter=uninsured_filter, label="uninsured homeowners",
+                expected=expected_ho)
+            report.home_insurance = analysis.aggregate_home_insurance(
+                ho_records, ihp_schema, options.home_insurance, options.deflator,
+                state=options.state, disaster_years=disaster_years,
+                allowed_disasters=allowed)
 
     # ---- context denominators ---------------------------------------------
     if not options.skip_context:

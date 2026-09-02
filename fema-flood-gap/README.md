@@ -103,6 +103,28 @@ which makes OpenFEMA scan the whole 26-million-row registration table.
 `--skip-context` drops them and the rest of the report is unaffected. Every
 response is cached, so only the first run for a state pays for them.
 
+### The uninsured-homeowner cohort
+
+A second cohort runs alongside the flood one: **owner-occupants carrying no
+homeowners insurance at all**, whether or not the damage was flood. It is
+reported split in two, because a homeowners policy excludes flood:
+
+- **Other perils** -- wind, hail, fire, a fallen tree. A homeowners policy
+  would ordinarily have paid; IHP stepped in where private cover was absent.
+  This is the half that supports "insurance should have covered this".
+- **Flood damage** -- a homeowners policy would *not* have paid. That loss
+  needed an NFIP policy, and belongs with the flood comparison instead.
+
+Presenting the blended total as an insurance gap overstates it, which is why
+the tool never shows one without both halves beside it. The cohort lands in
+its own CSV (`uninsured-homeowners.csv`) rather than as extra columns on the
+flood file, since the two overlap and must not be summed.
+
+| Flag | Effect |
+| --- | --- |
+| `--skip-home-insurance` | omit the cohort entirely |
+| `--home-insurance-unknown uninsured` | count registrations with no homeowners-insurance value as uninsured |
+
 ### State cost share
 
 Under the Stafford Act the state already funds **25% of Other Needs

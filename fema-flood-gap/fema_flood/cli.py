@@ -15,6 +15,7 @@ DEFAULT_CACHE = os.path.join(
 
 BUNDLE_FORMATS = [("report.txt", "text"), ("report.md", "md"),
                   ("report.html", "html"), ("by-declaration.csv", "csv"),
+                  ("uninsured-homeowners.csv", "home-insurance-csv"),
                   ("report.json", "json")]
 
 
@@ -129,6 +130,15 @@ def _add_report_args(parser):
     cohort.add_argument("--primary-residence-only", action="store_true",
                         help="drop registrations flagged as non-primary residences")
 
+    homeowners = parser.add_argument_group("uninsured-homeowner cohort")
+    homeowners.add_argument("--skip-home-insurance", action="store_true",
+                            help="skip the owner/no-homeowners-insurance cohort")
+    homeowners.add_argument("--home-insurance-unknown",
+                            choices=["exclude", "uninsured", "insured"],
+                            default="exclude",
+                            help="how to treat registrations with no "
+                                 "homeowners-insurance value (default: %(default)s)")
+
     nfip = parser.add_argument_group("NFIP claim selection")
     nfip.add_argument("--nfip-owner-occupied", action="store_true",
                       help="restrict claims to single-family/owner-occupied "
@@ -235,9 +245,16 @@ def build_options(args, state):
         ha_state_share=args.ha_state_share,
         include_scenarios=not args.no_scenarios)
 
+    home_insurance = analysis.HomeInsuranceOptions(
+        owner_only=not args.include_renters,
+        unknown_insurance=args.home_insurance_unknown,
+        flood_basis=args.flood_basis,
+        keep_values=keep_values,
+        enabled=not args.skip_home_insurance)
+
     return pipeline.RunOptions(
         state=state, cohort=cohort, nfip=nfip, deflator=deflator,
-        cost_share=shares,
+        cost_share=shares, home_insurance=home_insurance,
         min_year=args.min_year, max_year=args.max_year,
         incident_types=args.incident_types,
         flood_declarations_only=args.flood_declarations_only,

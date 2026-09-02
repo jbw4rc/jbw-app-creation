@@ -11,7 +11,7 @@ DECLARATION_FIELDS = {
 IHP_FIELDS = {
     "id": "text", "disasterNumber": "integer", "damagedStateAbbreviation": "text",
     "ownRent": "text", "floodDamage": "integer", "floodInsurance": "integer",
-    "ihpAmount": "number", "haAmount": "number", "onaAmount": "number",
+    "homeOwnersInsurance": "integer", "ihpAmount": "number", "haAmount": "number", "onaAmount": "number",
     "ihpEligible": "integer", "primaryResidence": "integer", "waterLevel": "number",
     "rpfvl": "number", "ppfvl": "number", "county": "text",
 }
@@ -64,28 +64,35 @@ OWNER, RENTER = "O", "R"
 
 
 def _ihp(row_id, disaster, own_rent, flood, insurance, ihp, ha, ona,
-         state="LA", water=12.0, rpfvl=0.0, ppfvl=0.0, primary=1):
+         state="LA", water=12.0, rpfvl=0.0, ppfvl=0.0, primary=1,
+         home_insurance=0):
     return {
         "id": row_id, "disasterNumber": disaster,
         "damagedStateAbbreviation": state, "ownRent": own_rent,
         "floodDamage": flood, "floodInsurance": insurance,
+        "homeOwnersInsurance": home_insurance,
         "ihpAmount": ihp, "haAmount": ha, "onaAmount": ona,
         "ihpEligible": 1 if ihp else 0, "primaryResidence": primary,
         "waterLevel": water, "rpfvl": rpfvl, "ppfvl": ppfvl, "county": "Test",
     }
 
 
-# Cohort members are r01, r02, r07, r08, r09: 5 households, $19,000 of IHP
-# ($15,000 HA + $4,000 ONA), 4 of them funded.
+# Flood cohort (owner, flood damage, no flood insurance): r01 r02 r07 r08 r09
+# -- 5 households, $19,000 of IHP ($15,000 HA + $4,000 ONA), 4 of them funded.
+#
+# Uninsured-homeowner cohort (owner, no homeowners insurance): r01 r03 r05 r07
+# r09 -- 5 households, $41,900 of IHP; $41,000 of it on flood-damaged homes a
+# homeowners policy would not have covered, $900 on other perils it would.
 IHP_RECORDS = [
     _ihp("r01", 4277, OWNER, 1, 0, 10000.0, 8000.0, 2000.0, rpfvl=30000.0, ppfvl=5000.0),
-    _ihp("r02", 4277, OWNER, 1, 0, 0.0, 0.0, 0.0, rpfvl=2000.0),
+    _ihp("r02", 4277, OWNER, 1, 0, 0.0, 0.0, 0.0, rpfvl=2000.0, home_insurance=1),
     _ihp("r03", 4277, OWNER, 1, 1, 25000.0, 25000.0, 0.0),          # insured
     _ihp("r04", 4277, RENTER, 1, 0, 4000.0, 3000.0, 1000.0),        # renter
     _ihp("r05", 4277, OWNER, 0, 0, 900.0, 0.0, 900.0, water=0.0),   # no flood damage
-    _ihp("r06", 4277, OWNER, 1, None, 7000.0, 7000.0, 0.0),         # unknown insurance
+    _ihp("r06", 4277, OWNER, 1, None, 7000.0, 7000.0, 0.0,          # unknown insurance
+         home_insurance=None),
     _ihp("r07", 1603, OWNER, 1, 0, 5000.0, 5000.0, 0.0),
-    _ihp("r08", 1603, OWNER, 1, 0, 3000.0, 1000.0, 2000.0),
+    _ihp("r08", 1603, OWNER, 1, 0, 3000.0, 1000.0, 2000.0, home_insurance=1),
     _ihp("r09", 9999, OWNER, 1, 0, 1000.0, 1000.0, 0.0),            # no declaration row
     _ihp("r10", 4277, OWNER, 1, 0, 8000.0, 8000.0, 0.0, state="TX"),
 ]

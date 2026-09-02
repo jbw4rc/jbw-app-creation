@@ -23,6 +23,8 @@ IHP_FIELDS = {
     "ownRent": ["ownRent", "ownersRenters"],
     "floodDamage": ["floodDamage", "floodDamageIndicator"],
     "floodInsurance": ["floodInsurance", "floodInsuranceIndicator"],
+    "homeOwnersInsurance": ["homeOwnersInsurance", "homeownersInsurance",
+                            "homeOwnerInsurance", "homeownersInsuranceIndicator"],
     "ihpAmount": ["ihpAmount"],
     "haAmount": ["haAmount"],
     "onaAmount": ["onaAmount"],
@@ -33,7 +35,8 @@ IHP_FIELDS = {
     "ppfvl": ["ppfvl", "personalPropertyFvl"],
     "county": ["county", "damagedCounty"],
 }
-IHP_OPTIONAL = {"ihpEligible", "primaryResidence", "waterLevel", "rpfvl", "ppfvl", "county"}
+IHP_OPTIONAL = {"ihpEligible", "primaryResidence", "waterLevel", "rpfvl", "ppfvl",
+                "county", "homeOwnersInsurance"}
 
 NFIP_FIELDS = {
     "state": ["state"],
@@ -161,6 +164,32 @@ def ihp_cohort_filter(schema, state, owner_only=True, flood_damage=True,
         if literal:
             parts.append("%s eq %s" % (schema.name("floodInsurance"), literal))
 
+    return api.and_filters(*parts)
+
+
+def uninsured_owner_filter(schema, state, owner_only=True, vocabulary=None,
+                           filter_insurance=True):
+    """Owner-occupants carrying no homeowners insurance.
+
+    A separate cohort from the flood one: it is not conditioned on flood
+    damage, because the question is what IHP paid out to households that had
+    no property insurance at all.
+    """
+    vocabulary = vocabulary or {}
+    parts = [ihp_state_filter(schema, state)]
+    if owner_only:
+        literals = _matching_literals(
+            vocabulary.get("ownRent"), lambda v: analysis.is_owner(v) is True)
+        if literals:
+            parts.append(api.or_filters(
+                *["%s eq %s" % (schema.name("ownRent"), lit) for lit in literals]))
+    # When "no value recorded" counts as uninsured, the predicate must stay
+    # off: OpenFEMA drops nulls on an equality test, so pushing it down would
+    # exclude exactly the rows the option exists to include.
+    literal = (probe.flag_literal(vocabulary.get("homeOwnersInsurance"), False)
+               if filter_insurance else None)
+    if literal and schema.name("homeOwnersInsurance"):
+        parts.append("%s eq %s" % (schema.name("homeOwnersInsurance"), literal))
     return api.and_filters(*parts)
 
 

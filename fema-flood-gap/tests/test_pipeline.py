@@ -33,10 +33,11 @@ def _vocabulary(client, schema, state="LA"):
     sampled = probe.sample(
         client, datasets.IHP_DATASET, 2,
         [schema.name("ownRent"), schema.name("floodDamage"),
-         schema.name("floodInsurance")],
+         schema.name("floodInsurance"), schema.name("homeOwnersInsurance")],
         filter=datasets.ihp_state_filter(schema, state))
     return {logical: sampled.get(schema.name(logical))
-            for logical in ("ownRent", "floodDamage", "floodInsurance")}
+            for logical in ("ownRent", "floodDamage", "floodInsurance",
+                            "homeOwnersInsurance")}
 
 
 def make_options(state="LA", **overrides):
@@ -1134,6 +1135,42 @@ class TestPageScriptArithmetic(unittest.TestCase):
     def test_cost_share_rows_survive_filtering(self):
         self.assertEqual(self.run_page("2016")["shareRows"], 4)
 
+    def test_uninsured_homeowner_cards_match_the_pipeline(self):
+        page = self.run_page()
+        home = self.real.home_insurance
+        self.assertEqual(page["hoHouseholds"],
+                         report.count(home.all.statewide.households))
+        self.assertEqual(page["hoIhpTotal"],
+                         report.money(home.all.statewide.ihp.total))
+        self.assertEqual(page["hoOther"],
+                         report.money(home.other_peril.statewide.ihp.total))
+        self.assertEqual(page["hoFlood"],
+                         report.money(home.flood_damaged.statewide.ihp.total))
+        self.assertEqual(page["hoStateShare"], report.money(
+            self.real.options.cost_share.state_cost(
+                home.all.statewide.ha.total, home.all.statewide.ona.total)))
+
+    def test_uninsured_homeowner_cards_follow_the_slider(self):
+        equivalent = pipeline.build(
+            make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))
+        page = self.run_page("2016")
+        home = equivalent.home_insurance
+        self.assertEqual(page["hoHouseholds"],
+                         report.count(home.all.statewide.households))
+        self.assertEqual(page["hoIhpTotal"],
+                         report.money(home.all.statewide.ihp.total))
+        self.assertEqual(page["hoFlood"],
+                         report.money(home.flood_damaged.statewide.ihp.total))
+        self.assertNotEqual(page["hoIhpTotal"], self.run_page()["hoIhpTotal"])
+
+    def test_uninsured_homeowner_cards_switch_dollar_basis(self):
+        nominal = self.run_page("", "toggle")
+        home = self.nominal.home_insurance
+        self.assertEqual(nominal["hoIhpTotal"],
+                         report.money(home.all.statewide.ihp.total))
+        self.assertEqual(nominal["hoOther"],
+                         report.money(home.other_peril.statewide.ihp.total))
+
     def test_nfip_note_names_the_date_field_it_filtered_on(self):
         filtered = self.run_page("2016")
         self.assertIn("date of loss from 2016 onward", filtered["note:nfipMean"])
@@ -1160,3 +1197,127 @@ class TestYearRangeAppliesToBothSides(unittest.TestCase):
         # The 2005 claims are gone from the later view.
         self.assertNotIn(2005, recent.nfip.by_year)
         self.assertIn(2005, everything.nfip.by_year)
+
+
+class TestUninsuredHomeowners(unittest.TestCase):
+    """Owner-occupants with no homeowners policy, split by whether HO applies."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.report = pipeline.build(make_client(), make_options())
+
+    def test_cohort_is_not_conditioned_on_flood_damage(self):
+        client = make_client()
+        schema = datasets.ihp_schema(client, 2)
+        query = datasets.uninsured_owner_filter(
+            schema, "LA", vocabulary=_vocabulary(client, schema))
+        self.assertIn("homeOwnersInsurance eq 0", query)
+        self.assertIn("ownRent eq 'O'", query)
+        self.assertNotIn("floodDamage", query)
+
+    def test_membership_and_totals(self):
+        home = self.report.home_insurance
+        # r01 r03 r05 r07 r09 -- r02/r08 are insured, r06 unknown, r04 a renter.
+        self.assertEqual(home.all.statewide.households, 5)
+        self.assertEqual(home.all.statewide.ihp.total, 41900.0)
+        self.assertEqual(home.all.statewide.ha.total, 39000.0)
+        self.assertEqual(home.all.statewide.ona.total, 2900.0)
+
+    def test_split_by_peril(self):
+        home = self.report.home_insurance
+        self.assertEqual(home.flood_damaged.statewide.households, 4)
+        self.assertEqual(home.flood_damaged.statewide.ihp.total, 41000.0)
+        self.assertEqual(home.other_peril.statewide.households, 1)
+        self.assertEqual(home.other_peril.statewide.ihp.total, 900.0)
+        self.assertEqual(
+            home.flood_damaged.statewide.ihp.total
+            + home.other_peril.statewide.ihp.total,
+            home.all.statewide.ihp.total)
+
+    def test_it_is_a_different_population_from_the_flood_cohort(self):
+        """The two cohorts overlap but are not the same rows; never sum them."""
+        self.assertEqual(self.report.ihp.statewide.households, 5)
+        self.assertEqual(self.report.ihp.statewide.ihp.total, 19000.0)
+        self.assertNotEqual(self.report.home_insurance.all.statewide.ihp.total,
+                            self.report.ihp.statewide.ihp.total)
+
+    def test_unknown_home_insurance_is_excluded_by_default(self):
+        self.assertEqual(self.report.home_insurance.rejections.unknown_insurance, 0)
+        widened = pipeline.build(make_client(reject_compound_filters=True),
+                                 make_options())
+        self.assertEqual(widened.home_insurance.rejections.unknown_insurance, 1)
+        self.assertEqual(widened.home_insurance.all.statewide.ihp.total, 41900.0)
+
+    def test_counting_unknown_as_uninsured_widens_it(self):
+        from fema_flood.analysis import HomeInsuranceOptions
+        widened = pipeline.build(
+            make_client(),
+            make_options(home_insurance=HomeInsuranceOptions(
+                unknown_insurance="uninsured")))
+        self.assertEqual(widened.home_insurance.all.statewide.households, 6)
+
+    def test_can_be_skipped(self):
+        from fema_flood.analysis import HomeInsuranceOptions
+        built = pipeline.build(
+            make_client(),
+            make_options(home_insurance=HomeInsuranceOptions(enabled=False)))
+        self.assertIsNone(built.home_insurance)
+
+    def test_missing_field_is_reported_not_silently_zero(self):
+        trimmed = [{k: v for k, v in row.items() if k != "homeOwnersInsurance"}
+                   for row in fixtures.IHP_RECORDS]
+        types = dict(fixtures.FIELD_TYPES)
+        types[datasets.IHP_DATASET] = {
+            k: v for k, v in fixtures.IHP_FIELDS.items()
+            if k != "homeOwnersInsurance"}
+        tables = dict(fixtures.TABLES,
+                      IndividualsAndHouseholdsProgramValidRegistrations=trimmed)
+        built = pipeline.build(FakeClient(tables, field_types=types), make_options())
+        self.assertIsNone(built.home_insurance)
+        self.assertTrue(any("no homeowners-insurance field" in w
+                            for w in built.warnings))
+
+    def test_every_format_states_the_flood_exclusion(self):
+        # The exclusion has to be stated wherever the figure appears, or the
+        # blended number reads as "insurance would have covered all of it".
+        for fmt in ("text", "md", "html"):
+            output = " ".join(report.render(self.report, fmt)
+                              .replace("&#x27;", "'").split()).lower()
+            self.assertIn("homeowners policy excludes flood", output, fmt)
+            self.assertIn("no homeowners insurance", output, fmt)
+
+    def test_text_and_markdown_carry_both_halves(self):
+        # The HTML page fills its figures in from the embedded payload, so its
+        # numbers are checked by the page-script tests, not the static markup.
+        for fmt in ("text", "md"):
+            output = report.render(self.report, fmt)
+            self.assertIn("$900", output, fmt)        # non-flood half
+            self.assertIn("$41,000", output, fmt)     # flood half
+            self.assertIn("$41,900", output, fmt)     # the cohort total
+
+    def test_dedicated_csv_keeps_the_cohorts_apart(self):
+        import csv as csv_module
+        rows = list(csv_module.reader(
+            io.StringIO(report.render(self.report, "home-insurance-csv"))))
+        self.assertTrue(all(len(r) == len(rows[0]) for r in rows))
+        total = dict(zip(rows[0], rows[-1]))
+        self.assertEqual(float(total["ihp_total"]), 41900.0)
+        self.assertEqual(float(total["other_peril_ihp_total"]), 900.0)
+        self.assertEqual(float(total["ona_state_share"]), 725.0)
+        # The flood CSV is untouched by the second cohort.
+        flood = list(csv_module.reader(io.StringIO(report.render(self.report, "csv"))))
+        self.assertEqual(float(dict(zip(flood[0], flood[-1]))["ihp_total"]), 19000.0)
+
+    def test_json_reports_both_cohorts(self):
+        payload = json.loads(report.render(self.report, "json"))
+        self.assertEqual(payload["ihp"]["statewide"]["ihp"]["total"], 19000.0)
+        home = payload["uninsured_homeowners"]
+        self.assertEqual(home["statewide"]["ihp"]["total"], 41900.0)
+        self.assertEqual(home["other_peril"]["ihp"]["total"], 900.0)
+
+    def test_page_payload_carries_the_cohort_split(self):
+        config = _page_config(report.render(self.report, "html"))
+        rows = config["payloads"]["primary"]["homeInsurance"]
+        self.assertEqual(sum(r["ihpTotal"] for r in rows), 41900.0)
+        self.assertEqual(sum(r["otherIhpTotal"] for r in rows), 900.0)
+        self.assertEqual(sum(r["floodIhpTotal"] for r in rows), 41000.0)
