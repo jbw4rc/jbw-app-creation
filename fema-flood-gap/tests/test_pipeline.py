@@ -21,6 +21,12 @@ def make_client(**kwargs):
     return FakeClient(fixtures.TABLES, **kwargs)
 
 
+def _page_config(page):
+    """The JSON the rendered page hands to its own script."""
+    blob = re.search(r'id="figures">(.*?)</script>', page, re.S).group(1)
+    return json.loads(blob.replace("<\\/", "</"))
+
+
 def _vocabulary(client, schema, state="LA"):
     """The value sample the pipeline builds its filters from."""
     from fema_flood import probe
@@ -300,9 +306,13 @@ class TestRenderers(unittest.TestCase):
     def test_html_is_self_contained(self):
         page = report.render(self.report, "html")
         self.assertTrue(page.startswith("<!doctype html>"))
-        self.assertNotIn("<script", page)
-        self.assertNotIn("http://", page.split("<style>")[0])
         self.assertIn("Louisiana", page)
+        # Inline only: no external scripts, styles, images or fonts, so the
+        # file works offline and as an email attachment.
+        self.assertNotIn("<script src", page)
+        self.assertNotIn("http://", page)
+        self.assertNotIn("https://", page)
+        self.assertNotIn("<link", page)
 
 
 class TestCli(unittest.TestCase):
@@ -897,7 +907,9 @@ class TestDollarBasisIsStated(unittest.TestCase):
 
     def test_declaration_table_repeats_the_basis(self):
         page = self._html(deflator=cpi.Deflator(2024))
-        self.assertIn("Dollar columns: constant 2024 dollars", page)
+        config = _page_config(page)
+        self.assertEqual(config["payloads"]["primary"]["basis"],
+                         "Constant 2024 dollars (CPI-U)")
 
     def test_basis_appears_in_every_text_format(self):
         for fmt, needle in (("text", "constant 2024 dollars"),
@@ -974,7 +986,7 @@ class TestStateCostShare(unittest.TestCase):
 
 
 class TestDollarBasisToggle(unittest.TestCase):
-    """The HTML page carries both bases so a reader can switch without us."""
+    """The page carries both bases so a reader can switch without a re-run."""
 
     def setUp(self):
         client = make_client()
@@ -984,37 +996,38 @@ class TestDollarBasisToggle(unittest.TestCase):
     def test_no_toggle_when_only_one_basis_is_supplied(self):
         page = report.render(self.real, "html")
         self.assertNotIn('id="toggle"', page)
-        self.assertNotIn("<script", page)
+        self.assertIn('"hasAlternate": false', page)
 
-    def test_figures_carry_both_bases(self):
+    def test_both_bases_are_embedded(self):
         page = report.render(self.real, "html", alternate=self.nominal)
-        self.assertIn('id="toggle"', page)
-        # $19,000 nominal becomes more in 2024 dollars; both must be present.
-        self.assertIn('data-primary="$26,920"', page)
-        self.assertIn('data-alt="$19,000"', page)
+        config = _page_config(page)
+        self.assertTrue(config["hasAlternate"])
+        self.assertEqual(config["primaryShortBasis"], "2024 dollars")
+        self.assertEqual(config["altShortBasis"], "nominal dollars")
+        primary = {d["dr"]: d["ihpTotal"]
+                   for d in config["payloads"]["primary"]["disasters"]}
+        alt = {d["dr"]: d["ihpTotal"]
+               for d in config["payloads"]["alt"]["disasters"]}
+        self.assertEqual(alt[1603], 8000.0)              # nominal
+        self.assertGreater(primary[1603], alt[1603])     # lifted to 2024 dollars
 
-    def test_button_labels_name_each_basis(self):
-        page = report.render(self.real, "html", alternate=self.nominal)
-        self.assertIn('data-primary-label="Show 2024 dollars"', page)
-        self.assertIn('data-alt-label="Show nominal dollars"', page)
+    def test_payload_carries_only_additive_quantities(self):
+        """Medians cannot be re-derived from sums, so they must not be shipped."""
+        config = _page_config(report.render(self.real, "html"))
+        for disaster in config["payloads"]["primary"]["disasters"]:
+            self.assertNotIn("median", " ".join(disaster).lower())
 
-    def test_badge_switches_style_with_the_basis(self):
-        page = report.render(self.real, "html", alternate=self.nominal)
-        self.assertIn('data-primary-class="real"', page)
-        self.assertIn('data-alt-class="nominal"', page)
+    def test_year_slider_is_offered_only_with_more_than_one_year(self):
+        page = report.render(self.real, "html")
+        self.assertIn('id="since"', page)
+        self.assertEqual(_page_config(page)["years"], [2005, 2016])
 
-    def test_equal_values_are_not_duplicated(self):
-        # Household counts are not money and must not become toggleable.
-        page = report.render(self.real, "html", alternate=self.nominal)
-        cards = page[page.index('class="cards"'):page.index("</section>")]
-        self.assertIn("<p class=\"value\">5</p>", cards)
+        single = pipeline.build(make_client(), make_options(min_year=2016))
+        self.assertNotIn('id="since"', report.render(single, "html"))
 
-    def test_toggle_works_from_a_nominal_primary(self):
-        page = report.render(self.nominal, "html", alternate=self.real)
-        self.assertIn('data-primary-label="Show nominal dollars"', page)
-        self.assertIn('data-alt-label="Show 2024 dollars"', page)
-        self.assertIn('data-primary="$19,000"', page)
-        self.assertIn('data-alt="$26,920"', page)
+    def test_undated_declarations_are_counted_for_the_all_years_case(self):
+        config = _page_config(report.render(self.real, "html"))
+        self.assertEqual(config["undated"], 1)           # DR 9999
 
     def test_alternate_basis_chosen_for_a_nominal_report_is_a_final_cpi_year(self):
         from fema_flood.cli import _other_basis
@@ -1031,3 +1044,82 @@ class TestDollarBasisToggle(unittest.TestCase):
             after_first = client.requests_made
             pipeline.build(client, make_options())
             self.assertEqual(client.requests_made, after_first)
+
+
+class TestPageScriptArithmetic(unittest.TestCase):
+    """Run the real page script and check it agrees with the Python.
+
+    The slider and toggle recompute totals in the browser, so the page could
+    drift from the CSV and JSON without anyone noticing. This executes the
+    shipped script against the shipped payload and compares the figures it
+    produces to the ones the pipeline computed.
+    """
+
+    HARNESS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                           "run_page_script.cjs")
+
+    @classmethod
+    def setUpClass(cls):
+        import shutil
+        if not shutil.which("node"):
+            raise unittest.SkipTest("node is not available")
+        client = make_client()
+        cls.real = pipeline.build(client, make_options(deflator=cpi.Deflator(2024)))
+        cls.nominal = pipeline.build(client, make_options())
+        cls.page = report.render(cls.real, "html", alternate=cls.nominal)
+
+    def run_page(self, *args):
+        import subprocess
+        import tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False) as fh:
+            fh.write(self.page)
+            path = fh.name
+        try:
+            result = subprocess.run(["node", self.HARNESS, path, *args],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return json.loads(result.stdout)
+        finally:
+            os.unlink(path)
+
+    def test_default_view_matches_the_server_side_figures(self):
+        page = self.run_page()
+        self.assertEqual(page["households"], report.count(
+            self.real.ihp.statewide.households))
+        self.assertEqual(page["ihpTotal"], report.money(
+            self.real.ihp.statewide.ihp.total))
+        self.assertEqual(page["ihpMean"], report.money(self.real.ihp_mean()))
+        self.assertEqual(page["nfipMean"], report.money(self.real.nfip_mean()))
+        self.assertEqual(page["gap"], report.money(self.real.gap_per_household()))
+        self.assertEqual(page["aggregateGap"], report.money(self.real.aggregate_gap()))
+        self.assertEqual(page["stateShare"], report.money(
+            self.real.state_cost_share()))
+
+    def test_toggling_reproduces_the_nominal_report(self):
+        page = self.run_page("", "toggle")
+        self.assertEqual(page["ihpTotal"], report.money(
+            self.nominal.ihp.statewide.ihp.total))
+        self.assertEqual(page["gap"], report.money(self.nominal.gap_per_household()))
+        self.assertIn("Nominal dollars", page["basis"])
+
+    def test_year_filter_matches_a_pipeline_run_with_the_same_cutoff(self):
+        """The slider must agree with `--since`, not merely look plausible."""
+        page = self.run_page("2016")
+        equivalent = pipeline.build(
+            make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))
+        self.assertEqual(page["households"],
+                         report.count(equivalent.ihp.statewide.households))
+        self.assertEqual(page["ihpTotal"],
+                         report.money(equivalent.ihp.statewide.ihp.total))
+        self.assertEqual(page["ihpMean"], report.money(equivalent.ihp_mean()))
+        self.assertEqual(page["stateShare"],
+                         report.money(equivalent.state_cost_share()))
+        self.assertEqual(page["tableRows"], 1)
+        self.assertEqual(page["sinceLabel"], "2016")
+
+    def test_filtered_caption_says_what_is_shown(self):
+        self.assertIn("declarations from 2016 onward", self.run_page("2016")["caption"])
+        self.assertIn("no declaration date", self.run_page()["caption"])
+
+    def test_cost_share_rows_survive_filtering(self):
+        self.assertEqual(self.run_page("2016")["shareRows"], 4)

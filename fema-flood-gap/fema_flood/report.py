@@ -360,20 +360,6 @@ def _num(value, digits=2):
 
 # ---------------------------------------------------------------------- html
 
-def _amount(primary, alternate=None):
-    """A figure that can be shown on either dollar basis.
-
-    Both values are baked into the page so the toggle is instant and the file
-    stays self-contained -- no recomputation, no network, works from a
-    downloaded copy or an email attachment.
-    """
-    text = html.escape(primary)
-    if alternate is None or alternate == primary:
-        return text
-    return ('<span class="amt" data-primary="%s" data-alt="%s">%s</span>'
-            % (html.escape(primary), html.escape(alternate), text))
-
-
 def _basis_text(deflator):
     if deflator is None:
         return "Nominal dollars"
@@ -386,200 +372,381 @@ def _basis_text(deflator):
             "different years are not comparable")
 
 
-def render_html(report, limit=40, alternate=None):
-    """Render the page, optionally carrying a second dollar basis.
-
-    ``alternate`` is the same report aggregated on the other basis (nominal vs
-    constant dollars). When present, every figure carries both and a toggle
-    switches the page between them.
-    """
-    e = html.escape
-    stats = report.ihp.statewide
-    rows = report.disaster_rows(report.options.sort, limit)
-    alt_rows = {}
-    alt_stats = None
-    if alternate is not None:
-        alt_stats = alternate.ihp.statewide
-        alt_rows = {r["disaster"]: r
-                    for r in alternate.disaster_rows(alternate.options.sort)}
-
-    def alt_money(getter, default=None):
-        if alternate is None:
-            return None
-        try:
-            return money(getter())
-        except (AttributeError, TypeError, KeyError):
-            return default
-
-    cards = [
-        ("Uninsured flooded owner households", count(stats.households), None,
-         "registrations with FEMA-verified flood damage and no flood insurance"),
-        ("Total FEMA IHP paid to them", money(stats.ihp.total),
-         alt_money(lambda: alt_stats.ihp.total),
-         "HA %s + ONA %s" % (money(stats.ha.total), money(stats.ona.total))),
-        ("Average IHP per household", money(stats.ihp.mean),
-         alt_money(lambda: alt_stats.ihp.mean),
-         "%s per household that received an award" % money(stats.ihp.mean_positive)),
-        ("Average paid NFIP claim", money(report.nfip_mean()),
-         alt_money(lambda: alternate.nfip_mean()),
-         "across %s paid claims in the state"
-         % count(report.nfip.paid.n_positive if report.nfip else None)),
-        ("State's share of that ONA", money(report.state_cost_share()),
-         alt_money(lambda: alternate.state_cost_share()),
-         "already owed under the 75/25 split on Other Needs Assistance"),
-        ("Difference per household", money(report.gap_per_household()),
-         alt_money(lambda: alternate.gap_per_household()),
-         "insurance payout minus disaster aid"),
-        ("Aggregate difference", money(report.aggregate_gap()),
-         alt_money(lambda: alternate.aggregate_gap()),
-         "difference per household across the whole cohort"),
-    ]
-
-    deflator = report.options.deflator
-    basis_text = _basis_text(deflator)
-    basis_class = "real" if deflator.active else "nominal"
-    alt_basis = _basis_text(alternate.options.deflator) if alternate else None
-
-    body = [
-        "<header><p class=\"eyebrow\">OpenFEMA analysis</p>",
-        "<h1>%s: what flood aid paid, what insurance would have</h1>" % e(report.state_name),
-        "<div class=\"basisrow\">",
-        "<p class=\"basis %s\" id=\"basis\" data-primary=\"%s\" data-alt=\"%s\" "
-        "data-primary-class=\"%s\" data-alt-class=\"%s\">%s</p>"
-        % (basis_class, e(basis_text), e(alt_basis or basis_text), basis_class,
-           "real" if (alternate and alternate.options.deflator.active) else "nominal",
-           e(basis_text)),
-    ]
-    if alternate is not None:
-        body.append(
-            "<button type=\"button\" id=\"toggle\" "
-            "data-primary-label=\"%s\" data-alt-label=\"%s\">%s</button>"
-            % (e("Show %s" % _short_basis(report.options.deflator)),
-               e("Show %s" % _short_basis(alternate.options.deflator)),
-               e("Show %s" % _short_basis(alternate.options.deflator))))
-    body.append("</div>")
-    body.extend([
-        "<p class=\"lede\">%s</p>" % e(headline(report)),
-        "<p class=\"meta\">Generated %s &middot; Cohort: %s</p></header>"
-        % (e(report.generated), e(report.options.cohort.describe())),
-        "<section class=\"cards\">",
-    ])
-    for label, value, alt_value, note in cards:
-        body.append(
-            "<div class=\"card\"><p class=\"label\">%s</p><p class=\"value\">%s</p>"
-            "<p class=\"note\">%s</p></div>"
-            % (e(label), _amount(value, alt_value), e(note)))
-    body.append("</section>")
-
-    share_rows = report.cost_share_table()
-    alt_share = {r["key"]: r for r in (alternate.cost_share_table()
-                                       if alternate else [])}
-    if share_rows:
-        body.append("<section><h2>What the state already pays</h2>"
-                    "<p class=\"caption\">%s</p><div class=\"scroll\"><table>"
-                    % e("Scope: the non-federal share of ONA paid to this cohort, "
-                        "not the state's whole IHP caseload."))
-        body.append("<thead><tr><th>Funding arrangement</th>"
-                    "<th class=\"n\">State cost</th><th class=\"n\">vs. today</th>"
-                    "</tr></thead><tbody>")
-        for row in share_rows:
-            today = row["key"] == "today"
-            other = alt_share.get(row["key"])
-            body.append(
-                "<tr%s><td>%s%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td></tr>"
-                % (' class="today"' if today else "", e(row["label"]),
-                   "" if not row.get("note") else
-                   " <span class=\"sub\">%s</span>" % e(row["note"]),
-                   _amount(money(row["state_cost"]),
-                           money(other["state_cost"]) if other else None),
-                   "&mdash;" if today
-                   else ("%.1f&times;" % row["multiple_of_today"]
-                         if row.get("multiple_of_today") else "n/a")))
-        body.append("</tbody></table></div>"
-                    "<p class=\"caption\">%s</p></section>" % e(COST_SHARE_NOTE))
-
-    if rows:
-        body.append("<section><h2>By declaration</h2>"
-                    "<p class=\"caption\" id=\"tablebasis\" data-primary=\"%s\" "
-                    "data-alt=\"%s\">%s</p><div class=\"scroll\"><table>"
-                    % (e("Dollar columns: %s." % basis_text.lower()),
-                       e("Dollar columns: %s." % (alt_basis or basis_text).lower()),
-                       e("Dollar columns: %s." % basis_text.lower())))
-        body.append(
-            "<thead><tr><th>DR</th><th>Disaster</th><th class=\"n\">Year</th>"
-            "<th class=\"n\">Households</th><th class=\"n\">IHP total</th>"
-            "<th class=\"n\">Avg IHP</th><th class=\"n\">HA total</th>"
-            "<th class=\"n\">ONA total</th><th class=\"n\">State ONA share</th>"
-            "<th class=\"n\">NFIP claims</th>"
-            "<th class=\"n\">Avg NFIP paid</th><th class=\"n\">Gap / household</th>"
-            "</tr></thead><tbody>")
-        for row in rows:
-            other = alt_rows.get(row["disaster"], {})
-
-            def pair(key):
-                return _amount(money(row[key]),
-                               money(other[key]) if key in other else None)
-
-            body.append(
-                "<tr><td>%s</td><td>%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td>"
-                "<td class=\"n\">%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td>"
-                "<td class=\"n\">%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td>"
-                "<td class=\"n\">%s</td><td class=\"n\">%s</td></tr>" % (
-                    e(str(row["disaster"])), e(str(row["title"])), row["year"] or "",
-                    count(row["households"]), pair("ihp_total"), pair("ihp_mean"),
-                    pair("ha_total"), pair("ona_total"), pair("ona_state_share"),
-                    count(row["nfip_claims"]), pair("nfip_mean_paid"),
-                    pair("gap_per_household")))
-        body.append("</tbody></table></div></section>")
-
-    if report.warnings:
-        body.append("<section><h2>Notes</h2><ul>")
-        body.extend("<li>%s</li>" % e(warning) for warning in report.warnings)
-        body.append("</ul></section>")
-    body.append("<footer><p>%s</p><p>%s</p></footer>"
-                % (e(basis_text + "."), e(CAVEATS)))
-
-    return HTML_TEMPLATE % {
-        "title": e("%s flood aid vs. NFIP" % report.state_name),
-        "body": "\n".join(body),
-        "script": TOGGLE_SCRIPT if alternate is not None else "",
-    }
-
-
 def _short_basis(deflator):
     if deflator is not None and deflator.active:
         return "%d dollars" % deflator.base_year
     return "nominal dollars"
 
 
-TOGGLE_SCRIPT = """
+def page_payload(report):
+    """Everything the page needs to recompute totals for a year range.
+
+    Only additive quantities travel: counts and sums per declaration, and NFIP
+    claim aggregates per year of loss. Anything that cannot be re-derived from
+    those -- medians, percentiles -- is deliberately absent rather than
+    approximated, so no filtered view can show a number the data cannot
+    support.
+    """
+    share = report.options.cost_share
+    disasters = []
+    for row in report.disaster_rows(sort="disaster"):
+        disasters.append({
+            "dr": row["disaster"],
+            "title": row["title"],
+            "year": row["year"],
+            "households": row["households"],
+            "ihpTotal": row["ihp_total"],
+            "ihpPaid": row["ihp_paid_households"],
+            "haTotal": row["ha_total"],
+            "onaTotal": row["ona_total"],
+            "nfipClaims": row["nfip_claims"],
+            "nfipPaidClaims": row["nfip_paid_claims"],
+            "nfipTotal": row["nfip_total"] or 0.0,
+        })
+
+    by_year = {}
+    if report.nfip:
+        for year, acc in report.nfip.by_year.items():
+            by_year[str(year)] = {"claims": acc.n, "paidClaims": acc.n_positive,
+                                  "total": round(acc.total, 2),
+                                  "paidTotal": round(acc.total_positive, 2)}
+
+    return {
+        "basis": _basis_text(report.options.deflator),
+        "basisClass": "real" if report.options.deflator.active else "nominal",
+        "shortBasis": _short_basis(report.options.deflator),
+        "disasters": disasters,
+        "nfipByYear": by_year,
+        "scenarios": [{"key": s.key, "label": s.label, "note": s.note,
+                       "ona": s.ona_share, "ha": s.ha_share}
+                      for s in share.scenarios()],
+        "stateName": report.state_name,
+    }
+
+
+CARD_SPECS = [
+    ("households", "Uninsured flooded owner households",
+     "registrations with FEMA-verified flood damage and no flood insurance"),
+    ("ihpTotal", "Total FEMA IHP paid to them", "Housing Assistance plus Other Needs"),
+    ("ihpMean", "Average IHP per household", "across every household in the cohort"),
+    ("nfipMean", "Average paid NFIP claim", "per claim closed with a payment"),
+    ("stateShare", "State's share of that ONA",
+     "owed under the 75/25 split on Other Needs Assistance"),
+    ("gap", "Difference per household", "insurance payout minus disaster aid"),
+    ("aggregateGap", "Aggregate difference", "difference per household, across the cohort"),
+]
+
+
+def render_html(report, limit=40, alternate=None):
+    """Render the page. Filtering and the dollar basis are handled in-page.
+
+    Both dollar bases and the per-declaration detail are embedded, so the year
+    slider and the basis toggle recompute locally: the file stays one
+    self-contained document that works from an email attachment with no
+    network and no re-run.
+    """
+    e = html.escape
+    payloads = {"primary": page_payload(report)}
+    if alternate is not None:
+        payloads["alt"] = page_payload(alternate)
+
+    years = sorted({d["year"] for d in payloads["primary"]["disasters"] if d["year"]})
+    undated = sum(1 for d in payloads["primary"]["disasters"] if not d["year"])
+    basis_text = _basis_text(report.options.deflator)
+    basis_class = "real" if report.options.deflator.active else "nominal"
+
+    controls = ["<div class=\"controls\">",
+                "<p class=\"basis %s\" id=\"basis\">%s</p>"
+                % (basis_class, e(basis_text))]
+    if alternate is not None:
+        controls.append(
+            "<button type=\"button\" id=\"toggle\">%s</button>"
+            % e("Show %s" % _short_basis(alternate.options.deflator)))
+    if len(years) > 1:
+        controls.append(
+            "<div class=\"slider\"><label for=\"since\">Include disasters from</label>"
+            "<input type=\"range\" id=\"since\" min=\"%d\" max=\"%d\" value=\"%d\" "
+            "step=\"1\" list=\"yearticks\"><output id=\"sincelabel\">%s</output>"
+            "<button type=\"button\" id=\"resetyears\" class=\"link\">reset</button>"
+            "</div>" % (years[0], years[-1], years[0], e("all years")))
+        controls.append("<datalist id=\"yearticks\">%s</datalist>"
+                        % "".join("<option value=\"%d\"></option>" % y for y in years))
+    controls.append("</div>")
+
+    body = [
+        "<header><p class=\"eyebrow\">OpenFEMA analysis</p>",
+        "<h1>%s: what flood aid paid, what insurance would have</h1>" % e(report.state_name),
+        "".join(controls),
+        "<p class=\"lede\" id=\"lede\">%s</p>" % e(headline(report)),
+        "<p class=\"meta\">Generated %s &middot; Cohort: %s</p></header>"
+        % (e(report.generated), e(report.options.cohort.describe())),
+        "<section class=\"cards\" id=\"cards\">",
+    ]
+    for key, label, note in CARD_SPECS:
+        body.append(
+            "<div class=\"card\"><p class=\"label\">%s</p>"
+            "<p class=\"value\" data-card=\"%s\">-</p>"
+            "<p class=\"note\" data-note=\"%s\">%s</p></div>"
+            % (e(label), key, key, e(note)))
+    body.append("</section>")
+
+    body.append(
+        "<section><h2>State cost share: current law and alternatives</h2>"
+        "<p class=\"caption\">%s</p><div class=\"scroll\"><table>"
+        "<thead><tr><th>Funding arrangement</th><th class=\"n\">State cost</th>"
+        "<th class=\"n\">vs. today</th></tr></thead>"
+        "<tbody id=\"sharebody\"></tbody></table></div>"
+        "<p class=\"caption\">%s</p></section>"
+        % (e("Only the first row is current law. Scope: the non-federal share of "
+             "ONA paid to this cohort, not the state's whole IHP caseload."),
+           e(COST_SHARE_NOTE)))
+
+    body.append(
+        "<section><h2>By declaration</h2>"
+        "<p class=\"caption\" id=\"tablecaption\"></p><div class=\"scroll\"><table>"
+        "<thead><tr><th>DR</th><th>Disaster</th><th class=\"n\">Year</th>"
+        "<th class=\"n\">Households</th><th class=\"n\">IHP total</th>"
+        "<th class=\"n\">Avg IHP</th><th class=\"n\">HA total</th>"
+        "<th class=\"n\">ONA total</th><th class=\"n\">State ONA share</th>"
+        "<th class=\"n\">NFIP claims</th><th class=\"n\">Avg NFIP paid</th>"
+        "<th class=\"n\">Gap / household</th></tr></thead>"
+        "<tbody id=\"tablebody\"></tbody></table></div></section>")
+
+    if report.warnings:
+        body.append("<section><h2>Notes</h2><ul>")
+        body.extend("<li>%s</li>" % e(warning) for warning in report.warnings)
+        body.append("</ul></section>")
+    body.append("<footer><p id=\"footerbasis\">%s</p><p>%s</p></footer>"
+                % (e(basis_text + "."), e(CAVEATS)))
+
+    config = {
+        "payloads": payloads,
+        "hasAlternate": alternate is not None,
+        "altShortBasis": (_short_basis(alternate.options.deflator)
+                          if alternate else None),
+        "primaryShortBasis": _short_basis(report.options.deflator),
+        "years": years,
+        "undated": undated,
+        "limit": limit,
+    }
+    blob = json.dumps(config).replace("</", "<\\/")
+
+    return HTML_TEMPLATE % {
+        "title": e("%s flood aid vs. NFIP" % report.state_name),
+        "body": "\n".join(body),
+        "script": ("<script type=\"application/json\" id=\"figures\">%s</script>\n%s"
+                   % (blob, PAGE_SCRIPT)),
+    }
+
+
+PAGE_SCRIPT = """
 <script>
 (function () {
-  var button = document.getElementById('toggle');
-  if (!button) return;
+  var config = JSON.parse(document.getElementById('figures').textContent);
   var showingPrimary = true;
-  function swap(node, key) {
-    var value = node.getAttribute('data-' + key);
-    if (value !== null) node.textContent = value;
+  var since = config.years.length ? config.years[0] : null;
+
+  function money(value) {
+    if (value === null || value === undefined || isNaN(value)) return 'n/a';
+    var rounded = Math.round(value);
+    return (rounded < 0 ? '-$' : '$') +
+      Math.abs(rounded).toLocaleString('en-US');
   }
-  button.addEventListener('click', function () {
-    showingPrimary = !showingPrimary;
-    var key = showingPrimary ? 'primary' : 'alt';
-    document.querySelectorAll('.amt').forEach(function (node) {
-      swap(node, key);
+  function count(value) {
+    return value === null || value === undefined
+      ? 'n/a' : Math.round(value).toLocaleString('en-US');
+  }
+
+  function activePayload() {
+    return showingPrimary || !config.hasAlternate
+      ? config.payloads.primary : config.payloads.alt;
+  }
+
+  /* All years means "no filter", which is the only setting that can include
+     declarations with no date -- they cannot be placed on the timeline. */
+  function showingAllYears() {
+    return !config.years.length || since === config.years[0];
+  }
+
+  function selectedDisasters(payload) {
+    if (showingAllYears()) return payload.disasters;
+    return payload.disasters.filter(function (d) {
+      return d.year && d.year >= since;
     });
-    ['basis', 'tablebasis'].forEach(function (id) {
-      var node = document.getElementById(id);
-      if (node) swap(node, key);
+  }
+
+  function nfipForRange(payload) {
+    var claims = 0, paidClaims = 0, paidTotal = 0;
+    Object.keys(payload.nfipByYear).forEach(function (year) {
+      if (!showingAllYears() && Number(year) < since) return;
+      var row = payload.nfipByYear[year];
+      claims += row.claims;
+      paidClaims += row.paidClaims;
+      paidTotal += row.paidTotal;
     });
-    var basis = document.getElementById('basis');
-    if (basis) {
-      basis.className = 'basis ' + (basis.getAttribute(
-        'data-' + key + '-class') || '');
+    return {claims: claims, paidClaims: paidClaims, paidTotal: paidTotal,
+            mean: paidClaims ? paidTotal / paidClaims : null};
+  }
+
+  function totals(payload) {
+    var rows = selectedDisasters(payload);
+    var sum = {households: 0, ihpTotal: 0, ihpPaid: 0, haTotal: 0, onaTotal: 0};
+    rows.forEach(function (d) {
+      sum.households += d.households;
+      sum.ihpTotal += d.ihpTotal;
+      sum.ihpPaid += d.ihpPaid;
+      sum.haTotal += d.haTotal;
+      sum.onaTotal += d.onaTotal;
+    });
+    var nfip = nfipForRange(payload);
+    var today = payload.scenarios[0];
+    sum.rows = rows;
+    sum.nfip = nfip;
+    sum.ihpMean = sum.households ? sum.ihpTotal / sum.households : null;
+    sum.nfipMean = nfip.mean;
+    sum.stateShare = sum.onaTotal * today.ona + sum.haTotal * today.ha;
+    sum.gap = (nfip.mean === null || sum.ihpMean === null)
+      ? null : nfip.mean - sum.ihpMean;
+    sum.aggregateGap = sum.gap === null ? null : sum.gap * sum.households;
+    return sum;
+  }
+
+  function shareFor(scenario, sum) {
+    return sum.onaTotal * scenario.ona + sum.haTotal * scenario.ha;
+  }
+
+  function renderCards(sum) {
+    var values = {
+      households: count(sum.households),
+      ihpTotal: money(sum.ihpTotal),
+      ihpMean: money(sum.ihpMean),
+      nfipMean: money(sum.nfipMean),
+      stateShare: money(sum.stateShare),
+      gap: money(sum.gap),
+      aggregateGap: money(sum.aggregateGap)
+    };
+    var notes = {
+      ihpTotal: 'HA ' + money(sum.haTotal) + ' + ONA ' + money(sum.onaTotal),
+      nfipMean: 'across ' + count(sum.nfip.paidClaims) + ' paid claims',
+      ihpMean: count(sum.ihpPaid) + ' of ' + count(sum.households) +
+        ' households received an award'
+    };
+    document.querySelectorAll('[data-card]').forEach(function (node) {
+      node.textContent = values[node.getAttribute('data-card')];
+    });
+    document.querySelectorAll('[data-note]').forEach(function (node) {
+      var key = node.getAttribute('data-note');
+      if (notes[key]) node.textContent = notes[key];
+    });
+  }
+
+  function renderShare(payload, sum) {
+    var baseline = shareFor(payload.scenarios[0], sum);
+    document.getElementById('sharebody').innerHTML =
+      payload.scenarios.map(function (scenario, index) {
+        var cost = shareFor(scenario, sum);
+        var multiple = index === 0 ? '&mdash;'
+          : (baseline ? (cost / baseline).toFixed(1) + '&times;' : 'n/a');
+        return '<tr' + (index === 0 ? ' class="today"' : '') + '><td>' +
+          scenario.label +
+          (scenario.note ? ' <span class="sub">' + scenario.note + '</span>' : '') +
+          '</td><td class="n">' + money(cost) + '</td>' +
+          '<td class="n">' + multiple + '</td></tr>';
+      }).join('');
+  }
+
+  function renderTable(payload, sum) {
+    var rows = sum.rows.slice().sort(function (a, b) {
+      return b.ihpTotal - a.ihpTotal;
+    }).slice(0, config.limit);
+    var today = payload.scenarios[0];
+    document.getElementById('tablebody').innerHTML = rows.map(function (d) {
+      var mean = d.households ? d.ihpTotal / d.households : null;
+      var nfipMean = d.nfipPaidClaims ? d.nfipTotal / d.nfipPaidClaims : null;
+      var gap = (nfipMean === null || mean === null) ? null : nfipMean - mean;
+      return '<tr><td>' + d.dr + '</td><td>' + d.title + '</td>' +
+        '<td class="n">' + (d.year || '') + '</td>' +
+        '<td class="n">' + count(d.households) + '</td>' +
+        '<td class="n">' + money(d.ihpTotal) + '</td>' +
+        '<td class="n">' + money(mean) + '</td>' +
+        '<td class="n">' + money(d.haTotal) + '</td>' +
+        '<td class="n">' + money(d.onaTotal) + '</td>' +
+        '<td class="n">' + money(d.onaTotal * today.ona + d.haTotal * today.ha) + '</td>' +
+        '<td class="n">' + count(d.nfipClaims) + '</td>' +
+        '<td class="n">' + money(nfipMean) + '</td>' +
+        '<td class="n">' + money(gap) + '</td></tr>';
+    }).join('');
+
+    var scope = showingAllYears()
+      ? 'All ' + count(sum.rows.length) + ' declarations'
+      : count(sum.rows.length) + ' declarations from ' + since + ' onward';
+    var note = '';
+    if (showingAllYears() && config.undated) {
+      note = ', including ' + count(config.undated) +
+        ' with no declaration date (excluded once a start year is set)';
     }
-    button.textContent = button.getAttribute(
-      showingPrimary ? 'data-alt-label' : 'data-primary-label');
-  });
+    document.getElementById('tablecaption').textContent =
+      scope + note + '. Dollar columns: ' +
+      payload.basis.toLowerCase().split(' - ')[0] + '.';
+  }
+
+  function renderLede(payload, sum) {
+    var span = showingAllYears() ? '' : ' since ' + since;
+    var text = count(sum.households) + ' owner-occupant households in ' +
+      payload.stateName + ' reported flood damage without flood insurance' +
+      span + ', across ' + count(sum.rows.length) + ' disasters. FEMA paid ' +
+      'them ' + money(sum.ihpTotal) + ' through the Individuals and Households ' +
+      'Program, an average of ' + money(sum.ihpMean) + ' per household.';
+    if (sum.nfipMean !== null) {
+      text += ' The average paid NFIP claim over the same period was ' +
+        money(sum.nfipMean) + ' - a difference of ' + money(sum.gap) +
+        ' per household, or ' + money(sum.aggregateGap) + ' across the cohort.';
+    }
+    document.getElementById('lede').textContent = text;
+  }
+
+  function render() {
+    var payload = activePayload();
+    var sum = totals(payload);
+    renderCards(sum);
+    renderShare(payload, sum);
+    renderTable(payload, sum);
+    renderLede(payload, sum);
+
+    var basis = document.getElementById('basis');
+    basis.textContent = payload.basis;
+    basis.className = 'basis ' + payload.basisClass;
+    document.getElementById('footerbasis').textContent = payload.basis + '.';
+
+    var toggle = document.getElementById('toggle');
+    if (toggle) {
+      toggle.textContent = 'Show ' + (showingPrimary
+        ? config.altShortBasis : config.primaryShortBasis);
+    }
+    var label = document.getElementById('sincelabel');
+    if (label) label.textContent = showingAllYears() ? 'all years' : since;
+  }
+
+  var toggle = document.getElementById('toggle');
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      showingPrimary = !showingPrimary;
+      render();
+    });
+  }
+  var slider = document.getElementById('since');
+  if (slider) {
+    slider.addEventListener('input', function () {
+      since = Number(slider.value);
+      render();
+    });
+    document.getElementById('resetyears').addEventListener('click', function () {
+      since = config.years[0];
+      slider.value = since;
+      render();
+    });
+  }
+  render();
 })();
 </script>
 """
@@ -610,14 +777,20 @@ font-size:13px;font-weight:600;border:1px solid transparent}
 .basis.real{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
 .basis.nominal{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
 .caption{margin:0 0 10px;font-size:13px;color:var(--muted);max-width:80ch}
-.basisrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.basisrow .basis{margin:0}
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.controls .basis{margin:0}
+.slider{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.slider input[type=range]{width:200px;accent-color:var(--accent)}
+.slider output{font-weight:650;color:var(--ink);font-variant-numeric:tabular-nums;
+min-width:5.5ch}
+button.link{background:none;border:0;padding:0;font:inherit;font-size:13px;
+color:var(--accent);cursor:pointer;text-decoration:underline}
 #toggle{font:inherit;font-size:13px;font-weight:600;padding:6px 14px;
 border-radius:999px;border:1px solid var(--line);background:var(--panel);
 color:var(--ink);cursor:pointer}
 #toggle:hover{border-color:var(--accent);color:var(--accent)}
 #toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-@media print{#toggle{display:none}}
+@media print{#toggle,.slider,button.link{display:none}}
 tr.today td{background:var(--accent-soft);font-weight:600}
 .sub{display:block;font-weight:400;font-size:12px;color:var(--muted);
 white-space:normal;max-width:44ch}

@@ -132,7 +132,13 @@ it everything is nominal — fine for a single event, misleading across decades.
 
 The HTML page carries **both** bases and a button switches between them, so a
 reader can check whether a figure survives inflation adjustment without
-asking you to re-run anything. The badge under the headline always names the
+asking you to re-run anything. It also carries a **year slider**: one very
+large old disaster (Katrina in the Gulf states) can dominate a state's whole
+history, and dragging the start year forward shows whether the finding holds
+without it. Everything recomputes in the page -- cards, both tables, the
+summary sentence -- from per-declaration and per-year figures embedded in the
+file. Only additive quantities are embedded, so a filtered view can never
+show a median or percentile the data cannot support. The badge under the headline always names the
 basis currently shown, and an unadjusted view is styled as a warning. The
 second basis is computed from the same cached responses, so it costs no extra
 requests; `--no-toggle` omits it.
@@ -226,6 +232,12 @@ report states, and you should too:
 ```bash
 python3 -m unittest discover -s tests
 ```
+
+If `node` is present the suite also executes the shipped page script against
+the shipped payload under a small DOM shim, and checks that the slider and
+toggle produce the same figures the pipeline does -- filtering to a year in
+the page must equal a fresh run with `--since` on that year. Otherwise the
+page could drift from the CSV and JSON with nothing to catch it.
 
 The suite runs the real client, filter construction, paging, schema
 resolution, aggregation, and every renderer against an in-memory fake of the
