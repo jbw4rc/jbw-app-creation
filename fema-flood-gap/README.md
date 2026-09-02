@@ -103,12 +103,39 @@ which makes OpenFEMA scan the whole 26-million-row registration table.
 `--skip-context` drops them and the rest of the report is unaffected. Every
 response is cached, so only the first run for a state pays for them.
 
+### State cost share
+
+Under the Stafford Act the state already funds **25% of Other Needs
+Assistance** (sec. 408(g), 42 U.S.C. 5174(g)); Housing Assistance under
+sec. 408(c) is **100% federal**. The report shows what that quarter came to
+for this cohort, per declaration and statewide, alongside what the same
+historical caseload would have cost the state under other terms -- a higher
+ONA share, cost sharing extended to HA, or IHP withdrawn entirely. Those are
+illustrations, not forecasts, and none is an enacted proposal.
+
+Scope matters and the report says so on every surface: this is the
+non-federal share of ONA paid to *this cohort*, not the state's whole IHP
+caseload.
+
+| Flag | Effect |
+| --- | --- |
+| `--ona-state-share 0.5` | model a different non-federal ONA share |
+| `--ha-state-share 0.25` | model cost sharing extended to Housing Assistance |
+| `--no-scenarios` | show only the current split |
+
 ### Dollars
 
 `--adjust-to 2025` restates every amount in one year's dollars using a built-in
 CPI-U table, so a 2005 Katrina award and a 2021 claim are comparable. Without
 it everything is nominal — fine for a single event, misleading across decades.
 `--cpi-file table.json` substitutes your own deflator.
+
+The HTML page carries **both** bases and a button switches between them, so a
+reader can check whether a figure survives inflation adjustment without
+asking you to re-run anything. The badge under the headline always names the
+basis currently shown, and an unadjusted view is styled as a warning. The
+second basis is computed from the same cached responses, so it costs no extra
+requests; `--no-toggle` omits it.
 
 ## How it works
 

@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import re
@@ -883,7 +884,7 @@ class TestDollarBasisIsStated(unittest.TestCase):
     def test_adjusted_page_names_the_base_year(self):
         page = self._html(deflator=cpi.Deflator(2024))
         self.assertIn('class="basis real"', page)
-        self.assertIn("constant 2024 dollars", page)
+        self.assertIn("Constant 2024 dollars", page)
         self.assertNotIn("NOT adjusted", page)
 
     def test_unadjusted_page_says_so_prominently(self):
@@ -896,7 +897,7 @@ class TestDollarBasisIsStated(unittest.TestCase):
 
     def test_declaration_table_repeats_the_basis(self):
         page = self._html(deflator=cpi.Deflator(2024))
-        self.assertIn("Dollar columns: all figures in constant 2024 dollars", page)
+        self.assertIn("Dollar columns: constant 2024 dollars", page)
 
     def test_basis_appears_in_every_text_format(self):
         for fmt, needle in (("text", "constant 2024 dollars"),
@@ -904,3 +905,129 @@ class TestDollarBasisIsStated(unittest.TestCase):
             built = pipeline.build(make_client(),
                                    make_options(deflator=cpi.Deflator(2024)))
             self.assertIn(needle, report.render(built, fmt), fmt)
+
+
+class TestStateCostShare(unittest.TestCase):
+    """ONA carries a 25% non-federal share; HA is fully federal."""
+
+    def setUp(self):
+        self.report = pipeline.build(make_client(), make_options())
+
+    def test_baseline_is_a_quarter_of_ona_and_none_of_ha(self):
+        stats = self.report.ihp.statewide
+        self.assertEqual(stats.ona.total, 4000.0)
+        self.assertEqual(stats.ha.total, 15000.0)
+        self.assertAlmostEqual(self.report.state_cost_share(), 1000.0)
+
+    def test_scenarios_scale_from_the_baseline(self):
+        rows = {row["key"]: row for row in self.report.cost_share_table()}
+        self.assertAlmostEqual(rows["today"]["state_cost"], 1000.0)
+        self.assertAlmostEqual(rows["ona_50"]["state_cost"], 2000.0)
+        self.assertAlmostEqual(rows["ona_50"]["multiple_of_today"], 2.0)
+        # HA matched at 25% adds a quarter of the much larger HA total.
+        self.assertAlmostEqual(rows["ha_matched"]["state_cost"], 1000.0 + 3750.0)
+        # Withdrawal puts the entire IHP award on the state.
+        self.assertAlmostEqual(rows["no_ihp"]["state_cost"], 19000.0)
+
+    def test_per_disaster_share_sums_to_the_statewide_share(self):
+        rows = self.report.disaster_rows()
+        self.assertAlmostEqual(sum(r["ona_state_share"] for r in rows),
+                               self.report.state_cost_share())
+
+    def test_custom_share_is_marked_non_statutory(self):
+        from fema_flood.costshare import CostShare
+        custom = CostShare(ona_state_share=0.4)
+        self.assertFalse(custom.is_statutory)
+        self.assertIn("non-statutory", custom.describe())
+        report_ = pipeline.build(make_client(),
+                                 make_options(cost_share=custom))
+        self.assertAlmostEqual(report_.state_cost_share(), 1600.0)
+
+    def test_scenarios_can_be_suppressed(self):
+        from fema_flood.costshare import CostShare
+        built = pipeline.build(
+            make_client(),
+            make_options(cost_share=CostShare(include_scenarios=False)))
+        self.assertEqual([r["key"] for r in built.cost_share_table()], ["today"])
+
+    def test_every_format_states_the_share_and_its_scope(self):
+        for fmt in ("text", "md", "html"):
+            # Text output wraps, so compare on collapsed whitespace.
+            output = " ".join(report.render(self.report, fmt)
+                              .replace("&#x27;", "'").split())
+            self.assertIn("42 U.S.C. 5174(g)", output, fmt)
+            self.assertIn("not the state's whole IHP caseload", output, fmt)
+
+    def test_csv_columns_stay_aligned(self):
+        import csv as csv_module
+        rows = list(csv_module.reader(io.StringIO(report.render(self.report, "csv"))))
+        self.assertTrue(all(len(row) == len(rows[0]) for row in rows))
+        total = dict(zip(rows[0], rows[-1]))
+        self.assertEqual(float(total["ona_state_share"]), 1000.0)
+
+    def test_json_records_the_basis(self):
+        payload = json.loads(report.render(self.report, "json"))
+        share = payload["state_cost_share"]
+        self.assertAlmostEqual(share["today"], 1000.0)
+        self.assertIn("5174(g)", share["basis"])
+        self.assertEqual(len(share["scenarios"]), 4)
+
+
+class TestDollarBasisToggle(unittest.TestCase):
+    """The HTML page carries both bases so a reader can switch without us."""
+
+    def setUp(self):
+        client = make_client()
+        self.real = pipeline.build(client, make_options(deflator=cpi.Deflator(2024)))
+        self.nominal = pipeline.build(client, make_options())
+
+    def test_no_toggle_when_only_one_basis_is_supplied(self):
+        page = report.render(self.real, "html")
+        self.assertNotIn('id="toggle"', page)
+        self.assertNotIn("<script", page)
+
+    def test_figures_carry_both_bases(self):
+        page = report.render(self.real, "html", alternate=self.nominal)
+        self.assertIn('id="toggle"', page)
+        # $19,000 nominal becomes more in 2024 dollars; both must be present.
+        self.assertIn('data-primary="$26,920"', page)
+        self.assertIn('data-alt="$19,000"', page)
+
+    def test_button_labels_name_each_basis(self):
+        page = report.render(self.real, "html", alternate=self.nominal)
+        self.assertIn('data-primary-label="Show 2024 dollars"', page)
+        self.assertIn('data-alt-label="Show nominal dollars"', page)
+
+    def test_badge_switches_style_with_the_basis(self):
+        page = report.render(self.real, "html", alternate=self.nominal)
+        self.assertIn('data-primary-class="real"', page)
+        self.assertIn('data-alt-class="nominal"', page)
+
+    def test_equal_values_are_not_duplicated(self):
+        # Household counts are not money and must not become toggleable.
+        page = report.render(self.real, "html", alternate=self.nominal)
+        cards = page[page.index('class="cards"'):page.index("</section>")]
+        self.assertIn("<p class=\"value\">5</p>", cards)
+
+    def test_toggle_works_from_a_nominal_primary(self):
+        page = report.render(self.nominal, "html", alternate=self.real)
+        self.assertIn('data-primary-label="Show nominal dollars"', page)
+        self.assertIn('data-alt-label="Show 2024 dollars"', page)
+        self.assertIn('data-primary="$19,000"', page)
+        self.assertIn('data-alt="$26,920"', page)
+
+    def test_alternate_basis_chosen_for_a_nominal_report_is_a_final_cpi_year(self):
+        from fema_flood.cli import _other_basis
+        other = _other_basis(cpi.Deflator())
+        self.assertTrue(other.active)
+        self.assertNotIn(other.base_year, cpi.PROVISIONAL_YEARS)
+        self.assertIsNone(_other_basis(cpi.Deflator(2024)).base_year)
+
+    def test_second_pass_costs_no_extra_requests(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            client = make_client(cache_dir=tmp, use_cache=True)
+            pipeline.build(client, make_options(deflator=cpi.Deflator(2024)))
+            after_first = client.requests_made
+            pipeline.build(client, make_options())
+            self.assertEqual(client.requests_made, after_first)

@@ -5,8 +5,8 @@ import os
 import shutil
 import sys
 
-from . import (analysis, api, catalog, cpi, datasets, pipeline, probe,
-               report as report_mod, states)
+from . import (analysis, api, catalog, costshare, cpi, datasets, pipeline,
+               probe, report as report_mod, states)
 
 
 DEFAULT_CACHE = os.path.join(
@@ -143,6 +143,18 @@ def _add_report_args(parser):
     nfip.add_argument("--skip-nfip", action="store_true",
                       help="skip the NFIP pull (IHP figures only)")
 
+    share = parser.add_argument_group("state cost share")
+    share.add_argument("--ona-state-share", type=float,
+                       default=costshare.DEFAULT_ONA_STATE_SHARE,
+                       help="non-federal share of Other Needs Assistance "
+                            "(default: %(default)s, per 42 U.S.C. 5174(g))")
+    share.add_argument("--ha-state-share", type=float,
+                       default=costshare.DEFAULT_HA_STATE_SHARE,
+                       help="non-federal share of Housing Assistance "
+                            "(default: %(default)s -- HA is fully federal)")
+    share.add_argument("--no-scenarios", action="store_true",
+                       help="show only the current cost share, no alternatives")
+
     money = parser.add_argument_group("dollars")
     money.add_argument("--adjust-to", type=int, metavar="YEAR",
                        help="restate all dollars in this year's terms using CPI-U")
@@ -159,6 +171,9 @@ def _add_report_args(parser):
                         help="declarations shown in table output (default: %(default)s)")
     output.add_argument("--sort", choices=["ihp_total", "households", "disaster"],
                         default="ihp_total", help="declaration table ordering")
+    output.add_argument("--no-toggle", action="store_true",
+                        help="omit the nominal/constant-dollar toggle from the "
+                             "HTML page")
     output.add_argument("--skip-context", action="store_true",
                         help="skip the comparison-cohort counts")
 
@@ -214,8 +229,14 @@ def build_options(args, state):
         max_year=args.nfip_until if args.nfip_until is not None else args.max_year,
         keep_values=keep_values)
 
+    shares = costshare.CostShare(
+        ona_state_share=args.ona_state_share,
+        ha_state_share=args.ha_state_share,
+        include_scenarios=not args.no_scenarios)
+
     return pipeline.RunOptions(
         state=state, cohort=cohort, nfip=nfip, deflator=deflator,
+        cost_share=shares,
         min_year=args.min_year, max_year=args.max_year,
         incident_types=args.incident_types,
         flood_declarations_only=args.flood_declarations_only,
@@ -227,6 +248,21 @@ def build_options(args, state):
         declarations_dataset=args.declarations_dataset,
         skip_nfip=args.skip_nfip, skip_context=args.skip_context,
         sort=args.sort)
+
+
+def _other_basis(deflator):
+    """The deflator for the other side of the toggle.
+
+    An adjusted report pairs with nominal. A nominal report pairs with the
+    most recent year whose CPI is a final BLS annual average, so the toggle is
+    useful without quietly promoting a provisional index.
+    """
+    if deflator.active:
+        return cpi.Deflator(None, deflator.table)
+    final_years = [y for y in deflator.table if y not in cpi.PROVISIONAL_YEARS]
+    if not final_years:
+        return None
+    return cpi.Deflator(max(final_years), deflator.table)
 
 
 def cmd_report(args):
@@ -244,15 +280,26 @@ def cmd_report(args):
     options = build_options(args, state)
     result = pipeline.build(client, options)
 
+    # The HTML page carries both dollar bases so the reader can switch. The
+    # second pass re-reads the same cached responses, so it costs no requests.
+    alternate = None
+    if not args.no_toggle and (args.format == "html" or args.bundle):
+        alternate_options = build_options(args, state)
+        alternate_options.deflator = _other_basis(options.deflator)
+        if alternate_options.deflator is not None:
+            client.progress("Recomputing on the other dollar basis for the "
+                            "HTML toggle (served from cache)...")
+            alternate = pipeline.build(client, alternate_options)
+
     if args.bundle:
         os.makedirs(args.bundle, exist_ok=True)
         for filename, fmt in BUNDLE_FORMATS:
             path = os.path.join(args.bundle, filename)
             with open(path, "w", encoding="utf-8") as fh:
-                fh.write(report_mod.render(result, fmt, args.limit))
+                fh.write(report_mod.render(result, fmt, args.limit, alternate))
             client.progress("wrote %s" % path)
     else:
-        text = report_mod.render(result, args.format, args.limit)
+        text = report_mod.render(result, args.format, args.limit, alternate)
         if args.out:
             directory = os.path.dirname(os.path.abspath(args.out))
             os.makedirs(directory, exist_ok=True)

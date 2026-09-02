@@ -93,6 +93,22 @@ def render_text(report, limit=25, width=100):
         w("  %-44s %s\n" % (label, value))
     w("\n  Note: IHP is the sum of HA and ONA, not a third separate award.\n")
 
+    rows = report.cost_share_table()
+    if rows:
+        w("\n%s\n%s\n" % ("WHAT THE STATE ALREADY PAYS", "-" * width))
+        w("  %-52s %14s %10s\n" % ("Funding arrangement", "State cost", "vs today"))
+        w("  " + "-" * (width - 2) + "\n")
+        for row in rows:
+            w("  %-52s %14s %10s\n" % (
+                _clip(row["label"], 52), money(row["state_cost"]),
+                "-" if row["key"] == "today"
+                else ("%.1fx" % row["multiple_of_today"]
+                      if row.get("multiple_of_today") else "n/a")))
+        w("\n" + _wrap(
+            "Scope: the non-federal share of ONA paid to this cohort -- not the "
+            "state's whole IHP caseload. " + COST_SHARE_NOTE,
+            width - 2, indent="  ", initial="  ") + "\n")
+
     if report.context:
         w("\n%s\n%s\n" % ("HOW BIG IS THAT COHORT", "-" * width))
         for label, key in [
@@ -166,6 +182,14 @@ def render_text(report, limit=25, width=100):
     return out.getvalue()
 
 
+COST_SHARE_NOTE = (
+    "Under the Stafford Act the state already funds 25% of Other Needs "
+    "Assistance (sec. 408(g), 42 U.S.C. 5174(g)); Housing Assistance under "
+    "sec. 408(c) is fully federal. The other rows show how this same "
+    "historical caseload would have been funded under different terms. They "
+    "are illustrations, not forecasts, and none is an enacted proposal."
+)
+
 CAVEATS = (
     "Method notes: IHP counts are registrations, which FEMA treats as households; "
     "a household that registers for two disasters appears once per disaster. "
@@ -184,9 +208,10 @@ def _clip(text, width):
     return text if len(text) <= width else text[:width - 1] + "…"
 
 
-def _wrap(text, width, indent=""):
+def _wrap(text, width, indent="", initial=""):
     import textwrap
-    return "\n".join(textwrap.wrap(text, width, subsequent_indent=indent))
+    return "\n".join(textwrap.wrap(text, width, initial_indent=initial,
+                                   subsequent_indent=indent))
 
 
 # ------------------------------------------------------------------ markdown
@@ -235,6 +260,21 @@ def render_markdown(report, limit=25):
         ]:
             w("| %s | %s |\n" % (label, value))
 
+    rows = report.cost_share_table()
+    if rows:
+        w("\n## What the state already pays\n\n")
+        w("| Funding arrangement | State cost | vs. today |\n| --- | ---: | ---: |\n")
+        for row in rows:
+            marker = "**" if row["key"] == "today" else ""
+            w("| %s%s%s | %s%s%s | %s |\n" % (
+                marker, row["label"], marker,
+                marker, money(row["state_cost"]), marker,
+                "-" if row["key"] == "today"
+                else ("%.1fx" % row["multiple_of_today"]
+                      if row.get("multiple_of_today") else "n/a")))
+        w("\n_Scope: the non-federal share of ONA paid to this cohort, not the "
+          "state's whole IHP caseload. %s_\n" % COST_SHARE_NOTE)
+
     w("\n## The gap\n\n")
     w("| Measure | Value |\n| --- | ---: |\n")
     for label, value in [
@@ -281,6 +321,7 @@ def render_csv(report):
         "state", "disaster_number", "declaration_title", "incident_type", "year",
         "households", "households_awarded_ihp", "ihp_total", "ihp_mean",
         "ihp_mean_of_awarded", "ha_total", "ha_mean", "ona_total", "ona_mean",
+        "ona_state_share",
         "nfip_claims_same_event", "nfip_paid_claims_same_event",
         "nfip_total_paid_same_event", "nfip_mean_paid_same_event",
         "gap_per_household",
@@ -292,6 +333,7 @@ def render_csv(report):
             _num(row["ihp_total"]), _num(row["ihp_mean"]), _num(row["ihp_mean_paid"]),
             _num(row["ha_total"]), _num(row["ha_mean"]),
             _num(row["ona_total"]), _num(row["ona_mean"]),
+            _num(row["ona_state_share"]),
             row["nfip_claims"], row["nfip_paid_claims"],
             _num(row["nfip_total"]), _num(row["nfip_mean_paid"]),
             _num(row["gap_per_household"]),
@@ -303,6 +345,7 @@ def render_csv(report):
         _num(stats.ihp.total), _num(stats.ihp.mean), _num(stats.ihp.mean_positive),
         _num(stats.ha.total), _num(stats.ha.mean),
         _num(stats.ona.total), _num(stats.ona.mean),
+        _num(report.state_cost_share()),
         report.nfip.paid.n if report.nfip else "",
         report.nfip.paid.n_positive if report.nfip else "",
         _num(report.nfip.paid.total) if report.nfip else "",
@@ -317,76 +360,176 @@ def _num(value, digits=2):
 
 # ---------------------------------------------------------------------- html
 
-def render_html(report, limit=40):
+def _amount(primary, alternate=None):
+    """A figure that can be shown on either dollar basis.
+
+    Both values are baked into the page so the toggle is instant and the file
+    stays self-contained -- no recomputation, no network, works from a
+    downloaded copy or an email attachment.
+    """
+    text = html.escape(primary)
+    if alternate is None or alternate == primary:
+        return text
+    return ('<span class="amt" data-primary="%s" data-alt="%s">%s</span>'
+            % (html.escape(primary), html.escape(alternate), text))
+
+
+def _basis_text(deflator):
+    if deflator is None:
+        return "Nominal dollars"
+    if deflator.active:
+        label = "Constant %d dollars (CPI-U)" % deflator.base_year
+        if deflator.provisional:
+            label += " - %d index is provisional" % deflator.base_year
+        return label
+    return ("Nominal dollars - NOT adjusted for inflation; amounts from "
+            "different years are not comparable")
+
+
+def render_html(report, limit=40, alternate=None):
+    """Render the page, optionally carrying a second dollar basis.
+
+    ``alternate`` is the same report aggregated on the other basis (nominal vs
+    constant dollars). When present, every figure carries both and a toggle
+    switches the page between them.
+    """
     e = html.escape
     stats = report.ihp.statewide
     rows = report.disaster_rows(report.options.sort, limit)
+    alt_rows = {}
+    alt_stats = None
+    if alternate is not None:
+        alt_stats = alternate.ihp.statewide
+        alt_rows = {r["disaster"]: r
+                    for r in alternate.disaster_rows(alternate.options.sort)}
+
+    def alt_money(getter, default=None):
+        if alternate is None:
+            return None
+        try:
+            return money(getter())
+        except (AttributeError, TypeError, KeyError):
+            return default
 
     cards = [
-        ("Uninsured flooded owner households", count(stats.households),
+        ("Uninsured flooded owner households", count(stats.households), None,
          "registrations with FEMA-verified flood damage and no flood insurance"),
         ("Total FEMA IHP paid to them", money(stats.ihp.total),
+         alt_money(lambda: alt_stats.ihp.total),
          "HA %s + ONA %s" % (money(stats.ha.total), money(stats.ona.total))),
         ("Average IHP per household", money(stats.ihp.mean),
+         alt_money(lambda: alt_stats.ihp.mean),
          "%s per household that received an award" % money(stats.ihp.mean_positive)),
         ("Average paid NFIP claim", money(report.nfip_mean()),
+         alt_money(lambda: alternate.nfip_mean()),
          "across %s paid claims in the state"
          % count(report.nfip.paid.n_positive if report.nfip else None)),
+        ("State's share of that ONA", money(report.state_cost_share()),
+         alt_money(lambda: alternate.state_cost_share()),
+         "already owed under the 75/25 split on Other Needs Assistance"),
         ("Difference per household", money(report.gap_per_household()),
+         alt_money(lambda: alternate.gap_per_household()),
          "insurance payout minus disaster aid"),
         ("Aggregate difference", money(report.aggregate_gap()),
+         alt_money(lambda: alternate.aggregate_gap()),
          "difference per household across the whole cohort"),
     ]
 
     deflator = report.options.deflator
-    if deflator.active:
-        basis_class, basis_text = "real", "All figures in constant %d dollars (CPI-U)" % deflator.base_year
-        if deflator.provisional:
-            basis_text += " - %d index is provisional" % deflator.base_year
-    else:
-        # The riskier default to miss: a page mixing 2005 and 2021 dollars
-        # without saying so reads as a like-for-like comparison and is not one.
-        basis_class, basis_text = ("nominal",
-                                   "Nominal dollars - NOT adjusted for inflation; "
-                                   "amounts from different years are not comparable")
+    basis_text = _basis_text(deflator)
+    basis_class = "real" if deflator.active else "nominal"
+    alt_basis = _basis_text(alternate.options.deflator) if alternate else None
 
     body = [
         "<header><p class=\"eyebrow\">OpenFEMA analysis</p>",
         "<h1>%s: what flood aid paid, what insurance would have</h1>" % e(report.state_name),
-        "<p class=\"basis %s\">%s</p>" % (basis_class, e(basis_text)),
+        "<div class=\"basisrow\">",
+        "<p class=\"basis %s\" id=\"basis\" data-primary=\"%s\" data-alt=\"%s\" "
+        "data-primary-class=\"%s\" data-alt-class=\"%s\">%s</p>"
+        % (basis_class, e(basis_text), e(alt_basis or basis_text), basis_class,
+           "real" if (alternate and alternate.options.deflator.active) else "nominal",
+           e(basis_text)),
+    ]
+    if alternate is not None:
+        body.append(
+            "<button type=\"button\" id=\"toggle\" "
+            "data-primary-label=\"%s\" data-alt-label=\"%s\">%s</button>"
+            % (e("Show %s" % _short_basis(report.options.deflator)),
+               e("Show %s" % _short_basis(alternate.options.deflator)),
+               e("Show %s" % _short_basis(alternate.options.deflator))))
+    body.append("</div>")
+    body.extend([
         "<p class=\"lede\">%s</p>" % e(headline(report)),
         "<p class=\"meta\">Generated %s &middot; Cohort: %s</p></header>"
         % (e(report.generated), e(report.options.cohort.describe())),
         "<section class=\"cards\">",
-    ]
-    for label, value, note in cards:
+    ])
+    for label, value, alt_value, note in cards:
         body.append(
             "<div class=\"card\"><p class=\"label\">%s</p><p class=\"value\">%s</p>"
-            "<p class=\"note\">%s</p></div>" % (e(label), e(value), e(note)))
+            "<p class=\"note\">%s</p></div>"
+            % (e(label), _amount(value, alt_value), e(note)))
     body.append("</section>")
+
+    share_rows = report.cost_share_table()
+    alt_share = {r["key"]: r for r in (alternate.cost_share_table()
+                                       if alternate else [])}
+    if share_rows:
+        body.append("<section><h2>What the state already pays</h2>"
+                    "<p class=\"caption\">%s</p><div class=\"scroll\"><table>"
+                    % e("Scope: the non-federal share of ONA paid to this cohort, "
+                        "not the state's whole IHP caseload."))
+        body.append("<thead><tr><th>Funding arrangement</th>"
+                    "<th class=\"n\">State cost</th><th class=\"n\">vs. today</th>"
+                    "</tr></thead><tbody>")
+        for row in share_rows:
+            today = row["key"] == "today"
+            other = alt_share.get(row["key"])
+            body.append(
+                "<tr%s><td>%s%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td></tr>"
+                % (' class="today"' if today else "", e(row["label"]),
+                   "" if not row.get("note") else
+                   " <span class=\"sub\">%s</span>" % e(row["note"]),
+                   _amount(money(row["state_cost"]),
+                           money(other["state_cost"]) if other else None),
+                   "&mdash;" if today
+                   else ("%.1f&times;" % row["multiple_of_today"]
+                         if row.get("multiple_of_today") else "n/a")))
+        body.append("</tbody></table></div>"
+                    "<p class=\"caption\">%s</p></section>" % e(COST_SHARE_NOTE))
 
     if rows:
         body.append("<section><h2>By declaration</h2>"
-                    "<p class=\"caption\">Dollar columns: %s.</p>"
-                    "<div class=\"scroll\"><table>" % e(basis_text.lower()))
+                    "<p class=\"caption\" id=\"tablebasis\" data-primary=\"%s\" "
+                    "data-alt=\"%s\">%s</p><div class=\"scroll\"><table>"
+                    % (e("Dollar columns: %s." % basis_text.lower()),
+                       e("Dollar columns: %s." % (alt_basis or basis_text).lower()),
+                       e("Dollar columns: %s." % basis_text.lower())))
         body.append(
             "<thead><tr><th>DR</th><th>Disaster</th><th class=\"n\">Year</th>"
             "<th class=\"n\">Households</th><th class=\"n\">IHP total</th>"
             "<th class=\"n\">Avg IHP</th><th class=\"n\">HA total</th>"
-            "<th class=\"n\">ONA total</th><th class=\"n\">NFIP claims</th>"
+            "<th class=\"n\">ONA total</th><th class=\"n\">State ONA share</th>"
+            "<th class=\"n\">NFIP claims</th>"
             "<th class=\"n\">Avg NFIP paid</th><th class=\"n\">Gap / household</th>"
             "</tr></thead><tbody>")
         for row in rows:
+            other = alt_rows.get(row["disaster"], {})
+
+            def pair(key):
+                return _amount(money(row[key]),
+                               money(other[key]) if key in other else None)
+
             body.append(
                 "<tr><td>%s</td><td>%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td>"
                 "<td class=\"n\">%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td>"
                 "<td class=\"n\">%s</td><td class=\"n\">%s</td><td class=\"n\">%s</td>"
-                "<td class=\"n\">%s</td></tr>" % (
+                "<td class=\"n\">%s</td><td class=\"n\">%s</td></tr>" % (
                     e(str(row["disaster"])), e(str(row["title"])), row["year"] or "",
-                    count(row["households"]), money(row["ihp_total"]), money(row["ihp_mean"]),
-                    money(row["ha_total"]), money(row["ona_total"]),
-                    count(row["nfip_claims"]), money(row["nfip_mean_paid"]),
-                    money(row["gap_per_household"])))
+                    count(row["households"]), pair("ihp_total"), pair("ihp_mean"),
+                    pair("ha_total"), pair("ona_total"), pair("ona_state_share"),
+                    count(row["nfip_claims"]), pair("nfip_mean_paid"),
+                    pair("gap_per_household")))
         body.append("</tbody></table></div></section>")
 
     if report.warnings:
@@ -399,7 +542,47 @@ def render_html(report, limit=40):
     return HTML_TEMPLATE % {
         "title": e("%s flood aid vs. NFIP" % report.state_name),
         "body": "\n".join(body),
+        "script": TOGGLE_SCRIPT if alternate is not None else "",
     }
+
+
+def _short_basis(deflator):
+    if deflator is not None and deflator.active:
+        return "%d dollars" % deflator.base_year
+    return "nominal dollars"
+
+
+TOGGLE_SCRIPT = """
+<script>
+(function () {
+  var button = document.getElementById('toggle');
+  if (!button) return;
+  var showingPrimary = true;
+  function swap(node, key) {
+    var value = node.getAttribute('data-' + key);
+    if (value !== null) node.textContent = value;
+  }
+  button.addEventListener('click', function () {
+    showingPrimary = !showingPrimary;
+    var key = showingPrimary ? 'primary' : 'alt';
+    document.querySelectorAll('.amt').forEach(function (node) {
+      swap(node, key);
+    });
+    ['basis', 'tablebasis'].forEach(function (id) {
+      var node = document.getElementById(id);
+      if (node) swap(node, key);
+    });
+    var basis = document.getElementById('basis');
+    if (basis) {
+      basis.className = 'basis ' + (basis.getAttribute(
+        'data-' + key + '-class') || '');
+    }
+    button.textContent = button.getAttribute(
+      showingPrimary ? 'data-alt-label' : 'data-primary-label');
+  });
+})();
+</script>
+"""
 
 
 HTML_TEMPLATE = """<!doctype html>
@@ -422,11 +605,22 @@ color:var(--accent);font-weight:600}
 h1{margin:0 0 16px;font-size:34px;line-height:1.2;letter-spacing:-.02em}
 h2{margin:40px 0 14px;font-size:20px;letter-spacing:-.01em}
 .lede{margin:0 0 12px;font-size:18px;color:var(--ink);max-width:70ch}
-.basis{display:inline-block;margin:0 0 16px;padding:6px 12px;border-radius:999px;
+.basis{display:inline-block;margin:0;padding:6px 12px;border-radius:999px;
 font-size:13px;font-weight:600;border:1px solid transparent}
 .basis.real{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
 .basis.nominal{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
-.caption{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.caption{margin:0 0 10px;font-size:13px;color:var(--muted);max-width:80ch}
+.basisrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.basisrow .basis{margin:0}
+#toggle{font:inherit;font-size:13px;font-weight:600;padding:6px 14px;
+border-radius:999px;border:1px solid var(--line);background:var(--panel);
+color:var(--ink);cursor:pointer}
+#toggle:hover{border-color:var(--accent);color:var(--accent)}
+#toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media print{#toggle{display:none}}
+tr.today td{background:var(--accent-soft);font-weight:600}
+.sub{display:block;font-weight:400;font-size:12px;color:var(--muted);
+white-space:normal;max-width:44ch}
 .meta{margin:0;font-size:13px;color:var(--muted);max-width:80ch}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;
 margin-top:32px}
@@ -450,7 +644,7 @@ ul{padding-left:20px}li{margin-bottom:6px;font-size:14px;color:var(--muted)}
 </style></head>
 <body><main>
 %(body)s
-</main></body></html>
+</main>%(script)s</body></html>
 """
 
 
@@ -464,11 +658,13 @@ RENDERERS = {
 }
 
 
-def render(report, fmt, limit=25):
+def render(report, fmt, limit=25, alternate=None):
     renderer = RENDERERS.get(fmt)
     if renderer is None:
         raise ValueError("unknown format %r (choose from %s)"
                          % (fmt, ", ".join(sorted(RENDERERS))))
     if fmt in ("json", "csv"):
         return renderer(report)
+    if fmt == "html":
+        return renderer(report, limit, alternate)
     return renderer(report, limit)

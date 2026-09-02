@@ -2,7 +2,7 @@
 
 import datetime
 
-from . import (analysis, api, catalog, datasets,
+from . import (analysis, api, catalog, costshare, datasets,
                declarations as decl_mod, probe, states)
 
 
@@ -59,6 +59,24 @@ class StateReport:
             return None
         return gap * self.cohort_households()
 
+    def state_cost_share(self):
+        """The state's own liability on this cohort's ONA, under current law.
+
+        Scoped to the cohort, not the state's whole IHP caseload: it is the
+        non-federal share of ONA paid to owner-occupants who flooded without
+        flood insurance, which is the population this report is about.
+        """
+        if not self.ihp:
+            return None
+        stats = self.ihp.statewide
+        return self.options.cost_share.state_cost(stats.ha.total, stats.ona.total)
+
+    def cost_share_table(self):
+        if not self.ihp:
+            return []
+        stats = self.ihp.statewide
+        return self.options.cost_share.table(stats.ha.total, stats.ona.total)
+
     def disaster_rows(self, sort="ihp_total", limit=None):
         """Per-disaster rows joined to declaration metadata and matched NFIP stats."""
         rows = []
@@ -84,6 +102,8 @@ class StateReport:
                 "nfip_paid_claims": matched.n_positive if matched else 0,
                 "nfip_mean_paid": matched.mean_positive if matched else None,
                 "nfip_total": matched.total if matched else None,
+                "ona_state_share": self.options.cost_share.state_cost(
+                    bucket.ha.total, bucket.ona.total),
                 "gap_per_household": (
                     matched.mean_positive - bucket.ihp.mean
                     if matched and matched.mean_positive is not None
@@ -110,6 +130,13 @@ class StateReport:
             },
             "nfip": self.nfip.to_dict() if self.nfip else None,
             "context": self.context,
+            "state_cost_share": {
+                "scope": "the non-federal share of ONA paid to this cohort, "
+                         "not the state's whole IHP caseload",
+                "basis": costshare.CITATION,
+                "today": _r(self.state_cost_share()),
+                "scenarios": self.cost_share_table(),
+            },
             "comparison": {
                 "cohort_households": self.cohort_households(),
                 "mean_ihp_per_household": _r(self.ihp_mean()),
@@ -134,7 +161,8 @@ def _r(value, digits=2):
 class RunOptions:
     """Every knob the CLI exposes, in one place."""
 
-    def __init__(self, state, cohort, nfip, deflator, min_year=None, max_year=None,
+    def __init__(self, state, cohort, nfip, deflator, cost_share=None,
+                 min_year=None, max_year=None,
                  incident_types=None, flood_declarations_only=False, disasters=None,
                  match_buffer_days=3, ihp_version=None, nfip_version=None,
                  declarations_version=None, ihp_dataset=None, nfip_dataset=None,
@@ -144,6 +172,7 @@ class RunOptions:
         self.cohort = cohort
         self.nfip = nfip
         self.deflator = deflator
+        self.cost_share = cost_share or costshare.CostShare()
         self.min_year = min_year
         self.max_year = max_year
         self.incident_types = incident_types
@@ -167,6 +196,7 @@ class RunOptions:
             "cohort": self.cohort.describe(),
             "nfip_claim_filter": self.nfip.describe(),
             "dollars": self.deflator.label(),
+            "cost_share": self.cost_share.describe(),
             "min_year": self.min_year,
             "max_year": self.max_year,
             "incident_types": self.incident_types,
