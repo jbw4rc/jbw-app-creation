@@ -109,3 +109,30 @@ class TestDateWindow(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestInvocation(unittest.TestCase):
+    """The CLI must run whether or not the user remembers `-m`."""
+
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def _run(self, *args):
+        import subprocess
+        return subprocess.run([sys.executable, *args, "states"], cwd=self.ROOT,
+                              capture_output=True, text=True)
+
+    def test_module_form(self):
+        result = self._run("-m", "fema_flood")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("LA  Louisiana", result.stdout)
+
+    def test_directory_form_without_dash_m(self):
+        result = self._run("fema_flood")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("LA  Louisiana", result.stdout)
+
+    def test_directory_form_with_trailing_separator(self):
+        # What shell tab-completion produces: `python fema_flood/`
+        result = self._run("fema_flood" + os.sep)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("LA  Louisiana", result.stdout)
