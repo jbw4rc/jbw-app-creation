@@ -72,6 +72,31 @@ class StateReport:
         stats = self.ihp.statewide
         return self.options.cost_share.state_cost(stats.ha.total, stats.ona.total)
 
+    def non_flood_state_share(self):
+        """The state's current-law share on the non-flood, no-homeowners pot.
+
+        Disjoint from the flood cohort (flood damage is 0 here, 1 there), so
+        the two shares can be added without counting a household twice.
+        """
+        if not self.home_insurance:
+            return None
+        other = self.home_insurance.other_peril.statewide
+        return self.options.cost_share.state_cost(other.ha.total, other.ona.total)
+
+    def combined_state_share(self):
+        """Current-law state share across both disjoint pots."""
+        flood = self.state_cost_share()
+        other = self.non_flood_state_share()
+        if flood is None:
+            return other
+        return flood + (other or 0.0)
+
+    def non_flood_cost_share_table(self):
+        if not self.home_insurance:
+            return []
+        other = self.home_insurance.other_peril.statewide
+        return self.options.cost_share.table(other.ha.total, other.ona.total)
+
     def cost_share_table(self):
         if not self.ihp:
             return []
@@ -102,8 +127,16 @@ class StateReport:
                 "ona_state_share": share.state_cost(bucket.ha.total, bucket.ona.total),
                 "flood_households": flood.households if flood else 0,
                 "flood_ihp_total": flood.ihp.total if flood else 0.0,
+                "flood_ha_total": flood.ha.total if flood else 0.0,
+                "flood_ona_total": flood.ona.total if flood else 0.0,
+                "flood_state_share": share.state_cost(
+                    flood.ha.total, flood.ona.total) if flood else 0.0,
                 "other_households": other.households if other else 0,
                 "other_ihp_total": other.ihp.total if other else 0.0,
+                "other_ha_total": other.ha.total if other else 0.0,
+                "other_ona_total": other.ona.total if other else 0.0,
+                "other_state_share": share.state_cost(
+                    other.ha.total, other.ona.total) if other else 0.0,
             })
         rows.sort(key=lambda r: -r["ihp_total"])
         return rows[:limit] if limit else rows
@@ -161,8 +194,12 @@ class StateReport:
             },
             "nfip": self.nfip.to_dict() if self.nfip else None,
             "context": self.context,
-            "uninsured_homeowners": (self.home_insurance.to_dict()
-                                     if self.home_insurance else None),
+            "uninsured_homeowners": (dict(
+                self.home_insurance.to_dict(),
+                other_peril_state_share=_r(self.non_flood_state_share()),
+                other_peril_scenarios=self.non_flood_cost_share_table(),
+                combined_state_share_both_pots=_r(self.combined_state_share()),
+            ) if self.home_insurance else None),
             "state_cost_share": {
                 "scope": "the non-federal share of ONA paid to this cohort, "
                          "not the state's whole IHP caseload",

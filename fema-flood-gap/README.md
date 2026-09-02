@@ -116,7 +116,14 @@ reported split in two, because a homeowners policy excludes flood:
   needed an NFIP policy, and belongs with the flood comparison instead.
 
 Presenting the blended total as an insurance gap overstates it, which is why
-the tool never shows one without both halves beside it. The cohort lands in
+the tool never shows one without both halves beside it.
+
+The non-flood half is where the state's exposure shows up a second time. It
+gets its own state-share figure and scenario ladder, and because it is
+disjoint from the flood cohort (flood damage is 0 here and 1 there), the two
+current-law shares are added into one figure: the state's liability across
+both pots. That sum is stated in the cost-share section and in the JSON as
+`combined_state_share_both_pots`. The cohort lands in
 its own CSV (`uninsured-homeowners.csv`) rather than as extra columns on the
 flood file, since the two overlap and must not be summed.
 

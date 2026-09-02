@@ -50,6 +50,7 @@ const nodes = {
   footerbasis: new Node('footerbasis'),
   lede: new Node('lede'),
   sharebody: new Node('sharebody'),
+  hosharebody: new Node('hosharebody'),
   tablebody: new Node('tablebody'),
   tablecaption: new Node('tablecaption'),
   sincelabel: new Node('sincelabel'),
@@ -76,7 +77,7 @@ const cards = [];
 for (const key of ['households', 'ihpTotal', 'ihpMean', 'nfipMean',
                    'stateShare', 'gap', 'aggregateGap',
                    'hoHouseholds', 'hoIhpTotal', 'hoOther', 'hoFlood',
-                   'hoStateShare']) {
+                   'hoOtherShare']) {
   cards.push(new Node(null, {'data-card': key}));
   cards.push(new Node(null, {'data-note': key}));
 }
@@ -110,6 +111,8 @@ const out = {basis: nodes.basis.textContent, lede: nodes.lede.textContent,
              sinceLabel: nodes.sincelabel.textContent,
              toggleLabel: nodes.toggle.textContent,
              shareRows: (nodes.sharebody.innerHTML.match(/<tr/g) || []).length,
+             hoShareRows: (nodes.hosharebody.innerHTML.match(/<tr/g) || []).length,
+             hoShareHtml: nodes.hosharebody.innerHTML,
              tableRows: (nodes.tablebody.innerHTML.match(/<tr/g) || []).length};
 for (const node of cards) {
   const key = node.getAttribute('data-card');

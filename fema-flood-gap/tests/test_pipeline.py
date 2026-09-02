@@ -1146,9 +1146,17 @@ class TestPageScriptArithmetic(unittest.TestCase):
                          report.money(home.other_peril.statewide.ihp.total))
         self.assertEqual(page["hoFlood"],
                          report.money(home.flood_damaged.statewide.ihp.total))
-        self.assertEqual(page["hoStateShare"], report.money(
-            self.real.options.cost_share.state_cost(
-                home.all.statewide.ha.total, home.all.statewide.ona.total)))
+        self.assertEqual(page["hoOtherShare"],
+                         report.money(self.real.non_flood_state_share()))
+        # The non-flood pot gets its own scenario ladder.
+        self.assertEqual(page["hoShareRows"], 4)
+        self.assertIn(report.money(self.real.non_flood_state_share()),
+                      page["hoShareHtml"])
+        # Section 2 states the combined share across the disjoint pots.
+        self.assertIn(report.money(self.real.combined_state_share()),
+                      page["shareintro"])
+        self.assertIn("state\u2019s share of that under current law",
+                      page["hointro"].lower().replace("state's", "state\u2019s"))
 
     def test_uninsured_homeowner_cards_follow_the_slider(self):
         equivalent = pipeline.build(
@@ -1307,6 +1315,42 @@ class TestUninsuredHomeowners(unittest.TestCase):
         # The flood CSV is untouched by the second cohort.
         flood = list(csv_module.reader(io.StringIO(report.render(self.report, "csv"))))
         self.assertEqual(float(dict(zip(flood[0], flood[-1]))["ihp_total"]), 19000.0)
+
+    def test_non_flood_pot_state_share_and_the_disjoint_sum(self):
+        # r05 is the only non-flood member: HA 0, ONA 900 -> 25% is 225.
+        self.assertAlmostEqual(self.report.non_flood_state_share(), 225.0)
+        # Flood cohort share is 1,000; the pots are disjoint, so they add.
+        self.assertAlmostEqual(self.report.combined_state_share(), 1225.0)
+        rows = {r["key"]: r for r in self.report.non_flood_cost_share_table()}
+        self.assertAlmostEqual(rows["today"]["state_cost"], 225.0)
+        self.assertAlmostEqual(rows["no_ihp"]["state_cost"], 900.0)
+
+    def test_disjointness_holds_on_the_data(self):
+        """No registration can be in both the flood cohort and the non-flood pot."""
+        flood_cohort = {r["id"] for r in fixtures.IHP_RECORDS
+                        if r["ownRent"] == "O" and r["floodDamage"] == 1
+                        and r["floodInsurance"] == 0 and r["damagedStateAbbreviation"] == "LA"}
+        non_flood_pot = {r["id"] for r in fixtures.IHP_RECORDS
+                         if r["ownRent"] == "O" and r["floodDamage"] == 0
+                         and r["homeOwnersInsurance"] == 0}
+        self.assertFalse(flood_cohort & non_flood_pot)
+        self.assertEqual(len(non_flood_pot), 1)
+
+    def test_every_format_states_the_non_flood_state_share(self):
+        share = report.money(self.report.non_flood_state_share())
+        combined = report.money(self.report.combined_state_share())
+        for fmt in ("text", "md"):
+            output = report.render(self.report, fmt)
+            self.assertIn(share, output, fmt)
+            self.assertIn(combined, output, fmt)
+        payload = json.loads(report.render(self.report, "json"))
+        self.assertEqual(payload["uninsured_homeowners"]["other_peril_state_share"], 225.0)
+        self.assertEqual(payload["uninsured_homeowners"]["combined_state_share_both_pots"], 1225.0)
+        import csv as csv_module
+        rows = list(csv_module.reader(
+            io.StringIO(report.render(self.report, "home-insurance-csv"))))
+        self.assertTrue(all(len(r) == len(rows[0]) for r in rows))
+        self.assertEqual(float(dict(zip(rows[0], rows[-1]))["other_peril_state_share"]), 225.0)
 
     def test_json_reports_both_cohorts(self):
         payload = json.loads(report.render(self.report, "json"))

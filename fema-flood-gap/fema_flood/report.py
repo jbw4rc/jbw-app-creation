@@ -131,6 +131,10 @@ def render_text(report, limit=25, width=100):
             w("  %-44s %9s %14s %12s\n" % (
                 label, count(bucket.households), money(bucket.ihp.total),
                 money(bucket.ihp.mean)))
+        w("\n  %-44s %s\n" % ("State's share of ONA, non-flood pot only",
+                                money(report.non_flood_state_share())))
+        w("  %-44s %s\n" % ("State's share across both disjoint pots",
+                              money(report.combined_state_share())))
         w("\n" + _wrap(HOME_INSURANCE_NOTE, width - 2, indent="  ", initial="  ") + "\n")
 
     rows = report.cost_share_table()
@@ -354,6 +358,11 @@ def render_markdown(report, limit=25):
             w("| %s | %s | %s | %s |\n" % (
                 label, count(bucket.households), money(bucket.ihp.total),
                 money(bucket.ihp.mean)))
+        w("\n| State cost share | Value |\n| --- | ---: |\n")
+        w("| **State's share of ONA, non-flood pot only** | **%s** |\n"
+          % money(report.non_flood_state_share()))
+        w("| State's share across both disjoint pots | %s |\n"
+          % money(report.combined_state_share()))
         w("\n_%s_\n" % HOME_INSURANCE_NOTE)
 
     rows = report.cost_share_table()
@@ -464,6 +473,7 @@ def render_home_insurance_csv(report):
         "ihp_total", "ihp_mean", "ha_total", "ona_total", "ona_state_share",
         "flood_damaged_households", "flood_damaged_ihp_total",
         "other_peril_households", "other_peril_ihp_total",
+        "other_peril_ha_total", "other_peril_ona_total", "other_peril_state_share",
     ])
     if not report.home_insurance:
         return out.getvalue()
@@ -475,6 +485,8 @@ def render_home_insurance_csv(report):
             _num(row["ona_state_share"]),
             row["flood_households"], _num(row["flood_ihp_total"]),
             row["other_households"], _num(row["other_ihp_total"]),
+            _num(row["other_ha_total"]), _num(row["other_ona_total"]),
+            _num(row["other_state_share"]),
         ])
     home = report.home_insurance
     writer.writerow([
@@ -488,6 +500,9 @@ def render_home_insurance_csv(report):
         _num(home.flood_damaged.statewide.ihp.total),
         home.other_peril.statewide.households,
         _num(home.other_peril.statewide.ihp.total),
+        _num(home.other_peril.statewide.ha.total),
+        _num(home.other_peril.statewide.ona.total),
+        _num(report.non_flood_state_share()),
     ])
     return out.getvalue()
 
@@ -557,8 +572,12 @@ def page_payload(report):
             "haTotal": row["ha_total"], "onaTotal": row["ona_total"],
             "floodHouseholds": row["flood_households"],
             "floodIhpTotal": row["flood_ihp_total"],
+            "floodHaTotal": row["flood_ha_total"],
+            "floodOnaTotal": row["flood_ona_total"],
             "otherHouseholds": row["other_households"],
             "otherIhpTotal": row["other_ihp_total"],
+            "otherHaTotal": row["other_ha_total"],
+            "otherOnaTotal": row["other_ona_total"],
         })
 
     return {
@@ -579,13 +598,13 @@ def page_payload(report):
 HO_CARD_SPECS = [
     ("hoOther", "IHP for perils a homeowners policy covers",
      "wind, hail, fire, fallen trees - the gap a policy would have closed"),
+    ("hoOtherShare", "State's share of that ONA",
+     "current law, on the non-flood pot alone"),
     ("hoHouseholds", "Households with no homeowners policy",
      "owner-occupants with no homeowners insurance, all perils"),
     ("hoIhpTotal", "Total IHP paid to them", "Housing Assistance plus Other Needs"),
     ("hoFlood", "IHP for flood damage",
      "not a homeowners gap: standard policies exclude flood"),
-    ("hoStateShare", "State's share of that ONA",
-     "the 25% non-federal share on this cohort"),
 ]
 
 # Section 1 tiles: the people, in order of what a reader asks first.
@@ -727,9 +746,19 @@ def render_html(report, limit=40, alternate=None):
     # 5 -- the bigger picture
     if report.home_insurance:
         body.append(_section(
-            "5 · The bigger picture", "It is not only flood",
-            "<div class=\"cards\">%s</div><p class=\"caption\">%s</p>"
-            % (_tiles(HO_CARD_SPECS, lead="hoOther"), e(HOME_INSURANCE_NOTE)),
+            "5 · The bigger picture", "It is not only flood, and the state pays here too",
+            "<div class=\"cards\">%s</div>"
+            "<h3>State cost on the non-flood pot</h3>"
+            "<div class=\"scroll\"><table>"
+            "<thead><tr><th>Funding arrangement</th><th class=\"n\">State cost</th>"
+            "<th class=\"n\">vs. today</th></tr></thead>"
+            "<tbody id=\"hosharebody\"></tbody></table></div>"
+            "<p class=\"caption\">%s</p><p class=\"caption\">%s</p>"
+            % (_tiles(HO_CARD_SPECS, lead="hoOther"),
+               e("Owner-occupants with no homeowners insurance whose damage was not "
+                 "flood. This pot and the flood cohort above are disjoint, so their "
+                 "state shares add."),
+               e(HOME_INSURANCE_NOTE)),
             intro=("hointro", ""), section_id="hosection"))
 
     # 6 -- evidence
@@ -867,7 +896,8 @@ PAGE_SCRIPT = """
       return showingAllYears() || (d.year && d.year >= since);
     });
     var sum = {households: 0, ihpTotal: 0, haTotal: 0, onaTotal: 0,
-               floodIhp: 0, otherIhp: 0, floodHouseholds: 0, otherHouseholds: 0};
+               floodIhp: 0, otherIhp: 0, floodHouseholds: 0, otherHouseholds: 0,
+               otherHa: 0, otherOna: 0, floodHa: 0, floodOna: 0};
     rows.forEach(function (d) {
       sum.households += d.households;
       sum.ihpTotal += d.ihpTotal;
@@ -877,9 +907,16 @@ PAGE_SCRIPT = """
       sum.otherIhp += d.otherIhpTotal;
       sum.floodHouseholds += d.floodHouseholds;
       sum.otherHouseholds += d.otherHouseholds;
+      sum.otherHa += d.otherHaTotal || 0;
+      sum.otherOna += d.otherOnaTotal || 0;
+      sum.floodHa += d.floodHaTotal || 0;
+      sum.floodOna += d.floodOnaTotal || 0;
     });
     var today = payload.scenarios[0];
     sum.stateShare = sum.onaTotal * today.ona + sum.haTotal * today.ha;
+    /* The non-flood pot is disjoint from the flood cohort, so this share can
+       be added to the flood cohort's without counting a household twice. */
+    sum.otherStateShare = sum.otherOna * today.ona + sum.otherHa * today.ha;
     sum.rows = rows;
     return sum;
   }
@@ -912,6 +949,22 @@ PAGE_SCRIPT = """
   function shareFor(scenario, sum) {
     return sum.onaTotal * scenario.ona + sum.haTotal * scenario.ha;
   }
+  function costFor(scenario, haTotal, onaTotal) {
+    return onaTotal * scenario.ona + haTotal * scenario.ha;
+  }
+  function scenarioRows(payload, haTotal, onaTotal) {
+    var baseline = costFor(payload.scenarios[0], haTotal, onaTotal);
+    return payload.scenarios.map(function (scenario, index) {
+      var cost = costFor(scenario, haTotal, onaTotal);
+      var multiple = index === 0 ? '&mdash;'
+        : (baseline ? (cost / baseline).toFixed(1) + '&times;' : 'n/a');
+      return '<tr' + (index === 0 ? ' class="today"' : '') + '><td>' +
+        scenario.label +
+        (scenario.note ? ' <span class="sub">' + scenario.note + '</span>' : '') +
+        '</td><td class="n">' + money(cost) + '</td>' +
+        '<td class="n">' + multiple + '</td></tr>';
+    }).join('');
+  }
 
   function renderCards(sum) {
     var home = homeTotals(activePayload());
@@ -927,8 +980,8 @@ PAGE_SCRIPT = """
       hoHouseholds: count(home.households),
       hoIhpTotal: money(home.ihpTotal),
       hoOther: money(home.otherIhp),
-      hoFlood: money(home.floodIhp),
-      hoStateShare: money(home.stateShare)
+      hoOtherShare: money(home.otherStateShare),
+      hoFlood: money(home.floodIhp)
     };
     /* The two sides are filtered on different date fields -- declarations by
        their year, claims by date of loss -- so the note says which, rather
@@ -992,21 +1045,14 @@ PAGE_SCRIPT = """
     setText('heroSub', sub);
   }
 
-  function renderShare(payload, sum) {
+  function renderShare(payload, sum, home) {
     var baseline = shareFor(payload.scenarios[0], sum);
     var body = byId('sharebody');
-    if (body) {
-      body.innerHTML = payload.scenarios.map(function (scenario, index) {
-        var cost = shareFor(scenario, sum);
-        var multiple = index === 0 ? '&mdash;'
-          : (baseline ? (cost / baseline).toFixed(1) + '&times;' : 'n/a');
-        return '<tr' + (index === 0 ? ' class="today"' : '') + '><td>' +
-          scenario.label +
-          (scenario.note ? ' <span class="sub">' + scenario.note + '</span>' : '') +
-          '</td><td class="n">' + money(cost) + '</td>' +
-          '<td class="n">' + multiple + '</td></tr>';
-      }).join('');
-    }
+    if (body) body.innerHTML = scenarioRows(payload, sum.haTotal, sum.onaTotal);
+    var combined = home && byId('hosection')
+      ? ' Counting the non-flood pot in section 5 as well, the state\u2019s ' +
+        'current-law share comes to ' + money(baseline + home.otherStateShare) + '.'
+      : '';
     /* The lede has already said the state pays a quarter of ONA; this
        advances from that figure rather than restating it. */
     setText('shareintro',
@@ -1016,17 +1062,24 @@ PAGE_SCRIPT = """
       'toward the states, or IHP is curtailed, the same caseload lands on ' +
       payload.stateName + '. FEMA does not pay for what insurance covers, so ' +
       'coverage takes most of this liability off the state\u2019s ledger and the ' +
-      'federal one alike.');
+      'federal one alike.' + combined);
   }
 
   function renderHome(payload, home) {
     if (!byId('hosection')) return;
     setText('hointro',
-      'Flood is one peril. ' + count(home.households) + ' owner-occupant ' +
-      (Math.round(home.households) === 1 ? 'household' : 'households') +
-      periodPhrase() + ' turned to FEMA with no homeowners insurance of any kind, and ' +
-      'were paid ' + money(home.ihpTotal) + '. ' + money(home.otherIhp) +
-      ' of that was for damage a standard policy would ordinarily have covered.');
+      'Flood is one peril. Beyond it, ' + households(home.otherHouseholds) +
+      periodPhrase() + ' turned to FEMA with no homeowners insurance and damage a ' +
+      'standard policy would ordinarily have covered \u2014 wind, hail, fire, a ' +
+      'fallen tree \u2014 and ' +
+      (Math.round(home.otherHouseholds) === 1 ? 'was' : 'were') + ' paid ' +
+      money(home.otherIhp) + '. The state\u2019s ' +
+      'share of that under current law is ' + money(home.otherStateShare) +
+      '; if IHP were withdrawn, the whole ' + money(home.otherIhp) +
+      ' falls to the state, the household, or nobody. This pot is separate from ' +
+      'the flood cohort above, so the two liabilities add.');
+    var body = byId('hosharebody');
+    if (body) body.innerHTML = scenarioRows(payload, home.otherHa, home.otherOna);
   }
 
   function renderTable(payload, sum) {
@@ -1114,7 +1167,7 @@ PAGE_SCRIPT = """
     var home = renderCards(sum);
     renderChart(sum);
     renderHero(payload, sum);
-    renderShare(payload, sum);
+    renderShare(payload, sum, home);
     renderHome(payload, home);
     renderTable(payload, sum);
     renderLede(payload, sum);
@@ -1236,6 +1289,7 @@ color:var(--muted)}
 .step{margin:0 0 6px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
 color:var(--muted);font-weight:600}
 section{margin-top:44px}section h2{margin:0 0 10px}
+section h3{margin:22px 0 8px;font-size:15px;letter-spacing:-.01em}
 .intro{margin:0 0 16px;font-size:16px;max-width:72ch}.intro:empty{display:none}
 .herowrap{margin:4px 0 18px}
 .herolabel{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.06em;
