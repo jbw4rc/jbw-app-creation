@@ -1516,6 +1516,8 @@ class TestPublicAssistanceSheltering(unittest.TestCase):
     def test_keyword_floor_totals(self):
         pa = self.report.pa
         self.assertEqual(pa.matched.projects, 4)                  # p1 p2 p6 p7
+        # Whole cost from projectAmount; the non-federal share is the real
+        # remainder, not the sliver totalObligated would have given.
         self.assertEqual(pa.matched.total, 6_500_000.0)
         self.assertEqual(pa.matched.federal, 5_685_000.0)
         self.assertEqual(pa.matched.non_federal, 815_000.0)
@@ -1607,7 +1609,7 @@ class TestPublicAssistanceSheltering(unittest.TestCase):
         # what the report totals, so both must be present and different.
         self.assertEqual(float(first["whole_nominal"]), 5_000_000.0)
         self.assertEqual(float(first["non_federal_nominal"]), 500_000.0)
-        self.assertEqual(first["non_federal_basis_field"], "totalObligated")
+        self.assertEqual(first["non_federal_basis_field"], "projectAmount")
         self.assertIn("nominal", first["dollars"])
 
     def test_text_and_markdown_carry_both_tiers(self):
@@ -1942,8 +1944,8 @@ class TestNonFederalBasisIsAnAssumption(unittest.TestCase):
         from fema_flood.pa import PaOptions
         # projectAmount equals totalObligated in the fixtures, so the totals
         # match; what must differ is the field the report says it used.
-        for basis, field in (("total-obligated", "totalObligated"),
-                             ("project-amount", "projectAmount")):
+        for basis, field in (("project-amount", "projectAmount"),
+                             ("total-obligated", "totalObligated")):
             built = pipeline.build(
                 make_client(), make_options(pa=PaOptions(non_federal_basis=basis)))
             self.assertEqual(built.pa.options.total_field, field)
@@ -1965,7 +1967,8 @@ class TestNonFederalBasisIsAnAssumption(unittest.TestCase):
     def test_the_caveat_travels_with_the_figure(self):
         built = pipeline.build(make_client(), make_options())
         caveat = report.pa_basis_caveat(built)
-        self.assertIn("Verify that", caveat)
+        self.assertIn("projectAmount minus federalShareObligated", caveat)
+        self.assertIn("75% and 100%", caveat)
         self.assertIn("--pa-non-federal-basis", caveat)
         for fmt in ("text", "md", "html"):
             output = " ".join(report.render(built, fmt).split())
@@ -1974,10 +1977,29 @@ class TestNonFederalBasisIsAnAssumption(unittest.TestCase):
     def test_json_records_the_basis_and_the_profile(self):
         built = pipeline.build(make_client(), make_options())
         block = json.loads(report.render(built, "json"))["public_assistance_sheltering"]
-        self.assertEqual(block["non_federal_basis"], "total-obligated")
-        self.assertIn("Verify that", block["basis_caveat"])
+        self.assertEqual(block["non_federal_basis"], "project-amount")
+        self.assertIn("whole project cost", block["basis_caveat"])
         profile = block["federal_ratio_profile"]
         # Every category-B state-applicant project feeds the check, not only
         # the keyword matches: a bigger sample reads the column more reliably.
         self.assertEqual(profile["projects"], 6)
         self.assertIn("reading", profile)
+
+
+    def test_the_wrong_basis_is_flagged_at_run_time(self):
+        """Choosing the federal-side column must not fail silently."""
+        from fema_flood.pa import PaOptions
+        built = pipeline.build(
+            make_client(),
+            make_options(pa=PaOptions(non_federal_basis="total-obligated")))
+        warning = next(w for w in built.warnings if "non-federal share was derived" in w)
+        self.assertIn("reads as a federal-side figure", warning)
+        self.assertIn("--pa-non-federal-basis project-amount", warning)
+        # And the figure it produced is the giveaway: a sliver, not a share.
+        self.assertLess(built.pa.matched.non_federal, built.pa.matched.total * 0.05)
+
+    def test_the_default_basis_produces_no_such_warning(self):
+        built = pipeline.build(make_client(), make_options())
+        self.assertFalse(any("federal-side figure" in w for w in built.warnings))
+        self.assertAlmostEqual(built.pa.matched.non_federal / built.pa.matched.total,
+                               0.1254, places=3)

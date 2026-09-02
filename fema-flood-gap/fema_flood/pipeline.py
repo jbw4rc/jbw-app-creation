@@ -602,6 +602,15 @@ def _pull_public_assistance(client, options, report, disaster_years, allowed):
         pa_result = report.pa
         progress("  %d sheltering projects matched (state applicants), %s obligated"
                  % (pa_result.matched.projects, f"{pa_result.matched.total:,.0f}"))
+        profile = pa_mod.federal_ratio_profile(pa_result.federal_ratios)
+        if profile and profile["reading"].startswith("federal-side"):
+            report.warnings.append(
+                "The non-federal share was derived from %s, but across these "
+                "projects the federal share is a median %s of it -- that column "
+                "reads as a federal-side figure, so the state cost shown is "
+                "likely management costs rather than the non-federal share. "
+                "Re-run with --pa-non-federal-basis project-amount."
+                % (options.pa.total_field, profile["median"]))
         if pa_result.matched.projects == 0:
             # An empty block is a result a reader will act on, so say which of
             # the three filters emptied it rather than showing a silent zero.

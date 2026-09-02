@@ -47,7 +47,13 @@ NON_FEDERAL_BASES = {
     "total-obligated": "totalObligated",
     "project-amount": "projectAmount",
 }
-DEFAULT_NON_FEDERAL_BASIS = "total-obligated"
+# Settled against live Mississippi data (19,114 projects): the federal share
+# is a median 0.990 of totalObligated, with 4,529 of 4,746 projects between
+# 0.95 and 1.00 -- that column is a federal-side figure, and subtracting from
+# it yields management costs, not the state's share. Against projectAmount the
+# ratio is bimodal at 0.75 and 1.00, the two statutory federal shares, which is
+# what a true total-cost column looks like.
+DEFAULT_NON_FEDERAL_BASIS = "project-amount"
 
 PA_APPLICANT_FIELDS = {
     "applicantId": ["applicantId"],
@@ -104,13 +110,19 @@ class PaOptions:
         return bool(title) and bool(self._pattern.search(str(title)))
 
     def basis_note(self):
-        return ("Non-federal share = %s minus federalShareObligated. Verify that "
-                "%s is the whole project cost in the OpenFEMA data dictionary for "
-                "your vintage; if it is a federal-side figure, this understates "
-                "or misstates the state's share. `--pa-non-federal-basis` switches "
-                "it, and `fema-flood-gap pa <state>` reports which reading the "
-                "data supports."
-                % (self.total_field, self.total_field))
+        return ("Non-federal share = %s minus federalShareObligated. %s "
+                "`--pa-non-federal-basis` switches the column, and "
+                "`fema-flood-gap pa <state>` reports which reading the data "
+                "supports for that state."
+                % (self.total_field,
+                   "projectAmount is the whole project cost: across live data the "
+                   "federal share sits at the two statutory levels, 75% and 100%, "
+                   "against it."
+                   if self.total_field == "projectAmount" else
+                   "Warning: totalObligated reads as a federal-side figure "
+                   "(federal share plus management costs) in live data, so this "
+                   "subtraction is likely management costs rather than the "
+                   "state's share."))
 
     def describe(self):
         return ("Public Assistance category %s, %s%s, titles matching: %s"

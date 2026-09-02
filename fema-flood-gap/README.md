@@ -151,16 +151,19 @@ table supplies names as a second check), and reports two tiers:
 - **Category ceiling** -- every Category B project with a state applicant,
   which bounds the same costs from above.
 
-The non-federal share is derived as **`totalObligated` minus
+The non-federal share is derived as **`projectAmount` minus
 `federalShareObligated`**, so it reflects any adjustment to 90% or 100%
-federal rather than assuming the statutory 25%. **That derivation rests on an
-assumption**: that `totalObligated` is the whole project cost rather than a
-federal-side figure (federal share plus management costs). Verify it against
-the OpenFEMA data dictionary for your vintage; `--pa-non-federal-basis
-project-amount` switches to `projectAmount` instead. The tool also checks the
-assumption empirically -- `fema-flood-gap pa <state>` reports the federal
-share as a fraction of each candidate column, and a median near 1.0 means the
-column is federal-side and the derived "state share" is not one. Every matched project is written to `pa-sheltering-projects.csv` with its
+federal rather than assuming the statutory 25%.
+
+`projectAmount` is the whole project cost. **`totalObligated` is not** --
+against 19,114 live Mississippi projects the federal share is a median 0.990
+of it, with 4,529 of 4,746 between 0.95 and 1.00, which is a federal-side
+figure (federal share plus management costs). Against `projectAmount` the same
+ratio is bimodal at 0.75 and 1.00, the two statutory federal shares, which is
+what a true total-cost column looks like. `--pa-non-federal-basis` switches
+the column, `fema-flood-gap pa <state>` reports which reading a state's data
+supports, and choosing the federal-side column raises a warning on the run
+rather than quietly reporting management costs as the state's share. Every matched project is written to `pa-sheltering-projects.csv` with its
 applicant, title, and both the **nominal** amounts (which tie out against
 FEMA's own CSV download) and the **inflation-adjusted** ones the report
 totals -- so a figure that looks wrong can be traced to either the derivation

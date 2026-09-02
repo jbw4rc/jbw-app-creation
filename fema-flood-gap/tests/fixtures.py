@@ -165,11 +165,19 @@ CATALOG = [
 
 def _pa(row_id, disaster, applicant_id, title, category, total, federal,
         state="LA", county="Statewide"):
+    """One PA project.
+
+    ``projectAmount`` is the whole cost and ``federalShareObligated`` the
+    federal part of it. ``totalObligated`` mirrors the live data, where it is
+    a federal-side figure: the federal share plus a little management cost,
+    so the ratio against it sits near 1.0 and never at 0.75.
+    """
     return {
         "disasterNumber": disaster, "stateAbbreviation": state,
         "applicantId": applicant_id, "applicationTitle": title,
         "damageCategoryCode": category, "projectAmount": total,
-        "federalShareObligated": federal, "totalObligated": total,
+        "federalShareObligated": federal,
+        "totalObligated": round(federal * 1.01, 2),
         "county": county, "pwNumber": int(row_id[1:]),
     }
 
