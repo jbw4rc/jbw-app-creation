@@ -195,7 +195,7 @@ class RunOptions:
     """Every knob the CLI exposes, in one place."""
 
     def __init__(self, state, cohort, nfip, deflator, cost_share=None,
-                 home_insurance=None, min_year=None, max_year=None,
+                 home_insurance=None, review_note=None, min_year=None, max_year=None,
                  incident_types=None, flood_declarations_only=False, disasters=None,
                  match_buffer_days=3, ihp_version=None, nfip_version=None,
                  declarations_version=None, ihp_dataset=None, nfip_dataset=None,
@@ -207,6 +207,7 @@ class RunOptions:
         self.deflator = deflator
         self.cost_share = cost_share or costshare.CostShare()
         self.home_insurance = home_insurance or analysis.HomeInsuranceOptions()
+        self.review_note = review_note
         self.min_year = min_year
         self.max_year = max_year
         # A year range applies to both sides unless the caller narrowed the

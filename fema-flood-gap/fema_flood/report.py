@@ -23,36 +23,38 @@ def pct(value, digits=1):
 # ------------------------------------------------------------------ narrative
 
 def headline(report):
-    """The claim, in one paragraph, built from the numbers.
+    """The claim, in one paragraph, for a state audience.
 
-    Written as an argument rather than a caption: who, what aid paid, what
-    insurance paid, and the size of the difference. The HTML page regenerates
-    the same sentence in the browser as the filters change.
+    The state is the subject from the first sentence: what it already pays,
+    what the households it pays for received, what insured neighbours
+    received, and where that leaves the state. The HTML page regenerates the
+    same paragraph in the browser as the filters change.
     """
     households = report.cohort_households()
     if not households:
         return "No owner-occupant households in %s matched the cohort." % report.state_name
 
+    stats = report.ihp.statewide
+    state_share = report.state_cost_share()
     ihp_mean = report.ihp_mean()
     nfip_mean = report.nfip_mean()
-    total_ihp = report.ihp.statewide.ihp.total
     text = (
-        "In %s, %s owner-occupant households flooded without flood insurance "
-        "across %d disasters and turned to FEMA. The Individuals and Households "
-        "Program paid them %s in all -- an average of %s per household, with %s "
-        "of the cohort receiving any award."
+        "%s already pays for uninsured homes. Under current law the state funds a "
+        "quarter of every Other Needs Assistance award; on the %s owner-occupant "
+        "households that flooded without flood insurance across %d disasters, that "
+        "has come to %s of the %s FEMA paid out."
         % (report.state_name, count(households), len(report.ihp.by_disaster),
-           money(total_ihp), money(ihp_mean),
-           pct(report.ihp.statewide.ihp.share_positive)))
+           money(state_share), money(stats.ihp.total)))
     if nfip_mean is not None and ihp_mean:
-        ratio = nfip_mean / ihp_mean
         text += (
-            " Insured neighbours filing NFIP claims over the same period were "
-            "paid an average of %s -- %s as much. That difference, %s per "
-            "household, is what an uninsured household absorbed, or went "
-            "without; across the cohort it comes to %s."
-            % (money(nfip_mean), _times(ratio), money(report.gap_per_household()),
-               money(report.aggregate_gap())))
+            " The households themselves averaged %s from FEMA. Insured neighbours "
+            "filing NFIP claims over the same period averaged %s -- %s as much. "
+            "Coverage takes the liability off the state, and pays the homeowner "
+            "%s more."
+            % (money(ihp_mean), money(nfip_mean), _times(nfip_mean / ihp_mean),
+               money(report.gap_per_household())))
+    else:
+        text += " The households themselves averaged %s from FEMA." % money(ihp_mean)
     return text
 
 
@@ -79,7 +81,8 @@ def render_text(report, limit=25, width=100):
         w("Data vintage: %s\n" % ", ".join(
             "%s %s" % (k.upper(), v or "unknown") for k, v in report.vintage.items()))
     w("\n%s\n%s\n\n" % ("THE HEADLINE", "-" * width))
-    w(_wrap(headline(report), width) + "\n")
+    w(_wrap(headline(report), width) + "\n\n")
+    w(_wrap(FRAMING_NOTE, width) + "\n")
 
     stats = report.ihp.statewide
     w("\n%s\n%s\n" % ("FEMA IHP -- OWNER, FLOOD DAMAGE, NO FLOOD INSURANCE", "-" * width))
@@ -220,6 +223,21 @@ def render_text(report, limit=25, width=100):
     return out.getvalue()
 
 
+FRAMING_NOTE = (
+    "IHP is one of several ways a state ends up paying for uninsured homes "
+    "after a disaster. It is the program worth measuring because every "
+    "registration records whether the household was insured -- so the figures "
+    "here are a floor for that cost, not an estimate of all of it."
+)
+
+# The federal role is under formal review. This names the review without
+# asserting what it will recommend; the CLI lets the author substitute a
+# citation of their own.
+DEFAULT_REVIEW_NOTE = (
+    "The federal share is under review: a FEMA Review Council was established "
+    "in 2025 to recommend changes to the federal role in disaster response."
+)
+
 HOME_INSURANCE_NOTE = (
     "Every standard homeowners policy excludes flood, so the two halves answer "
     "different questions. For the non-flood share -- wind, hail, fire, a fallen "
@@ -271,6 +289,7 @@ def render_markdown(report, limit=25):
 
     w("# %s: FEMA flood aid vs. NFIP payouts\n\n" % report.state_name)
     w("%s\n\n" % headline(report))
+    w("%s\n\n" % FRAMING_NOTE)
     w("*Generated %s. %s. Cohort: %s.*\n\n"
       % (report.generated, report.options.deflator.label().capitalize(),
          report.options.cohort.describe()))
@@ -543,6 +562,7 @@ def page_payload(report):
         })
 
     return {
+        "reviewNote": getattr(report.options, "review_note", None) or DEFAULT_REVIEW_NOTE,
         "homeInsurance": home,
         "basis": _basis_text(report.options.deflator),
         "basisClass": "real" if report.options.deflator.active else "nominal",
@@ -646,19 +666,33 @@ def render_html(report, limit=40, alternate=None):
 
     body = [
         "<header><p class=\"eyebrow\">OpenFEMA analysis &middot; %s</p>" % e(report.state_name),
-        "<h1>What flood aid paid uninsured homeowners &mdash; "
-        "and what insurance would have</h1>",
+        "<h1>What uninsured homes cost the state after a disaster &mdash; "
+        "and what insurance would have paid</h1>",
         "".join(controls),
         "<p class=\"lede\" id=\"lede\">%s</p>" % e(headline(report)),
         "<p class=\"meta\">Cohort: %s</p></header>" % e(report.options.cohort.describe()),
     ]
 
-    # 1 -- the people
+    # 1 -- the people, and why this program is the one to measure
     body.append(_section(
-        "1 · Who this is about", "Homeowners who flooded without flood insurance",
-        "<div class=\"cards\">%s</div>" % _tiles(CARD_SPECS)))
+        "1 · Who the state is paying for",
+        "Homeowners who flooded without flood insurance",
+        "<div class=\"cards\">%s</div>" % _tiles(CARD_SPECS),
+        intro=("framing", FRAMING_NOTE)))
 
-    # 2 -- the comparison, as a chart
+    # 2 -- the state is already paying (state-first: this is the audience)
+    body.append(_section(
+        "2 · The state is already paying", "And could pay more",
+        "<div class=\"scroll\"><table>"
+        "<thead><tr><th>Funding arrangement</th><th class=\"n\">State cost</th>"
+        "<th class=\"n\">vs. today</th></tr></thead>"
+        "<tbody id=\"sharebody\"></tbody></table></div>"
+        "<p class=\"caption\">%s</p>" % e(
+            "Only the first row is current law. Scope: the non-federal share of ONA "
+            "paid to this cohort, not the state's whole IHP caseload. " + COST_SHARE_NOTE),
+        intro=("shareintro", "")))
+
+    # 3 -- the comparison, as a chart
     chart = (
         "<figure class=\"compare\" id=\"compare\">"
         "<div class=\"row\"><span class=\"cat\">FEMA IHP, average per household</span>"
@@ -674,33 +708,21 @@ def render_html(report, limit=40, alternate=None):
         "<div class=\"tip\" id=\"tip\" role=\"status\" hidden></div>"
         "</figure>")
     body.append(_section(
-        "2 · Aid versus insurance", "What each paid, per household",
+        "3 · Aid versus insurance", "The aid is a band-aid; insurance is not",
         chart,
         intro=("compareintro",
                "The same state, the same storms. On one side, what FEMA's Individuals "
                "and Households Program paid an uninsured flooded owner-occupant. On the "
                "other, what the National Flood Insurance Program paid a policyholder's "
-               "claim.")))
+               "claim. IHP was never designed to make a household whole; a policy is.")))
 
-    # 3 -- the gap, as the hero figure
+    # 4 -- the gap, as the hero figure
     hero = (
         "<div class=\"herowrap\"><p class=\"herolabel\">Difference per household</p>"
         "<p class=\"hero\" id=\"heroGap\">-</p>"
         "<p class=\"herosub\" id=\"heroSub\"></p></div>"
         "<div class=\"cards\">%s</div>" % _tiles(GAP_SPECS))
-    body.append(_section("3 · The gap", "What going uninsured cost", hero))
-
-    # 4 -- why it matters more now
-    body.append(_section(
-        "4 · Why it matters more now", "The state is already paying, and could pay more",
-        "<div class=\"scroll\"><table>"
-        "<thead><tr><th>Funding arrangement</th><th class=\"n\">State cost</th>"
-        "<th class=\"n\">vs. today</th></tr></thead>"
-        "<tbody id=\"sharebody\"></tbody></table></div>"
-        "<p class=\"caption\">%s</p>" % e(
-            "Only the first row is current law. Scope: the non-federal share of ONA "
-            "paid to this cohort, not the state's whole IHP caseload. " + COST_SHARE_NOTE),
-        intro=("shareintro", "")))
+    body.append(_section("4 · The gap", "What going uninsured cost the household", hero))
 
     # 5 -- the bigger picture
     if report.home_insurance:
@@ -985,12 +1007,16 @@ PAGE_SCRIPT = """
           '<td class="n">' + multiple + '</td></tr>';
       }).join('');
     }
+    /* The lede has already said the state pays a quarter of ONA; this
+       advances from that figure rather than restating it. */
     setText('shareintro',
-      'Under current law ' + payload.stateName + ' already funds a quarter of the ' +
-      'Other Needs Assistance in these awards: ' + money(baseline) +
-      ' on this cohort' + periodPhrase() + '. Housing Assistance is fully federal. ' +
-      'If the split moves, or IHP is curtailed, the same caseload lands ' +
-      'differently.');
+      'That ' + money(baseline) + ' is the state\u2019s share under current law' +
+      periodPhrase() + ': Housing Assistance is fully federal, Other Needs ' +
+      'Assistance is split 75/25. ' + payload.reviewNote + ' If the split moves ' +
+      'toward the states, or IHP is curtailed, the same caseload lands on ' +
+      payload.stateName + '. FEMA does not pay for what insurance covers, so ' +
+      'coverage takes most of this liability off the state\u2019s ledger and the ' +
+      'federal one alike.');
   }
 
   function renderHome(payload, home) {
@@ -1042,19 +1068,21 @@ PAGE_SCRIPT = """
   }
 
   function renderLede(payload, sum) {
-    var text = 'In ' + payload.stateName + ', ' + count(sum.households) +
-      ' owner-occupant households flooded without flood insurance' +
-      periodPhrase() + ' across ' + count(sum.rows.length) +
-      ' disasters and turned to FEMA. The Individuals and Households Program ' +
-      'paid them ' + money(sum.ihpTotal) + ' in all \\u2014 an average of ' +
-      money(sum.ihpMean) + ' per household, with ' + pct(sum.awardedShare) +
-      ' of the cohort receiving any award.';
+    var text = payload.stateName + ' already pays for uninsured homes. Under ' +
+      'current law the state funds a quarter of every Other Needs Assistance ' +
+      'award; on the ' + count(sum.households) + ' owner-occupant households that ' +
+      'flooded without flood insurance' + periodPhrase() + ' across ' +
+      count(sum.rows.length) + ' disasters, that has come to ' +
+      money(sum.stateShare) + ' of the ' + money(sum.ihpTotal) + ' FEMA paid out.';
     if (sum.nfipMean !== null && sum.ihpMean) {
-      text += ' Insured neighbours filing NFIP claims over the same period were ' +
-        'paid an average of ' + money(sum.nfipMean) + ' \\u2014 ' + times(sum.ratio) +
-        ' as much. That difference, ' + money(sum.gap) + ' per household, is what ' +
-        'an uninsured household absorbed, or went without; across the cohort it ' +
-        'comes to ' + money(sum.aggregateGap) + '.';
+      text += ' The households themselves averaged ' + money(sum.ihpMean) +
+        ' from FEMA. Insured neighbours filing NFIP claims over the same period ' +
+        'averaged ' + money(sum.nfipMean) + ' \u2014 ' + times(sum.ratio) +
+        ' as much. Coverage takes the liability off the state, and pays the ' +
+        'homeowner ' + money(sum.gap) + ' more.';
+    } else {
+      text += ' The households themselves averaged ' + money(sum.ihpMean) +
+        ' from FEMA.';
     }
     setText('lede', text);
   }
@@ -1074,8 +1102,10 @@ PAGE_SCRIPT = """
       'coverage bought, and IHP is capped assistance for essential needs \\u2014 ' +
       'but the size of that difference is the size of what a policy covers and ' +
       'aid does not. The state already funds a quarter of the ONA in these ' +
-      'awards. If that share rises, or the program is curtailed, the cost of ' +
-      'going uninsured moves further onto the household and the state.');
+      'awards, and the federal role is under review. If that share rises, or ' +
+      'the program is curtailed, the cost of going uninsured moves further onto ' +
+      'the household and the state \u2014 and insurance is the one arrangement ' +
+      'under which all three ledgers improve.');
   }
 
   function render() {

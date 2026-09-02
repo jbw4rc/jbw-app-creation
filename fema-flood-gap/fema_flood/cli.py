@@ -181,6 +181,11 @@ def _add_report_args(parser):
                         help="declarations shown in table output (default: %(default)s)")
     output.add_argument("--sort", choices=["ihp_total", "households", "disaster"],
                         default="ihp_total", help="declaration table ordering")
+    output.add_argument("--review-note", metavar="TEXT",
+                        help="sentence to quote on the page about the federal "
+                             "cost-share review, e.g. a citation to the FEMA "
+                             "Review Council's recommendation (replaces the "
+                             "built-in, deliberately general wording)")
     output.add_argument("--no-toggle", action="store_true",
                         help="omit the nominal/constant-dollar toggle from the "
                              "HTML page")
@@ -255,6 +260,7 @@ def build_options(args, state):
     return pipeline.RunOptions(
         state=state, cohort=cohort, nfip=nfip, deflator=deflator,
         cost_share=shares, home_insurance=home_insurance,
+        review_note=args.review_note,
         min_year=args.min_year, max_year=args.max_year,
         incident_types=args.incident_types,
         flood_declarations_only=args.flood_declarations_only,

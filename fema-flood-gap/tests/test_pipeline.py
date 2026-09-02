@@ -1336,11 +1336,28 @@ class TestStoryStructure(unittest.TestCase):
     def test_sections_run_in_story_order(self):
         steps = re.findall(r'<p class="step">([^<]*)</p>', self.page)
         self.assertEqual([s.split(" ")[0] for s in steps], ["1", "2", "3", "4", "5", "6"])
-        self.assertIn("Aid versus insurance", steps[1])
-        self.assertIn("The gap", steps[2])
-        self.assertIn("Why it matters more now", steps[3])
+        # State-first: the audience is the state, so its liability comes
+        # before the household comparison.
+        self.assertIn("Who the state is paying for", steps[0])
+        self.assertIn("The state is already paying", steps[1])
+        self.assertIn("Aid versus insurance", steps[2])
+        self.assertIn("The gap", steps[3])
         self.assertIn("The bigger picture", steps[4])
         self.assertIn("Evidence", steps[5])
+
+    def test_framing_says_ihp_is_one_program_and_a_floor(self):
+        for fmt in ("text", "md", "html"):
+            output = " ".join(report.render(self.real, fmt).split())
+            self.assertIn("one of several ways a state ends up paying", output, fmt)
+            self.assertIn("a floor for that cost", output, fmt)
+
+    def test_review_note_is_general_by_default_and_replaceable(self):
+        config = _page_config(self.page)
+        self.assertIn("FEMA Review Council", config["payloads"]["primary"]["reviewNote"])
+        custom = pipeline.build(make_client(), make_options(
+            review_note="Per the Council's final report, section 3."))
+        page = report.render(custom, "html")
+        self.assertIn("Per the Council", _page_config(page)["payloads"]["primary"]["reviewNote"])
 
     def test_exactly_one_hero_figure_and_it_is_the_gap(self):
         self.assertEqual(self.page.count('class="hero"'), 1)
@@ -1363,8 +1380,10 @@ class TestStoryStructure(unittest.TestCase):
 
     def test_headline_is_a_claim_with_the_ratio(self):
         text = report.headline(self.real)
+        # State first, then the households, then the comparison.
+        self.assertTrue(text.startswith("Louisiana already pays for uninsured homes"))
+        self.assertIn(report.money(self.real.state_cost_share()), text)
         self.assertIn("times as much", text)
-        self.assertIn("turned to FEMA", text)
         self.assertIn(report.money(self.real.gap_per_household()), text)
         # The same sentence leads the text and Markdown outputs.
         self.assertIn("times as much", report.render(self.real, "text"))
@@ -1403,7 +1422,12 @@ class TestStoryArithmetic(TestPageScriptArithmetic):
         page = self.run_page("2016")
         self.assertIn("since 2016", page["comparecaption"])
         self.assertIn("since 2016", page["shareintro"])
+        self.assertTrue(page["shareintro"].startswith("That $"))
+        self.assertIn("does not pay for what insurance covers", page["shareintro"])
+        # Section 2 advances from the lede's figure instead of repeating it.
+        self.assertNotIn("already pays for uninsured homes", page["shareintro"])
         self.assertIn("since 2016", page["lede"])
+        self.assertTrue(page["lede"].startswith("Louisiana already pays"))
         self.assertIn("since 2016", page["reading"])
         equivalent = pipeline.build(
             make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))

@@ -152,12 +152,16 @@ CPI-U table, so a 2005 Katrina award and a 2021 claim are comparable. Without
 it everything is nominal — fine for a single event, misleading across decades.
 `--cpi-file table.json` substitutes your own deflator.
 
-The HTML page is written as an argument, in order: the claim; who the
-households are; a two-bar comparison of what aid paid against what insurance
-paid; the difference as the single hero figure; what the state already funds
-and what a changed split would cost; the non-flood cohort as the wider
-picture; the per-declaration evidence; and, as a titled section rather than a
-footer, what the numbers do and do not show. Every sentence and figure on it
+The HTML page is written as an argument for a state audience, in order: the
+claim, with the state as its subject; who the state is paying for, and why
+IHP is the program to measure (it records insurance status, so it is a floor
+for the cost, not all of it); what the state already funds and what a changed
+split would cost; a two-bar comparison of what aid paid against what
+insurance paid; the difference as the single hero figure; the non-flood
+cohort as the wider picture; the per-declaration evidence; and, as a titled
+section rather than a footer, what the numbers do and do not show. The
+sentence about the federal cost-share review is deliberately general;
+`--review-note "..."` substitutes your own citation. Every sentence and figure on it
 is regenerated in the browser as the controls change, so a filtered view
 argues the same way as the full one.
 
