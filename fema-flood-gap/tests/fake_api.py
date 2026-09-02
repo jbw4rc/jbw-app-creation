@@ -89,7 +89,7 @@ class FakeClient(api.Client):
         self.reject_compound_filters = reject_compound_filters
         self.urls = []
 
-    def _fetch(self, url):
+    def _request(self, url):
         self.urls.append(url)
         path = urllib.parse.urlparse(url).path
         dataset = path.rsplit("/", 1)[-1]

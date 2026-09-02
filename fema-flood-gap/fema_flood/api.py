@@ -10,6 +10,7 @@ dataset does not cooperate.
 
 import gzip
 import hashlib
+import http.client
 import json
 import os
 import re
@@ -25,6 +26,9 @@ USER_AGENT = "fema-flood-gap/1.0 (+https://www.fema.gov/about/openfema/api)"
 # OpenFEMA caps $top at 10,000. 5,000 keeps individual responses ~10-20 MB for
 # the wide NFIP rows, which is a friendlier retry unit on a flaky connection.
 DEFAULT_PAGE_SIZE = 5000
+
+# Floor for the adaptive shrink applied when a server keeps truncating a page.
+MIN_PAGE_SIZE = 250
 
 RETRY_STATUS = {408, 425, 429, 500, 502, 503, 504}
 
@@ -190,22 +194,31 @@ class Client:
             os.replace(tmp, path)
         return payload
 
+    def _request(self, url):
+        """One HTTP attempt. Overridden wholesale by the test double.
+
+        Kept separate from the retry loop so that retry, backoff, and the
+        classification of transient failures are exercised by tests rather
+        than replaced by them.
+        """
+        request = urllib.request.Request(url, headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Accept-Encoding": "gzip",
+        })
+        self.requests_made += 1
+        with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            raw = response.read()
+            if response.headers.get("Content-Encoding") == "gzip":
+                raw = gzip.decompress(raw)
+            return json.loads(raw.decode("utf-8"))
+
     def _fetch(self, url):
         delay = 2.0
         last_error = None
         for attempt in range(1, self.max_retries + 1):
-            request = urllib.request.Request(url, headers={
-                "User-Agent": USER_AGENT,
-                "Accept": "application/json",
-                "Accept-Encoding": "gzip",
-            })
             try:
-                self.requests_made += 1
-                with urllib.request.urlopen(request, timeout=self.timeout) as response:
-                    raw = response.read()
-                    if response.headers.get("Content-Encoding") == "gzip":
-                        raw = gzip.decompress(raw)
-                    return json.loads(raw.decode("utf-8"))
+                return self._request(url)
             except urllib.error.HTTPError as exc:
                 body = _error_body(exc)
                 if exc.code not in RETRY_STATUS:
@@ -216,8 +229,16 @@ class Client:
                 retry_after = exc.headers.get("Retry-After") if exc.headers else None
                 if retry_after and str(retry_after).isdigit():
                     delay = max(delay, float(retry_after))
-            except (urllib.error.URLError, TimeoutError, ValueError, OSError) as exc:
-                last_error = OpenFemaError("%s while fetching %s" % (exc, url))
+            except (urllib.error.URLError, TimeoutError, ValueError, OSError,
+                    http.client.HTTPException) as exc:
+                # http.client.HTTPException covers IncompleteRead and
+                # RemoteDisconnected: a chunked response cut off mid-transfer.
+                # These are transient and belong in the retry loop -- they are
+                # neither OSError nor ValueError, so they need naming outright.
+                last_error = OpenFemaError("%s while fetching %s"
+                                           % (exc.__class__.__name__ + ": " + str(exc)
+                                              if str(exc) else exc.__class__.__name__,
+                                              url))
 
             if attempt < self.max_retries:
                 self.progress("  retry %d/%d in %.0fs (%s)"
@@ -268,16 +289,17 @@ class Client:
         skip = 0
         label = label or dataset
         quote_ids = False        # flipped if OpenFEMA rejects the literal's type
+        page_size = self.page_size
 
         while True:
             if mode == "cursor":
                 page_filter = and_filters(
                     filter,
                     "id gt %s" % format_literal(cursor, quote_ids) if cursor else None)
-                params = {"$top": self.page_size, "$filter": page_filter,
+                params = {"$top": page_size, "$filter": page_filter,
                           "$select": select_clause, "$orderby": "id"}
             else:
-                params = {"$top": self.page_size, "$skip": skip, "$filter": filter,
+                params = {"$top": page_size, "$skip": skip, "$filter": filter,
                           "$select": select_clause, "$orderby": "id"}
             url = self.build_url(dataset, version, params)
 
@@ -297,6 +319,17 @@ class Client:
                     mode = "skip"
                     continue
                 raise
+            except OpenFemaError:
+                # Every retry of this page failed. Before giving up on a pull
+                # that may be hundreds of pages in, try asking for less: a
+                # large page that the server keeps truncating often succeeds
+                # when it is smaller.
+                if page_size <= MIN_PAGE_SIZE:
+                    raise
+                page_size = max(MIN_PAGE_SIZE, page_size // 4)
+                self.progress("  page failed repeatedly; retrying with %d rows "
+                              "per request" % page_size)
+                continue
 
             if not rows:
                 break
@@ -319,7 +352,7 @@ class Client:
                 " of ~%s" % f"{expected:,}" if expected else "",
             ))
 
-            if len(rows) < self.page_size:
+            if len(rows) < page_size:
                 break
             if mode == "cursor":
                 next_cursor = rows[-1].get("id")

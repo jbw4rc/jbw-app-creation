@@ -4,6 +4,7 @@ import re
 import sys
 import urllib.parse
 import unittest
+import unittest.mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -332,7 +333,7 @@ class TestPagingSafety(unittest.TestCase):
         class IgnoresCursor(FakeClient):
             """A server that accepts `id gt ...` and then does not apply it."""
 
-            def _fetch(self, url):
+            def _request(self, url):
                 parts = urllib.parse.urlparse(url)
                 params = urllib.parse.parse_qs(parts.query)
                 if "$filter" in params:
@@ -344,7 +345,7 @@ class TestPagingSafety(unittest.TestCase):
                 query = urllib.parse.urlencode(
                     [(k, v[0]) for k, v in params.items()],
                     quote_via=urllib.parse.quote)
-                return super()._fetch(parts._replace(query=query).geturl())
+                return super()._request(parts._replace(query=query).geturl())
 
         messages = []
         client = IgnoresCursor(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
@@ -454,13 +455,13 @@ class TestErrorDiagnosis(unittest.TestCase):
 
     def test_malformed_parameter_is_not_treated_as_a_filter_rejection(self):
         class BadParameter(FakeClient):
-            def _fetch(self, url):
+            def _request(self, url):
                 if "inlinecount" in url:
                     raise api_mod.HttpError(
                         400, url,
                         '{"error":"Bad Request","message":"Unexpected querystring '
                         'parameter","code":"INVALID_QUERY_PARAMETER"}')
-                return super()._fetch(url)
+                return super()._request(url)
 
         client = BadParameter(fixtures.TABLES, field_types=fixtures.FIELD_TYPES)
         result = pipeline.build(client, make_options())
@@ -522,10 +523,10 @@ class TestContextCounts(unittest.TestCase):
     def test_a_failed_pre_count_does_not_abort_the_report(self):
         """The pre-count only sizes a progress bar; losing it is not fatal."""
         class PreCountFails(FakeClient):
-            def _fetch(self, url):
+            def _request(self, url):
                 if "inlinecount" in url and "floodInsurance" in url:
                     raise api_mod.HttpError(503, url, "service unavailable")
-                return super()._fetch(url)
+                return super()._request(url)
 
         client = PreCountFails(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
                                max_retries=1)
@@ -538,11 +539,11 @@ class TestContextCounts(unittest.TestCase):
         class CountsFail(FakeClient):
             """Fails the owner-registrations context count only."""
 
-            def _fetch(self, url):
+            def _request(self, url):
                 if "inlinecount" in url and "ownRent" in url \
                         and "floodDamage" not in url:
                     raise api_mod.HttpError(500, url, "boom")
-                return super()._fetch(url)
+                return super()._request(url)
 
         client = CountsFail(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
                             max_retries=1)
@@ -605,8 +606,8 @@ class TestVocabulary(unittest.TestCase):
         class UnsampleableColumn(FakeClient):
             """Sampling comes back empty, so no cohort predicate can be built."""
 
-            def _fetch(self, url):
-                payload = super()._fetch(url)
+            def _request(self, url):
+                payload = super()._request(url)
                 if "%24top=1000" in url:
                     for key in payload:
                         if key != "metadata":
@@ -675,13 +676,13 @@ class TestNumericIdPaging(unittest.TestCase):
 
     def test_numeric_ids_page_unquoted(self):
         class StrictNumericId(FakeClient):
-            def _fetch(self, url):
+            def _request(self, url):
                 if "id%20gt%20%27" in url:      # id gt '...'
                     raise api_mod.HttpError(
                         400, url,
                         '{"error":[{"code":"OF_OQP_002","message":"Invalid data '
                         'type of: String for id"}]}')
-                return super()._fetch(url)
+                return super()._request(url)
 
         client = StrictNumericId(self._numeric_tables(),
                                  field_types=fixtures.FIELD_TYPES, page_size=2)
@@ -693,11 +694,11 @@ class TestNumericIdPaging(unittest.TestCase):
         """JSON can hand back a number for a column the API treats as text."""
 
         class StrictTextId(FakeClient):
-            def _fetch(self, url):
+            def _request(self, url):
                 if "id%20gt%20" in url and "id%20gt%20%27" not in url:
                     raise api_mod.HttpError(
                         400, url, '{"message":"Invalid data type of: Number for id"}')
-                return super()._fetch(url)
+                return super()._request(url)
 
         messages = []
         client = StrictTextId(self._numeric_tables(),
@@ -780,3 +781,93 @@ class TestPowerQueryParity(unittest.TestCase):
             make_client(), make_options(cohort_unknown_insurance="uninsured"))
         self.assertEqual(strict.ihp.statewide.households, 5)
         self.assertEqual(loose.ihp.statewide.households, 6)
+
+
+class TestTransientNetworkFailures(unittest.TestCase):
+    """A cut-off response is transient and must be retried, not fatal."""
+
+    def test_incomplete_read_is_retried(self):
+        import http.client
+
+        state = {"failures": 2}
+
+        class Flaky(FakeClient):
+            def _request(self, url):
+                if "FimaNfipClaims" in url and state["failures"]:
+                    state["failures"] -= 1
+                    raise http.client.IncompleteRead(b"partial")
+                return super()._request(url)
+
+        messages = []
+        client = Flaky(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                       page_size=3, max_retries=4, progress=messages.append)
+        client.timeout = 0
+        with unittest.mock.patch("time.sleep"):
+            rows = list(client.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
+        self.assertEqual(len(rows), 7)
+        self.assertTrue(any("retry" in m for m in messages))
+
+    def test_incomplete_read_names_the_cause(self):
+        import http.client
+
+        class AlwaysTruncates(FakeClient):
+            def _request(self, url):
+                raise http.client.IncompleteRead(b"partial")
+
+        client = AlwaysTruncates(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                                 max_retries=1)
+        with self.assertRaises(api_mod.OpenFemaError) as caught:
+            client.get("https://example.invalid/x")
+        self.assertIn("IncompleteRead", str(caught.exception))
+
+    def test_page_size_shrinks_when_a_page_keeps_failing(self):
+        import http.client
+
+        class TooBig(FakeClient):
+            """Fails any request asking for more than 500 rows."""
+
+            def _request(self, url):
+                match = re.search(r"%24top=(\d+)", url)
+                if match and int(match.group(1)) > 500:
+                    raise http.client.IncompleteRead(b"partial")
+                return super()._request(url)
+
+        messages = []
+        client = TooBig(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                        page_size=4000, max_retries=2, progress=messages.append)
+        with unittest.mock.patch("time.sleep"):
+            rows = list(client.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
+        self.assertEqual(len(rows), 7)
+        self.assertTrue(any("rows per request" in m for m in messages))
+
+    def test_cached_pages_let_an_interrupted_pull_resume(self):
+        import http.client
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            class DiesOnThirdPage(FakeClient):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+                    self.pages = 0
+
+                def _request(self, url):
+                    if "%24top=2" in url:
+                        self.pages += 1
+                        if self.pages > 2:
+                            raise http.client.IncompleteRead(b"partial")
+                    return super()._request(url)
+
+            first = DiesOnThirdPage(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                                    page_size=2, max_retries=1, cache_dir=tmp,
+                                    use_cache=True)
+            with unittest.mock.patch("time.sleep"):
+                with self.assertRaises(api_mod.OpenFemaError):
+                    list(first.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
+
+            # A fresh run replays the completed pages from cache and only asks
+            # the server for what it never received.
+            second = FakeClient(fixtures.TABLES, field_types=fixtures.FIELD_TYPES,
+                                page_size=2, cache_dir=tmp, use_cache=True)
+            rows = list(second.records("FimaNfipClaims", 2, filter="state eq 'LA'"))
+            self.assertEqual(len(rows), 7)
+            self.assertGreaterEqual(second.cache_hits, 2)
