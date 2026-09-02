@@ -132,6 +132,7 @@ class StateReport:
                 "flood_state_share": share.state_cost(
                     flood.ha.total, flood.ona.total) if flood else 0.0,
                 "other_households": other.households if other else 0,
+                "other_paid_households": other.ihp.n_positive if other else 0,
                 "other_ihp_total": other.ihp.total if other else 0.0,
                 "other_ha_total": other.ha.total if other else 0.0,
                 "other_ona_total": other.ona.total if other else 0.0,

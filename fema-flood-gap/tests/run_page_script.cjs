@@ -72,8 +72,13 @@ const nodes = {
   resetyears: new Node('resetyears'),
 };
 
-// Card and note placeholders, mirroring what the renderer emits.
+// Card, note and table-cell placeholders, mirroring what the renderer emits.
 const cards = [];
+for (const pot of ['flood', 'other', 'both']) {
+  for (const key of ['households', 'awarded', 'ihpTotal', 'haTotal', 'onaTotal']) {
+    cards.push(new Node(null, {'data-cell': pot + '.' + key}));
+  }
+}
 for (const key of ['households', 'ihpTotal', 'ihpMean', 'nfipMean',
                    'stateShare', 'gap', 'aggregateGap',
                    'hoHouseholds', 'hoIhpTotal', 'hoOther', 'hoFlood',
@@ -85,6 +90,10 @@ for (const key of ['households', 'ihpTotal', 'ihpMean', 'nfipMean',
 global.document = {
   getElementById: (id) => nodes[id] || null,
   querySelectorAll: (selector) => {
+    const exact = selector.match(/^\[([^=\]]+)="([^"]*)"\]$/);
+    if (exact) {
+      return cards.filter((node) => node.getAttribute(exact[1]) === exact[2]);
+    }
     const attr = selector.replace(/[[\]]/g, '');
     return cards.filter((node) => node.getAttribute(attr) !== null);
   },
@@ -111,10 +120,11 @@ const out = {basis: nodes.basis.textContent, lede: nodes.lede.textContent,
              sinceLabel: nodes.sincelabel.textContent,
              toggleLabel: nodes.toggle.textContent,
              shareRows: (nodes.sharebody.innerHTML.match(/<tr/g) || []).length,
-             hoShareRows: (nodes.hosharebody.innerHTML.match(/<tr/g) || []).length,
-             hoShareHtml: nodes.hosharebody.innerHTML,
+             shareHtml: nodes.sharebody.innerHTML,
              tableRows: (nodes.tablebody.innerHTML.match(/<tr/g) || []).length};
 for (const node of cards) {
+  const cell = node.getAttribute('data-cell');
+  if (cell) out['cell:' + cell] = node.textContent;
   const key = node.getAttribute('data-card');
   if (key) out[key] = node.textContent;
   const note = node.getAttribute('data-note');

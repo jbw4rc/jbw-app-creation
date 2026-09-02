@@ -1085,22 +1085,22 @@ class TestPageScriptArithmetic(unittest.TestCase):
 
     def test_default_view_matches_the_server_side_figures(self):
         page = self.run_page()
-        self.assertEqual(page["households"], report.count(
+        self.assertEqual(page["cell:flood.households"], report.count(
             self.real.ihp.statewide.households))
-        self.assertEqual(page["ihpTotal"], report.money(
+        self.assertEqual(page["cell:flood.ihpTotal"], report.money(
             self.real.ihp.statewide.ihp.total))
         self.assertEqual(page["ihpMean"], report.money(self.real.ihp_mean()))
         self.assertEqual(page["nfipMean"], report.money(self.real.nfip_mean()))
-        self.assertEqual(page["gap"], report.money(self.real.gap_per_household()))
+        self.assertEqual(page["heroGap"], report.money(self.real.gap_per_household()))
         self.assertEqual(page["aggregateGap"], report.money(self.real.aggregate_gap()))
         self.assertEqual(page["stateShare"], report.money(
             self.real.state_cost_share()))
 
     def test_toggling_reproduces_the_nominal_report(self):
         page = self.run_page("", "toggle")
-        self.assertEqual(page["ihpTotal"], report.money(
+        self.assertEqual(page["cell:flood.ihpTotal"], report.money(
             self.nominal.ihp.statewide.ihp.total))
-        self.assertEqual(page["gap"], report.money(self.nominal.gap_per_household()))
+        self.assertEqual(page["heroGap"], report.money(self.nominal.gap_per_household()))
         self.assertIn("Nominal dollars", page["basis"])
 
     def test_year_filter_matches_a_pipeline_run_with_the_same_cutoff(self):
@@ -1108,9 +1108,9 @@ class TestPageScriptArithmetic(unittest.TestCase):
         page = self.run_page("2016")
         equivalent = pipeline.build(
             make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))
-        self.assertEqual(page["households"],
+        self.assertEqual(page["cell:flood.households"],
                          report.count(equivalent.ihp.statewide.households))
-        self.assertEqual(page["ihpTotal"],
+        self.assertEqual(page["cell:flood.ihpTotal"],
                          report.money(equivalent.ihp.statewide.ihp.total))
         self.assertEqual(page["ihpMean"], report.money(equivalent.ihp_mean()))
         self.assertEqual(page["stateShare"],
@@ -1118,7 +1118,7 @@ class TestPageScriptArithmetic(unittest.TestCase):
         # The NFIP side must move with the slider too, or the gap is computed
         # from a full claim history against a truncated aid history.
         self.assertEqual(page["nfipMean"], report.money(equivalent.nfip_mean()))
-        self.assertEqual(page["gap"],
+        self.assertEqual(page["heroGap"],
                          report.money(equivalent.gap_per_household()))
         self.assertEqual(page["aggregateGap"],
                          report.money(equivalent.aggregate_gap()))
@@ -1135,49 +1135,36 @@ class TestPageScriptArithmetic(unittest.TestCase):
     def test_cost_share_rows_survive_filtering(self):
         self.assertEqual(self.run_page("2016")["shareRows"], 4)
 
-    def test_uninsured_homeowner_cards_match_the_pipeline(self):
+    def test_non_flood_pot_rows_match_the_pipeline(self):
         page = self.run_page()
-        home = self.real.home_insurance
-        self.assertEqual(page["hoHouseholds"],
-                         report.count(home.all.statewide.households))
-        self.assertEqual(page["hoIhpTotal"],
-                         report.money(home.all.statewide.ihp.total))
-        self.assertEqual(page["hoOther"],
-                         report.money(home.other_peril.statewide.ihp.total))
-        self.assertEqual(page["hoFlood"],
-                         report.money(home.flood_damaged.statewide.ihp.total))
-        self.assertEqual(page["hoOtherShare"],
-                         report.money(self.real.non_flood_state_share()))
-        # The non-flood pot gets its own scenario ladder.
-        self.assertEqual(page["hoShareRows"], 4)
-        self.assertIn(report.money(self.real.non_flood_state_share()),
-                      page["hoShareHtml"])
-        # Section 2 states the combined share across the disjoint pots.
-        self.assertIn(report.money(self.real.combined_state_share()),
-                      page["shareintro"])
-        self.assertIn("state\u2019s share of that under current law",
-                      page["hointro"].lower().replace("state's", "state\u2019s"))
+        other = self.real.home_insurance.other_peril.statewide
+        self.assertEqual(page["cell:other.households"], report.count(other.households))
+        self.assertEqual(page["cell:other.ihpTotal"], report.money(other.ihp.total))
+        self.assertEqual(page["cell:other.onaTotal"], report.money(other.ona.total))
+        self.assertEqual(page["cell:other.awarded"], "100%")     # r05 was paid
+        self.assertEqual(page["cell:both.awarded"], "83%")       # 5 of 6
+        flood = self.real.ihp.statewide
+        self.assertEqual(page["cell:both.households"],
+                         report.count(flood.households + other.households))
+        self.assertEqual(page["cell:both.ihpTotal"],
+                         report.money(flood.ihp.total + other.ihp.total))
+        # Section 2 carries the flood, non-flood and combined shares per row.
+        self.assertIn(report.money(self.real.non_flood_state_share()), page["shareHtml"])
+        self.assertIn(report.money(self.real.combined_state_share()), page["shareHtml"])
+        self.assertIn(report.money(self.real.combined_state_share()), page["shareintro"])
 
-    def test_uninsured_homeowner_cards_follow_the_slider(self):
+    def test_non_flood_pot_follows_the_slider(self):
         equivalent = pipeline.build(
             make_client(), make_options(deflator=cpi.Deflator(2024), min_year=2016))
         page = self.run_page("2016")
-        home = equivalent.home_insurance
-        self.assertEqual(page["hoHouseholds"],
-                         report.count(home.all.statewide.households))
-        self.assertEqual(page["hoIhpTotal"],
-                         report.money(home.all.statewide.ihp.total))
-        self.assertEqual(page["hoFlood"],
-                         report.money(home.flood_damaged.statewide.ihp.total))
-        self.assertNotEqual(page["hoIhpTotal"], self.run_page()["hoIhpTotal"])
+        other = equivalent.home_insurance.other_peril.statewide
+        self.assertEqual(page["cell:other.ihpTotal"], report.money(other.ihp.total))
+        self.assertIn(report.money(equivalent.combined_state_share()), page["shareintro"])
 
-    def test_uninsured_homeowner_cards_switch_dollar_basis(self):
+    def test_non_flood_pot_switches_dollar_basis(self):
         nominal = self.run_page("", "toggle")
-        home = self.nominal.home_insurance
-        self.assertEqual(nominal["hoIhpTotal"],
-                         report.money(home.all.statewide.ihp.total))
-        self.assertEqual(nominal["hoOther"],
-                         report.money(home.other_peril.statewide.ihp.total))
+        other = self.nominal.home_insurance.other_peril.statewide
+        self.assertEqual(nominal["cell:other.ihpTotal"], report.money(other.ihp.total))
 
     def test_nfip_note_names_the_date_field_it_filtered_on(self):
         filtered = self.run_page("2016")
@@ -1379,15 +1366,26 @@ class TestStoryStructure(unittest.TestCase):
 
     def test_sections_run_in_story_order(self):
         steps = re.findall(r'<p class="step">([^<]*)</p>', self.page)
-        self.assertEqual([s.split(" ")[0] for s in steps], ["1", "2", "3", "4", "5", "6"])
-        # State-first: the audience is the state, so its liability comes
-        # before the household comparison.
+        self.assertEqual([s.split(" ")[0] for s in steps], ["1", "2", "3", "4", "5"])
+        # State-first, both pots in the first two sections, then the flood
+        # comparison, then the evidence. No separate section for the non-flood pot.
         self.assertIn("Who the state is paying for", steps[0])
         self.assertIn("The state is already paying", steps[1])
         self.assertIn("Aid versus insurance", steps[2])
         self.assertIn("The gap", steps[3])
-        self.assertIn("The bigger picture", steps[4])
-        self.assertIn("Evidence", steps[5])
+        self.assertIn("Evidence", steps[4])
+        self.assertNotIn("The bigger picture", self.page)
+
+    def test_both_pots_sit_in_sections_one_and_two(self):
+        self.assertIn('data-cell="other.ihpTotal"', self.page)
+        self.assertIn('data-cell="both.ihpTotal"', self.page)
+        self.assertIn('<th class="n">Non-flood pot</th>', self.page)
+        self.assertIn('<th class="n">Both</th>', self.page)
+
+    def test_gap_section_says_why_it_is_flood_only(self):
+        self.assertIn("Flood cohort only. NFIP claims are public data", self.page)
+        self.assertIn("No equivalent public record exists for homeowners-insurance",
+                      self.page)
 
     def test_framing_says_ihp_is_one_program_and_a_floor(self):
         for fmt in ("text", "md", "html"):
@@ -1424,9 +1422,10 @@ class TestStoryStructure(unittest.TestCase):
 
     def test_headline_is_a_claim_with_the_ratio(self):
         text = report.headline(self.real)
-        # State first, then the households, then the comparison.
+        # State first, both pots, then the flood comparison.
         self.assertTrue(text.startswith("Louisiana already pays for uninsured homes"))
-        self.assertIn(report.money(self.real.state_cost_share()), text)
+        self.assertIn(report.money(self.real.combined_state_share()), text)
+        self.assertIn("non-flood damage", text)
         self.assertIn("times as much", text)
         self.assertIn(report.money(self.real.gap_per_household()), text)
         # The same sentence leads the text and Markdown outputs.
@@ -1441,10 +1440,10 @@ class TestStoryStructure(unittest.TestCase):
 class TestStoryArithmetic(TestPageScriptArithmetic):
     """The in-page story elements agree with the pipeline as the state changes."""
 
-    def test_hero_equals_the_gap_card_and_the_pipeline(self):
+    def test_hero_is_the_flood_gap_from_the_pipeline(self):
         page = self.run_page()
         self.assertEqual(page["heroGap"], report.money(self.real.gap_per_household()))
-        self.assertEqual(page["heroGap"], page["gap"])
+        self.assertIn("Across 5 households", page["heroSub"])
 
     def test_bars_are_proportional_and_labelled(self):
         page = self.run_page()
@@ -1465,8 +1464,7 @@ class TestStoryArithmetic(TestPageScriptArithmetic):
     def test_story_text_follows_the_slider(self):
         page = self.run_page("2016")
         self.assertIn("since 2016", page["comparecaption"])
-        self.assertIn("since 2016", page["shareintro"])
-        self.assertTrue(page["shareintro"].startswith("That $"))
+        self.assertIn("Across both pots since 2016", page["shareintro"])
         self.assertIn("does not pay for what insurance covers", page["shareintro"])
         # Section 2 advances from the lede's figure instead of repeating it.
         self.assertNotIn("already pays for uninsured homes", page["shareintro"])
@@ -1487,5 +1485,3 @@ class TestStoryArithmetic(TestPageScriptArithmetic):
         self.assertEqual(page["heroGap"], report.money(self.real.gap_per_household()))
         self.assertEqual(page["sinceLabel"], "all years")
 
-    def test_singular_household_is_grammatical(self):
-        self.assertIn("1 household;", self.run_page()["note:hoOther"])

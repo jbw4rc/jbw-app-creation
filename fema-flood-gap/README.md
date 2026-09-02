@@ -118,11 +118,12 @@ reported split in two, because a homeowners policy excludes flood:
 Presenting the blended total as an insurance gap overstates it, which is why
 the tool never shows one without both halves beside it.
 
-The non-flood half is where the state's exposure shows up a second time. It
-gets its own state-share figure and scenario ladder, and because it is
-disjoint from the flood cohort (flood damage is 0 here and 1 there), the two
-current-law shares are added into one figure: the state's liability across
-both pots. That sum is stated in the cost-share section and in the JSON as
+The non-flood half is where the state's exposure shows up a second time. On
+the HTML page it sits beside the flood cohort as a row in the first two
+tables rather than in a section of its own, and because it is disjoint from
+the flood cohort (flood damage is 0 here and 1 there), the two current-law
+shares are added into one figure: the state's liability across both pots.
+That sum leads the opening paragraph and appears in the JSON as
 `combined_state_share_both_pots`. The cohort lands in
 its own CSV (`uninsured-homeowners.csv`) rather than as extra columns on the
 flood file, since the two overlap and must not be summed.
@@ -159,18 +160,18 @@ CPI-U table, so a 2005 Katrina award and a 2021 claim are comparable. Without
 it everything is nominal — fine for a single event, misleading across decades.
 `--cpi-file table.json` substitutes your own deflator.
 
-The HTML page is written as an argument for a state audience, in order: the
-claim, with the state as its subject; who the state is paying for, and why
-IHP is the program to measure (it records insurance status, so it is a floor
-for the cost, not all of it); what the state already funds and what a changed
-split would cost; a two-bar comparison of what aid paid against what
-insurance paid; the difference as the single hero figure; the non-flood
-cohort as the wider picture; the per-declaration evidence; and, as a titled
-section rather than a footer, what the numbers do and do not show. The
-sentence about the federal cost-share review is deliberately general;
-`--review-note "..."` substitutes your own citation. Every sentence and figure on it
-is regenerated in the browser as the controls change, so a filtered view
-argues the same way as the full one.
+The HTML page is written as an argument for a state audience, in five
+sections: who the state is paying for -- both pots in one table, the flood
+cohort and the non-flood no-homeowners pot, which do not overlap and so add;
+what the state already funds on both and what a changed split would cost,
+one table with a column per pot and a combined column; the flood cohort's
+aid next to the NFIP claim, as a two-bar chart; the difference as the single
+hero figure, scoped to flood because NFIP claims are the one public record of
+an insurance payout; and the per-declaration evidence. A titled closing
+section says what the numbers do and do not show. The opening paragraph
+leads with the state's combined share across both pots. The sentence about
+the federal cost-share review is deliberately general; `--review-note "..."`
+substitutes your own citation.
 
 The page carries **both** bases and a button switches between them, so a
 reader can check whether a figure survives inflation adjustment without
