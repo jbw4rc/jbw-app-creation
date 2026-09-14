@@ -1,0 +1,352 @@
+# =============================================================================
+# SYNTHETIC PLAN -- NOT A REAL FILING
+#
+# "Housatonic Casualty" does not exist. This is a second synthetic plan whose
+# only purpose is to prove the interpreter is generic: it is deliberately built
+# on different mechanics from sample_plan.yaml at every point where the schema
+# offers a choice, and adding it required no Python change whatsoever.
+#
+#                      sample_plan.yaml        this plan
+#   interpolation      per_1000                linear
+#   deductible         exact match             banded, half-open
+#   dwelling age       banded                  nearest_below
+#   roof material      exact, no default       exact + cited "all other" row
+#   rounding           whole dollars, twice    cents, once, at the end
+#   territory codes    1 / 2 / 3               10 / 20 / 30, assigned differently
+#   forms              HO3, HO5                HO2, HO3, HO5
+#   endorsements       flat + per-$1,000       flat + percent-of-running
+#   renewal cap        yes                     no
+# =============================================================================
+
+schema_version: 1
+plan_id: housatonic-ct-ho-2025-07-01
+
+carrier: Housatonic Casualty Company
+naic: "88888"
+state: CT
+line: homeowners
+serff_tracking: null          # synthetic: no SERFF record exists
+effective_date: 2025-07-01
+expiration_date: null
+
+forms_supported: [HO2, HO3, HO5]
+occupancy_supported: [owner_occupied]
+
+filing_source:
+  filename: SYNTHETIC-housatonic-ct-ho-2025.pdf
+  page_count: 33
+
+verification:
+  status: verified
+  verified_by: fixture
+  verified_on: 2025-07-01
+  notes: Synthetic fixture, hand-authored rather than extracted.
+
+notes: >-
+  Rating sequence per the (fictional) filing's Rule 12: base premium
+  interpolated straight-line between the amounts shown, all factors at full
+  precision, optional coverages, minimum premium, then a single rounding to
+  cents. This company rounds once, to the cent, and never mid-sequence.
+
+territory:
+  basis: zip
+  description: >-
+    Territory 10 inland north and east, 20 central, 30 coastal. Note these ZIPs
+    map differently from Sample Mutual's: 06371 is territory 2 (cheapest tier)
+    there and territory 30 (coastal, dearest) here.
+  source: {page: 8, exhibit: "Territory Schedule -- CT"}
+  entries:
+    "06605": "30"
+    "06614": "30"
+    "06824": "30"
+    "06853": "30"
+    "06880": "30"
+    "06902": "30"
+    "06333": "30"
+    "06371": "30"
+    "06239": "10"
+    "06260": "10"
+    "06759": "10"
+    "06103": "20"
+    "06105": "20"
+    "06106": "20"
+    "06050": "20"
+    "06489": "20"
+    "06450": "20"
+
+base_rate_tables:
+  base_premium:
+    description: >-
+      Base premium by territory. The filing states amounts between those shown
+      are interpolated straight-line, which is a different rule from Sample
+      Mutual's per-$1,000 increments and gives different answers.
+    amount_attribute: coverage_a
+    interpolation: linear
+    below_min: error
+    above_max:
+      method: error           # filing: amounts above $750,000 are referred
+    keys:
+      - {attribute: territory_code, match: exact}
+    source: {page: 12, exhibit: "Rule 12.A"}
+    segments:
+      - when: {territory_code: "10"}
+        points:
+          - {amount: 200000, premium: 705.00}
+          - {amount: 300000, premium: 930.00}
+          - {amount: 400000, premium: 1140.00}
+          - {amount: 500000, premium: 1335.00}
+          - {amount: 750000, premium: 1780.00}
+      - when: {territory_code: "20"}
+        points:
+          - {amount: 200000, premium: 860.00}
+          - {amount: 300000, premium: 1145.00}
+          - {amount: 400000, premium: 1410.00}
+          - {amount: 500000, premium: 1655.00}
+          - {amount: 750000, premium: 2215.00}
+      - when: {territory_code: "30"}
+        points:
+          - {amount: 200000, premium: 1180.00}
+          - {amount: 300000, premium: 1590.00}
+          - {amount: 400000, premium: 1965.00}
+          - {amount: 500000, premium: 2310.00}
+          - {amount: 750000, premium: 3100.00}
+
+lookup_tables:
+
+  form_factor:
+    description: This company does write HO-2, unlike Sample Mutual.
+    keys:
+      - {attribute: form, match: exact}
+    source: {page: 18, exhibit: "Rule 14"}
+    rows:
+      - {when: {form: HO2}, value: 0.920}
+      - {when: {form: HO3}, value: 1.000}
+      - {when: {form: HO5}, value: 1.210}
+
+  protection_class_factor:
+    keys:
+      - {attribute: protection_class, match: exact}
+    source: {page: 20, exhibit: "Rule 15"}
+    rows:
+      - {when: {protection_class: "1"}, value: 0.980}
+      - {when: {protection_class: "2"}, value: 0.980}
+      - {when: {protection_class: "3"}, value: 0.990}
+      - {when: {protection_class: "4"}, value: 1.000}
+      - {when: {protection_class: "5"}, value: 1.055}
+      - {when: {protection_class: "6"}, value: 1.125}
+      - {when: {protection_class: "7"}, value: 1.215}
+      - {when: {protection_class: "8"}, value: 1.340}
+      - {when: {protection_class: "9"}, value: 1.690}
+      - {when: {protection_class: "10"}, value: 2.190}
+      - {when: {protection_class: "10W"}, value: 2.050}
+
+  construction_factor:
+    keys:
+      - {attribute: construction_type, match: exact}
+    source: {page: 21, exhibit: "Rule 16"}
+    rows:
+      - {when: {construction_type: frame}, value: 1.000}
+      - {when: {construction_type: masonry}, value: 0.930}
+      - {when: {construction_type: masonry_veneer}, value: 0.960}
+      - {when: {construction_type: fire_resistive}, value: 0.880}
+
+  roof_material_factor:
+    description: >-
+      This filing DOES print an "all other" row, so a default is legitimate
+      here -- and it cites the page that states it. Note this company rates
+      roof material but not roof age, so a risk with an unknown roof year can
+      be rated here and not by Sample Mutual.
+    keys:
+      - {attribute: roof_material, match: exact}
+    default: 1.050
+    default_source: {page: 25, exhibit: "Rule 18, 'All other roof coverings'"}
+    source: {page: 25, exhibit: "Rule 18"}
+    rows:
+      - {when: {roof_material: composition}, value: 1.000}
+      - {when: {roof_material: architectural}, value: 0.960}
+      - {when: {roof_material: metal}, value: 0.950}
+      - {when: {roof_material: tile}, value: 0.930}
+      - {when: {roof_material: wood_shake}, value: 1.350}
+
+  dwelling_age_factor:
+    description: >-
+      Printed as a list of ages meaning "this age or older", so the lookup is
+      nearest_below, not banded. Reading this as an exact match would fail on
+      every age not listed; reading it as bands would need boundaries the
+      filing never states.
+    keys:
+      - {attribute: home_age, match: nearest_below}
+    source: {page: 22, exhibit: "Rule 17 -- Age of Dwelling"}
+    rows:
+      - {when: {home_age: 0}, value: 0.900}
+      - {when: {home_age: 10}, value: 0.960}
+      - {when: {home_age: 20}, value: 1.000}
+      - {when: {home_age: 30}, value: 1.050}
+      - {when: {home_age: 50}, value: 1.120}
+
+  deductible_factor:
+    description: >-
+      Printed as "$500 to $999", "$1,000 to $2,499" and so on -- contiguous
+      money brackets, so half-open bounds. An exactly-$2,500 deductible belongs
+      to the third row, not the second.
+    keys:
+      - {attribute: deductible, match: band, bounds: half_open}
+    source: {page: 23, exhibit: "Rule 17.B"}
+    rows:
+      - {when: {deductible: {min: 500, max: 1000}}, value: 1.100}
+      - {when: {deductible: {min: 1000, max: 2500}}, value: 1.000}
+      - {when: {deductible: {min: 2500, max: 5000}}, value: 0.930}
+      - {when: {deductible: {min: 5000, max: 10000}}, value: 0.870}
+      - {when: {deductible: {min: 10000}}, value: 0.800}
+
+  claims_factor:
+    keys:
+      - {attribute: prior_claims, match: band, bounds: closed}
+    source: {page: 27, exhibit: "Rule 19"}
+    rows:
+      - {when: {prior_claims: {min: 0, max: 0}}, value: 1.000}
+      - {when: {prior_claims: {min: 1, max: 1}}, value: 1.200}
+      - {when: {prior_claims: {min: 2}}, value: 1.550}
+
+  alarm_credit:
+    description: >-
+      A percentage credit, not a multiplicative factor: the filing applies it to
+      the premium developed so far, after all factors. Negative value = credit.
+    keys:
+      - {attribute: form, match: exact}
+    source: {page: 29, exhibit: "Rule 21 -- Protective Devices"}
+    rows:
+      - {when: {form: HO2}, value: -5.0}
+      - {when: {form: HO3}, value: -5.0}
+      - {when: {form: HO5}, value: -7.5, note: larger credit on the broader form}
+
+steps:
+  - id: base_premium
+    type: base_rate
+    description: Base premium by territory and Coverage A (straight-line)
+    table: base_premium
+    source: {page: 12}
+
+  - id: form
+    type: factor
+    description: Policy form
+    table: form_factor
+    source: {page: 18}
+
+  - id: protection_class
+    type: factor
+    description: Protection class
+    table: protection_class_factor
+    source: {page: 20}
+
+  - id: construction
+    type: factor
+    description: Construction type
+    table: construction_factor
+    source: {page: 21}
+
+  - id: roof_material
+    type: factor
+    description: Roof covering
+    table: roof_material_factor
+    source: {page: 25}
+
+  - id: dwelling_age
+    type: factor
+    description: Age of dwelling
+    table: dwelling_age_factor
+    source: {page: 22}
+
+  - id: deductible
+    type: factor
+    description: Deductible
+    table: deductible_factor
+    source: {page: 23}
+
+  - id: claims
+    type: factor
+    description: Loss history
+    table: claims_factor
+    source: {page: 27}
+
+  - id: alarm_credit
+    type: additive
+    description: Central station alarm credit
+    table: alarm_credit
+    basis: percent_of_running
+    applies_when: {endorsement_alarm: true}
+    source: {page: 29}
+
+  - id: personal_property_rc
+    type: additive
+    description: Personal property replacement cost (HO 04 90)
+    amount: 45.00
+    basis: flat
+    applies_when: {endorsement_ppl_rc: true}
+    source: {page: 30, exhibit: "Rule 22"}
+
+  - id: minimum_premium
+    type: floor
+    description: Minimum written premium (Rule 4)
+    min_premium: 400.00
+    source: {page: 5}
+
+  - id: round_final
+    type: round
+    description: >-
+      Single rounding, to the cent. This company does not round mid-sequence,
+      which is why there is no round step above.
+    method: half_up
+    to: 0.01
+    source: {page: 6}
+
+worksheets:
+  - name: "Illustration 1 -- Hartford, HO-3, one claim"
+    source: {page: 31, exhibit: "Rate Illustration 1"}
+    form: HO3
+    expected_premium: 2164.42
+    risk:
+      address: "742 Prospect Ave, Hartford, CT 06105"
+      zip_code: "06105"
+      state: CT
+      coverage_a: 450000
+      year_built: 1955
+      construction_type: masonry
+      roof_material: composition
+      protection_class: "7"
+      deductible: 2500
+      prior_claims: 1
+      occupancy: owner_occupied
+
+  - name: "Illustration 2 -- coastal HO-5, alarm credit and PP replacement cost"
+    source: {page: 32, exhibit: "Rate Illustration 2"}
+    form: HO5
+    expected_premium: 2700.06
+    risk:
+      zip_code: "06880"
+      state: CT
+      coverage_a: 625000
+      year_built: 2010
+      construction_type: frame
+      roof_material: slate          # unlisted -> the filing's "all other" row
+      protection_class: "4"
+      deductible: 5000
+      prior_claims: 0
+      occupancy: owner_occupied
+      endorsements: [alarm, ppl_rc]
+
+  - name: "Illustration 3 -- HO-2, minimum premium"
+    source: {page: 32, exhibit: "Rate Illustration 3"}
+    form: HO2
+    expected_premium: 400.00
+    risk:
+      zip_code: "06239"
+      state: CT
+      coverage_a: 200000
+      year_built: 2024
+      construction_type: fire_resistive
+      roof_material: tile
+      protection_class: "2"
+      deductible: 10000
+      prior_claims: 0
+      occupancy: owner_occupied
