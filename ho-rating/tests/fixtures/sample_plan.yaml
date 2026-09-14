@@ -1,0 +1,428 @@
+# =============================================================================
+# SYNTHETIC PLAN -- NOT A REAL FILING
+#
+# "Sample Mutual" does not exist. Every rate, factor and page citation below is
+# invented. It exists so the interpreter is testable before any real filing has
+# been parsed, and so it exercises every step type and every lookup semantic the
+# schema supports:
+#
+#   base_rate  per-$1,000 interpolation, keyed on territory
+#   factor     exact match (single key), exact match (string key '10W'),
+#              banded match (open-ended top band), two-key grid (band x exact)
+#   additive   literal flat amount, and a table-driven per-$1,000 charge
+#   round      mid-sequence (after factors) and final
+#   floor      minimum written premium
+#   cap        renewal increase cap, gated by applies_when
+#
+# It deliberately does NOT support HO2, so "not written" has something to
+# exercise. The source_page numbers point at a filing that does not exist; they
+# are here to prove the plumbing carries provenance end to end.
+# =============================================================================
+
+schema_version: 1
+plan_id: sample-mutual-ct-ho-2026-01-01
+
+carrier: Sample Mutual Insurance Company
+naic: "99999"
+state: CT
+line: homeowners
+serff_tracking: null          # synthetic: no SERFF record exists
+effective_date: 2026-01-01
+expiration_date: null
+
+forms_supported: [HO3, HO5]   # HO2 absent on purpose -> rates as "not written"
+occupancy_supported: [owner_occupied]
+
+filing_source:
+  filename: SYNTHETIC-sample-mutual-ct-ho-2026.pdf
+  page_count: 48
+
+verification:
+  status: verified
+  verified_by: fixture
+  verified_on: 2026-01-01
+  notes: >-
+    Synthetic fixture, hand-authored rather than extracted. Marked verified so
+    the interpreter's refusal-to-rate-drafts guard does not block the test
+    suite; a plan produced by extract.py starts as draft_unverified.
+
+notes: >-
+  Rating sequence per the (fictional) filing's Rule 301: base rate by territory
+  and amount of insurance, all multiplicative factors applied to full precision,
+  round to the nearest whole dollar, then flat/per-$1,000 charges, then the
+  minimum premium, then the renewal cap, then round again.
+
+# -----------------------------------------------------------------------------
+# Territory definitions -- carrier-specific by design. Never share these across
+# carriers: two filings routinely number the same ZIP differently.
+# -----------------------------------------------------------------------------
+territory:
+  basis: zip
+  description: >-
+    Territory 1 coastal Fairfield/New Haven shoreline, 2 eastern and rural,
+    3 Hartford metro and central valley.
+  source: {page: 11, exhibit: "Territory Definitions -- Connecticut"}
+  entries:
+    "06605": "1"   # Bridgeport
+    "06614": "1"   # Stratford
+    "06824": "1"   # Fairfield
+    "06853": "1"   # Norwalk (Rowayton)
+    "06880": "1"   # Westport
+    "06902": "1"   # Stamford
+    "06239": "2"   # Danielson
+    "06260": "2"   # Putnam
+    "06333": "2"   # East Lyme
+    "06371": "2"   # Old Lyme
+    "06759": "2"   # Litchfield
+    "06103": "3"   # Hartford
+    "06105": "3"   # Hartford (West End)
+    "06106": "3"   # Hartford (Frog Hollow)
+    "06050": "3"   # New Britain
+    "06489": "3"   # Southington
+    "06450": "3"   # Meriden
+
+# -----------------------------------------------------------------------------
+# Base rates: Rule 301.A, "Base Premium -- Amount of Insurance by Territory".
+# Filing states: premium for the amount shown, plus the stated rate for each
+# additional $1,000 up to the next amount shown.
+# -----------------------------------------------------------------------------
+base_rate_tables:
+  base_premium:
+    description: Base premium by territory and Coverage A, per $1,000 increments.
+    amount_attribute: coverage_a
+    interpolation: per_1000
+    below_min: error          # filing: "amounts below $150,000 are not written"
+    above_max:
+      method: per_1000        # uses the top point's add_per_1000
+      max_amount: 1500000     # filing: refer amounts above $1,500,000
+    keys:
+      - {attribute: territory_code, match: exact}
+    source: {page: 14, exhibit: "Rule 301.A"}
+    segments:
+      - when: {territory_code: "1"}
+        source: {page: 14}
+        points:
+          - {amount: 150000, premium: 1042.00, add_per_1000: 3.55}
+          - {amount: 200000, premium: 1219.50, add_per_1000: 3.20}
+          - {amount: 300000, premium: 1539.50, add_per_1000: 2.90}
+          - {amount: 400000, premium: 1829.50, add_per_1000: 2.70}
+          - {amount: 600000, premium: 2369.50, add_per_1000: 2.50}
+      - when: {territory_code: "2"}
+        source: {page: 15}
+        points:
+          - {amount: 150000, premium: 688.00, add_per_1000: 2.40}
+          - {amount: 200000, premium: 808.00, add_per_1000: 2.20}
+          - {amount: 300000, premium: 1028.00, add_per_1000: 1.95}
+          - {amount: 400000, premium: 1223.00, add_per_1000: 1.80}
+          - {amount: 600000, premium: 1583.00, add_per_1000: 1.70}
+      - when: {territory_code: "3"}
+        source: {page: 15}
+        points:
+          - {amount: 150000, premium: 742.00, add_per_1000: 2.60}
+          - {amount: 200000, premium: 872.00, add_per_1000: 2.35}
+          - {amount: 300000, premium: 1107.00, add_per_1000: 2.10}
+          - {amount: 400000, premium: 1317.00, add_per_1000: 1.95}
+          - {amount: 600000, premium: 1707.00, add_per_1000: 1.80}
+
+# -----------------------------------------------------------------------------
+# Factor and charge tables. No table carries a `default` -- this filing prints no
+# "all other" rows, so an unmatched risk must raise rather than rate at 1.00.
+# -----------------------------------------------------------------------------
+lookup_tables:
+
+  form_factor:
+    description: >-
+      Policy form relativity. HO2 is not written by this company, which is
+      expressed by its absence from forms_supported rather than by a row here.
+    keys:
+      - {attribute: form, match: exact}
+    source: {page: 21, exhibit: "Rule 302 -- Policy Form"}
+    rows:
+      - {when: {form: HO3}, value: 1.000, note: base form}
+      - {when: {form: HO5}, value: 1.185}
+
+  protection_class_factor:
+    description: ISO Public Protection Class relativity.
+    keys:
+      - {attribute: protection_class, match: exact}
+    source: {page: 23, exhibit: "Rule 303"}
+    rows:
+      - {when: {protection_class: "1"}, value: 1.000}
+      - {when: {protection_class: "2"}, value: 1.000}
+      - {when: {protection_class: "3"}, value: 1.000}
+      - {when: {protection_class: "4"}, value: 1.000}
+      - {when: {protection_class: "5"}, value: 1.065}
+      - {when: {protection_class: "6"}, value: 1.140}
+      - {when: {protection_class: "7"}, value: 1.230}
+      - {when: {protection_class: "8"}, value: 1.350}
+      - {when: {protection_class: "9"}, value: 1.720}
+      - {when: {protection_class: "10"}, value: 2.280}
+      # Split classes are strings, not numbers -- one reason protection_class is
+      # typed as str throughout.
+      - {when: {protection_class: "8B"}, value: 1.480}
+      - {when: {protection_class: "10W"}, value: 2.100}
+
+  construction_factor:
+    keys:
+      - {attribute: construction_type, match: exact}
+    source: {page: 24, exhibit: "Rule 304"}
+    rows:
+      - {when: {construction_type: frame}, value: 1.000}
+      - {when: {construction_type: masonry}, value: 0.945}
+      - {when: {construction_type: masonry_veneer}, value: 0.970}
+      - {when: {construction_type: fire_resistive}, value: 0.900}
+
+  roof_factor:
+    description: >-
+      Two-key grid: roof material (exact) by roof age (banded, closed bounds --
+      the filing prints "0-10", "11-15", so 10 and 11 are both covered exactly
+      once). Top band is open-ended.
+    keys:
+      - {attribute: roof_material, match: exact}
+      - {attribute: roof_age, match: band, bounds: closed}
+    source: {page: 26, exhibit: "Rule 306 -- Roof Age and Material"}
+    rows:
+      - {when: {roof_material: composition, roof_age: {min: 0, max: 10}}, value: 0.950}
+      - {when: {roof_material: composition, roof_age: {min: 11, max: 15}}, value: 1.000}
+      - {when: {roof_material: composition, roof_age: {min: 16, max: 20}}, value: 1.140}
+      - {when: {roof_material: composition, roof_age: {min: 21}}, value: 1.380}
+      - {when: {roof_material: other, roof_age: {min: 0, max: 10}}, value: 0.930}
+      - {when: {roof_material: other, roof_age: {min: 11, max: 15}}, value: 0.980}
+      - {when: {roof_material: other, roof_age: {min: 16, max: 25}}, value: 1.090}
+      - {when: {roof_material: other, roof_age: {min: 26}}, value: 1.300}
+
+  home_age_factor:
+    description: Age of dwelling, banded. Closed bounds as printed.
+    keys:
+      - {attribute: home_age, match: band, bounds: closed}
+    source: {page: 27, exhibit: "Rule 307"}
+    rows:
+      - {when: {home_age: {min: 0, max: 5}}, value: 0.880}
+      - {when: {home_age: {min: 6, max: 10}}, value: 0.930}
+      - {when: {home_age: {min: 11, max: 25}}, value: 0.980}
+      - {when: {home_age: {min: 26, max: 50}}, value: 1.000}
+      - {when: {home_age: {min: 51}}, value: 1.075}
+
+  deductible_factor:
+    description: >-
+      Exact match, not banded. The filing rates only the deductibles listed; an
+      unlisted amount is an error, not the nearest one.
+    keys:
+      - {attribute: deductible, match: exact}
+    source: {page: 29, exhibit: "Rule 308 -- Deductibles"}
+    rows:
+      - {when: {deductible: 500}, value: 1.120}
+      - {when: {deductible: 1000}, value: 1.000}
+      - {when: {deductible: 2500}, value: 0.920}
+      - {when: {deductible: 5000}, value: 0.855}
+      - {when: {deductible: 10000}, value: 0.790}
+
+  claims_factor:
+    description: Paid claims in the prior 5 years, banded with an open top band.
+    keys:
+      - {attribute: prior_claims, match: band, bounds: closed}
+    source: {page: 31, exhibit: "Rule 310 -- Loss History"}
+    rows:
+      - {when: {prior_claims: {min: 0, max: 0}}, value: 1.000}
+      - {when: {prior_claims: {min: 1, max: 1}}, value: 1.150}
+      - {when: {prior_claims: {min: 2, max: 2}}, value: 1.350}
+      - {when: {prior_claims: {min: 3}}, value: 1.700}
+
+  ordinance_or_law_rate:
+    description: >-
+      Charge per $1,000 of Coverage A for increased Ordinance or Law coverage.
+      A dollar rate, not a multiplier -- used by an additive step whose basis is
+      per_1000_coverage_a.
+    keys:
+      - {attribute: form, match: exact}
+    source: {page: 36, exhibit: "Rule 404 -- Ordinance or Law"}
+    rows:
+      - {when: {form: HO3}, value: 0.28}
+      - {when: {form: HO5}, value: 0.24, note: partially included in HO5 base}
+
+# -----------------------------------------------------------------------------
+# The rating sequence. Order is the whole point: moving the round step changes
+# the answer, which is why rounding is a step and not an output setting.
+# -----------------------------------------------------------------------------
+steps:
+  - id: base_premium
+    type: base_rate
+    description: Base premium by territory and Coverage A
+    table: base_premium
+    source: {page: 14}
+
+  - id: form
+    type: factor
+    description: Policy form
+    table: form_factor
+    source: {page: 21}
+
+  - id: protection_class
+    type: factor
+    description: Protection class
+    table: protection_class_factor
+    source: {page: 23}
+
+  - id: construction
+    type: factor
+    description: Construction type
+    table: construction_factor
+    source: {page: 24}
+
+  - id: roof
+    type: factor
+    description: Roof age and material
+    table: roof_factor
+    source: {page: 26}
+
+  - id: home_age
+    type: factor
+    description: Age of dwelling
+    table: home_age_factor
+    source: {page: 27}
+
+  - id: deductible
+    type: factor
+    description: Deductible
+    table: deductible_factor
+    source: {page: 29}
+
+  - id: claims
+    type: factor
+    description: Loss history
+    table: claims_factor
+    source: {page: 31}
+
+  - id: round_subtotal
+    type: round
+    description: Round to nearest whole dollar after all factors (Rule 301.C)
+    method: half_up
+    to: 1
+    source: {page: 13}
+
+  - id: water_backup
+    type: additive
+    description: Water back-up and sump overflow, $10,000 limit (HO 23 85)
+    amount: 68.00
+    basis: flat
+    applies_when: {endorsement_water_backup: true}
+    source: {page: 35, exhibit: "Rule 403"}
+
+  - id: ordinance_or_law
+    type: additive
+    description: Increased Ordinance or Law coverage, per $1,000 of Coverage A
+    table: ordinance_or_law_rate
+    basis: per_1000_coverage_a
+    applies_when: {endorsement_ordinance_law: true}
+    source: {page: 36}
+
+  - id: minimum_premium
+    type: floor
+    description: Minimum written premium (Rule 105)
+    min_premium: 450.00
+    source: {page: 9}
+
+  - id: renewal_cap
+    type: cap
+    description: >-
+      Renewal increase capped at 25% of the expiring premium. Skipped on new
+      business, where there is no expiring premium.
+    max_increase_pct: 25
+    applies_when: {has_prior_term_premium: true}
+    source: {page: 10, exhibit: "Rule 106 -- Premium Transition"}
+
+  - id: round_final
+    type: round
+    description: Final rounding to whole dollars
+    method: half_up
+    to: 1
+    source: {page: 13}
+
+# -----------------------------------------------------------------------------
+# Worksheets: the filing's own worked examples. Reproducing these to the cent is
+# the only real evidence that the sequence above was read correctly, so a plan
+# is not done until these pass. expected_steps pins the running premium after
+# named steps, so a failure names the step that diverged instead of just a total.
+# -----------------------------------------------------------------------------
+worksheets:
+  - name: "Example 1 -- new business, Hartford, HO-3"
+    source: {page: 44, exhibit: "Appendix A, Example 1"}
+    form: HO3
+    expected_premium: 2132.00
+    expected_steps:
+      base_premium: 1414.50
+      round_subtotal: 2132.00
+    risk:
+      address: "742 Prospect Ave, Hartford, CT 06105"
+      zip_code: "06105"
+      state: CT
+      coverage_a: 450000
+      year_built: 1955
+      square_feet: 2400
+      construction_type: masonry
+      roof_year: 2008
+      roof_material: composition
+      protection_class: "7"
+      deductible: 2500
+      prior_claims: 1
+      occupancy: owner_occupied
+
+  - name: "Example 2 -- same risk, HO-5 with endorsements"
+    source: {page: 45, exhibit: "Appendix A, Example 2"}
+    form: HO5
+    expected_premium: 2702.00
+    expected_steps:
+      round_subtotal: 2526.00
+    risk:
+      address: "742 Prospect Ave, Hartford, CT 06105"
+      zip_code: "06105"
+      state: CT
+      coverage_a: 450000
+      year_built: 1955
+      construction_type: masonry
+      roof_year: 2008
+      roof_material: composition
+      protection_class: "7"
+      deductible: 2500
+      prior_claims: 1
+      occupancy: owner_occupied
+      endorsements: [water_backup, ordinance_law]
+
+  - name: "Example 3 -- minimum premium applies"
+    source: {page: 46, exhibit: "Appendix A, Example 3"}
+    form: HO3
+    expected_premium: 450.00
+    expected_steps:
+      round_subtotal: 409.00
+    risk:
+      zip_code: "06371"
+      state: CT
+      coverage_a: 150000
+      year_built: 2023
+      construction_type: fire_resistive
+      roof_year: 2023
+      roof_material: composition
+      protection_class: "1"
+      deductible: 10000
+      prior_claims: 0
+      occupancy: owner_occupied
+
+  - name: "Example 4 -- renewal increase cap"
+    source: {page: 47, exhibit: "Appendix A, Example 4"}
+    form: HO3
+    expected_premium: 1875.00
+    expected_steps:
+      round_subtotal: 2132.00
+    risk:
+      zip_code: "06105"
+      state: CT
+      coverage_a: 450000
+      year_built: 1955
+      construction_type: masonry
+      roof_year: 2008
+      roof_material: composition
+      protection_class: "7"
+      deductible: 2500
+      prior_claims: 1
+      occupancy: owner_occupied
+      prior_term_premium: 1500.00

@@ -1,0 +1,10 @@
+# Filing PDFs are downloaded by hand and never committed: they are large, and
+# redistribution of some carriers' filings is restricted.
+data/filings/**
+!data/filings/**/.gitkeep
+!data/filings/README.md
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
