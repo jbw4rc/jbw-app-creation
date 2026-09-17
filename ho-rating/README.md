@@ -12,8 +12,13 @@ parameter throughout, not an assumption.
 
 ## Try it
 
+Needs Python 3.10+.
+
 ```bash
-pip install -e '.[dev,extract]'
+cd ho-rating
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e '.[dev,extract]'      # 'extract' pulls PyMuPDF, only needed for PDFs
+pytest                               # 98 tests, ~3s
 
 # Two synthetic carriers, no real filing needed
 python -m src.cli rate --demo \
@@ -59,6 +64,15 @@ Other commands:
 python -m src.cli plans --demo        # what plans exist, and their status
 python -m src.cli validate --demo     # reproduce every filing's own worked examples
 ```
+
+Installing also puts an `ho-rate` command on your PATH, runnable from anywhere:
+`ho-rate rate --demo ...`. It is deliberately not called `rate` — that name is
+generic enough to collide with something else on a shared PATH. Change
+`[project.scripts]` in `pyproject.toml` if you want it shorter.
+
+`--roof-year` defaults to `--year-built`, i.e. the original roof. On an old
+house that lands in the worst roof-age band, so pass it explicitly if the roof
+has been replaced.
 
 ## How a plan works
 

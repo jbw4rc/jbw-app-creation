@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "ho-rating"
 version = "0.1.0"
@@ -10,7 +14,14 @@ dev = ["pytest>=8.0"]
 extract = ["pymupdf>=1.24"]        # only needed to read filing PDFs
 
 [project.scripts]
-rate = "src.cli:main"
+ho-rate = "src.cli:main"
+
+# The package directory is `src`, which is NOT the usual src-layout (there is no
+# src/<package>/ inside it). Without this, setuptools' auto-discovery assumes
+# src-layout, finds no package inside src/, and installs nothing importable --
+# the console script then fails with ModuleNotFoundError.
+[tool.setuptools]
+packages = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
