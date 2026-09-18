@@ -1,0 +1,43 @@
+{
+  "carrier": "Test Mutual",
+  "serff_tracking": "TEST-000000001",
+  "naic": "99999",
+  "effective_date": "2026-01-01",
+  "line": "homeowners",
+  "base_rates": [
+    {"territory": "T1", "coverage_a_band": "0-400000", "rate": 700.0},
+    {"territory": "T1", "coverage_a_band": "400001-800000", "rate": 1000.0},
+    {"territory": "T1", "coverage_a_band": "800001+", "rate": 1500.0},
+    {"territory": "T2", "coverage_a_band": "400001-800000", "rate": 1200.0}
+  ],
+  "rating_order": [
+    "base_rate",
+    "protection_class",
+    "construction",
+    "roof_age",
+    "age_of_home",
+    "deductible",
+    "wind_hurricane_deductible"
+  ],
+  "factors": {
+    "protection_class": {"1": 0.85, "4": 1.0, "10": 1.6},
+    "construction": {"frame": 1.0, "masonry": 0.9},
+    "roof_age": {"0-5": 0.95, "6-10": 1.0, "11-20": 1.15, "21+": 1.4},
+    "age_of_home": {"0-10": 0.9, "11-30": 1.0, "31+": 1.1},
+    "deductible": {"500": 1.1, "1000": 1.0, "2500": 0.9},
+    "wind_hurricane_deductible": {"1": 1.0, "2": 0.95, "5": 0.88}
+  },
+  "discounts": [
+    {"name": "protective_devices", "type": "multiplicative", "value": 0.95,
+     "eligibility": "central-station alarm or interior sprinklers"},
+    {"name": "claims_free", "type": "subtractive_pct", "value": 0.1,
+     "eligibility": "no paid claims in prior 3 years"},
+    {"name": "multi_policy", "type": "multiplicative", "value": 0.9,
+     "eligibility": "auto policy with same carrier"}
+  ],
+  "territory_map": {"06880": "T1", "06905": "T2"},
+  "minimum_premium": 250.0,
+  "rounding": {"step": "final", "method": "nearest", "increment": 1.0},
+  "gaps": [],
+  "factor_inputs": {}
+}
