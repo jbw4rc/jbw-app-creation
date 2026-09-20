@@ -1,0 +1,61 @@
+# Poll The Odds API and commit a snapshot of the NFL board. The accumulated
+# snapshots in src/nfl/data/oddsHistory.ts are the app's line-movement history.
+#
+# NOTE: GitHub only runs `schedule` triggers from the repository's DEFAULT
+# branch. While this lives on a feature branch the cron below never fires — use
+# workflow_dispatch, or merge to main.
+#
+# SCHEDULE = BUDGET. The free tier is 500 credits/month and each poll costs 4
+# (2 regions x 2 markets), so we get ~125 polls a month. The times below spend
+# roughly 82 and put them where the information is: a few midweek reads to catch
+# the opener and early sharp money, then tight coverage on Sunday morning when
+# the real money lands before the 1pm kicks.
+name: Build NFL odds
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 3-7'          # 10pm ET Tue-Sat
+    - cron: '0 14 * * 2-6'         # 10am ET Tue-Sat
+    - cron: '0 20 * * 2-6'         # 4pm ET Tue-Sat
+    - cron: '0 13,15,16,17 * * 0'  # 9/11am, 12/1pm ET Sunday
+  push:
+    branches: [claude/nfl-sharp-money-tracker-qd1wbn]
+    paths:
+      - 'scripts/build-odds.mjs'
+      - '.github/workflows/build-odds.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Poll The Odds API
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/build-odds.mjs
+      # Grade and retire finished games. Must run after every poll: it is what
+      # keeps the live history bounded, and a game dropped before it is graded
+      # is gone for good.
+      - name: Archive finished games
+        run: npx tsx scripts/archive-odds.ts
+      - name: Commit snapshot if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/nfl/data/oddsHistory.ts src/nfl/data/clvArchive.ts
+          if git diff --staged --quiet; then
+            echo "No odds changes."
+          else
+            git commit -m "Update NFL odds snapshot and CLV archive"
+            git pull --rebase --autostash || true
+            git push || (git pull --rebase --autostash && git push)
+          fi
