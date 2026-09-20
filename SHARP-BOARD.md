@@ -121,9 +121,16 @@ report "n/a", and each game shows a partial read of 30 available points.
 ### The credit budget
 
 Free tier is 500 credits/month. A poll costs `regions × markets` = 4 credits
-(`us,eu` × `spreads,totals`), giving ~125 polls a month. The workflow schedule
-spends about 82: a few midweek reads to catch the opener and early sharp money,
-then four on Sunday morning when the real money lands.
+(`us,eu` × `spreads,totals`), giving ~125 polls a month. The schedule runs 21 a
+week — about 91 a month, or 364 credits — leaving roughly 34 polls of headroom
+for manual triggers.
+
+They are placed where the information is: **Monday through Saturday** at 10am
+and 4pm ET to watch next week's numbers open and take their first money, an
+overnight read, then four on Sunday between 9am and 1pm ET as the real money
+lands. Monday matters more than it looks: it used to be skipped, leaving a
+45-hour blind spot from Sunday evening to Tuesday morning sitting exactly where
+fresh lines firm up.
 
 `eu` is not optional — that is the region Pinnacle sits in, and Pinnacle is the
 reference price the whole model leans on. Moneylines are deliberately skipped;
