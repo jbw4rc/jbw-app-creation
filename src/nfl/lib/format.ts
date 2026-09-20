@@ -63,3 +63,25 @@ export function nickname(team: string): string {
   const parts = team.split(' ');
   return parts[parts.length - 1];
 }
+
+/**
+ * End of the current NFL week, as a timestamp.
+ *
+ * A live pull returns every game the books have posted, which late in a week
+ * means next week's openers too — 29 games, not the 14 on today's slate. Those
+ * far-out lines have had no real money through them yet, so letting them rank
+ * against today's games is noise at best and misleading at worst.
+ *
+ * The football week runs Thursday through Monday night, so it ends at the
+ * Tuesday after the most recent Thursday.
+ */
+export function endOfNflWeek(now: Date = new Date()): number {
+  const d = new Date(now);
+  d.setUTCHours(6, 0, 0, 0);
+  // Step forward to the next Tuesday (day 2); if today is Tuesday before 06:00
+  // UTC we are still in the previous football week.
+  while (d.getUTCDay() !== 2 || d.getTime() <= now.getTime()) {
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  return d.getTime();
+}

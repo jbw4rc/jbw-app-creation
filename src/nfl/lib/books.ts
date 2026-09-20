@@ -7,7 +7,15 @@
 // piling onto. So when the two disagree, the gap points straight at the public
 // side — retail is the one that moved, and it moved to protect itself.
 
-export type BookTier = 'sharp' | 'retail';
+/**
+ * 'other' is not a throwaway. A live pull returns two dozen books, most of them
+ * European or low-limit offshore shops. Counting those as retail was letting
+ * Betsson, NordicBet, PMU and Tipico outvote DraftKings and FanDuel in the
+ * retail median — which corrupts the public-side read, since the public whose
+ * money we are trying to locate bets at the US majors. Unrecognised books are
+ * shown in the per-book table but kept out of both consensus numbers.
+ */
+export type BookTier = 'sharp' | 'retail' | 'other';
 
 interface BookInfo {
   key: string;
@@ -25,6 +33,7 @@ const BOOKS: BookInfo[] = [
   { key: 'lowvig', name: 'LowVig', tier: 'sharp' },
   { key: 'bookmaker', name: 'BookMaker', tier: 'sharp' },
   { key: 'betcris', name: 'Betcris', tier: 'sharp' },
+  { key: 'matchbook', name: 'Matchbook', tier: 'sharp' },
 
   // Retail books — where the public bets, and where lines get shaded.
   { key: 'draftkings', name: 'DraftKings', tier: 'retail' },
@@ -35,13 +44,18 @@ const BOOKS: BookInfo[] = [
   { key: 'fanatics', name: 'Fanatics', tier: 'retail' },
   { key: 'betrivers', name: 'BetRivers', tier: 'retail' },
   { key: 'hardrockbet', name: 'Hard Rock', tier: 'retail' },
+  { key: 'bovada', name: 'Bovada', tier: 'retail' },
 ];
 
 const BY_KEY = new Map(BOOKS.map((b) => [b.key, b]));
 
-/** Tier for a book key; unknown books are treated as retail (the safer default). */
+/**
+ * Tier for a book key. Unknown books are 'other' and sit out of the maths.
+ * Guessing a tier is worse than excluding: a book placed in the wrong bucket
+ * does not add noise, it moves the signal.
+ */
 export function bookTier(key: string): BookTier {
-  return BY_KEY.get(key)?.tier ?? 'retail';
+  return BY_KEY.get(key)?.tier ?? 'other';
 }
 
 /** Display name for a book key, falling back to the raw key. */

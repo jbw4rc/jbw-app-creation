@@ -94,16 +94,32 @@ const snapshot = { takenAt: new Date().toISOString(), games };
 
 // --- Merge with whatever history is already committed. ---
 let history = { updatedAt: null, sample: false, week: null, season: null, snapshots: [] };
+const MARKER = 'export const oddsHistory: OddsHistory = ';
 if (existsSync(OUT)) {
   const prior = readFileSync(OUT, 'utf8');
-  const json = prior.slice(prior.indexOf('{'), prior.lastIndexOf('}') + 1);
+  // Slice from the ASSIGNMENT, not the first brace in the file: the first
+  // brace belongs to `import type { OddsHistory }`, so indexing on it yields
+  // garbage that fails to parse. That failure used to be swallowed, and every
+  // poll silently restarted the history from scratch — which would have left
+  // the file permanently one snapshot long and movement signals permanently
+  // dead, with nothing in the logs to say so.
+  const at = prior.indexOf(MARKER);
+  if (at === -1) throw new Error(`${OUT} has no '${MARKER}' — refusing to overwrite it blindly`);
+  const json = prior.slice(at + MARKER.length, prior.lastIndexOf('}') + 1);
+
+  let parsed;
   try {
-    const parsed = JSON.parse(json);
-    // A sample file is scaffolding — the first real poll replaces it outright.
-    if (!parsed.sample) history = parsed;
-    else console.log('  replacing sample history with live data');
-  } catch {
-    console.log('  could not parse existing history; starting fresh');
+    parsed = JSON.parse(json);
+  } catch (err) {
+    // Never silently discard accumulated history — it is unrecoverable.
+    throw new Error(`Could not parse ${OUT}: ${err.message}`);
+  }
+  // A sample file is scaffolding — the first real poll replaces it outright.
+  if (!parsed.sample) {
+    history = parsed;
+    console.log(`  carrying forward ${history.snapshots.length} existing snapshot(s)`);
+  } else {
+    console.log('  replacing sample history with live data');
   }
 }
 

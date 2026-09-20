@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { oddsHistory } from './data/oddsHistory';
 import { clvArchive } from './data/clvArchive';
+import { sampleHistory } from './data/sampleHistory';
+import { sampleClv } from './data/sampleClv';
 import { readSlate, scoreBand, sideLabel, STRONG_MIN } from './lib/sharp';
 import { summarize } from './lib/clv';
 import { TrackRecord } from './components/TrackRecord';
 import type { GameRead } from './lib/sharp';
 import { GameRow } from './components/GameRow';
-import { stampLabel } from './lib/format';
+import { endOfNflWeek, stampLabel } from './lib/format';
 import { findGame } from './lib/market';
 
 type View = 'board' | 'record';
@@ -18,27 +20,44 @@ const LENSES: { id: Lens; label: string; blurb: string }[] = [
   { id: 'total', label: 'Totals only', blurb: 'Rank by the total read alone' },
 ];
 
+// Live data wins whenever it exists; the synthetic fixture is only a
+// placeholder for a repo that has never polled. Keeping them in separate files
+// means a fixture rebuild can never clobber real accumulated history.
+const history = oddsHistory.snapshots.length > 0 ? oddsHistory : sampleHistory;
+const archive = clvArchive.games.length > 0 ? clvArchive : sampleClv;
+
 export default function App() {
   const [view, setView] = useState<View>('board');
   const [lens, setLens] = useState<Lens>('best');
   const [minScore, setMinScore] = useState(0);
+  const [weekOnly, setWeekOnly] = useState(true);
   const [showMethod, setShowMethod] = useState(false);
 
-  const slate = useMemo(() => readSlate(oddsHistory), []);
-  const record = useMemo(() => summarize(clvArchive, STRONG_MIN), []);
-  const latest = oddsHistory.snapshots[oddsHistory.snapshots.length - 1];
+  const slate = useMemo(() => readSlate(history), []);
+  const record = useMemo(() => summarize(archive, STRONG_MIN), []);
+  const latest = history.snapshots[history.snapshots.length - 1];
+
+  // The API posts next week's openers alongside this week's slate; those lines
+  // have had no real money through them, so they default to hidden.
+  const weekEnd = useMemo(() => endOfNflWeek(), []);
+  const thisWeek = useMemo(
+    () => slate.filter((g) => new Date(g.commenceTime).getTime() < weekEnd),
+    [slate, weekEnd]
+  );
+  const laterCount = slate.length - thisWeek.length;
 
   const ranked = useMemo(() => {
     const pick = (g: GameRead) =>
       lens === 'best' ? g.best : lens === 'spread' ? g.spread : g.total;
-    return [...slate]
+    return [...(weekOnly ? thisWeek : slate)]
       .map((g) => ({ game: g, read: pick(g) }))
       .filter((r) => r.read.score >= minScore)
       .sort((a, b) => b.read.score - a.read.score);
-  }, [slate, lens, minScore]);
+  }, [slate, thisWeek, weekOnly, lens, minScore]);
 
-  const strong = slate.filter((g) => scoreBand(g.best.score).tone === 'strong').length;
-  const leans = slate.filter((g) => scoreBand(g.best.score).tone === 'lean').length;
+  const scoped = weekOnly ? thisWeek : slate;
+  const strong = scoped.filter((g) => scoreBand(g.best.score).tone === 'strong').length;
+  const leans = scoped.filter((g) => scoreBand(g.best.score).tone === 'lean').length;
 
   return (
     <div className="app">
@@ -54,21 +73,21 @@ export default function App() {
           <div>
             <span className="top__k">Slate</span>
             <span className="top__v">
-              {oddsHistory.season ? `${oddsHistory.season} ` : ''}
-              {oddsHistory.week ? `Week ${oddsHistory.week}` : 'Current board'}
+              {history.season ? `${history.season} ` : ''}
+              {history.week ? `Week ${history.week}` : 'Current board'}
             </span>
           </div>
           <div>
             <span className="top__k">Games</span>
-            <span className="top__v">{slate.length}</span>
+            <span className="top__v">{scoped.length}</span>
           </div>
           <div>
             <span className="top__k">Last poll</span>
-            <span className="top__v">{stampLabel(oddsHistory.updatedAt)}</span>
+            <span className="top__v">{stampLabel(history.updatedAt)}</span>
           </div>
           <div>
             <span className="top__k">History</span>
-            <span className="top__v">{oddsHistory.snapshots.length} snapshots</span>
+            <span className="top__v">{history.snapshots.length} snapshots</span>
           </div>
         </div>
       </header>
@@ -89,11 +108,11 @@ export default function App() {
         </button>
       </nav>
 
-      {view === 'record' && <TrackRecord summary={record} sample={clvArchive.sample} />}
+      {view === 'record' && <TrackRecord summary={record} sample={archive.sample} />}
 
       {view === 'board' && (
         <>
-      {oddsHistory.sample && (
+      {history.sample && (
         <div className="banner banner--warn">
           <b>Sample data.</b> These are synthetic lines built to exercise every signal,
           not a live market — do not bet them. Add an <code>ODDS_API_KEY</code> repository
@@ -109,8 +128,15 @@ export default function App() {
           <b>{leans}</b> lean{leans === 1 ? '' : 's'}
         </div>
         <div className="summary__stat summary__stat--muted">
-          <b>{slate.length - strong - leans}</b> with no edge worth playing
+          <b>{scoped.length - strong - leans}</b> with no edge worth playing
         </div>
+        {laterCount > 0 && (
+          <button className="linkbtn" onClick={() => setWeekOnly((v) => !v)}>
+            {weekOnly
+              ? `show ${laterCount} game${laterCount === 1 ? '' : 's'} from later weeks`
+              : 'hide later weeks'}
+          </button>
+        )}
       </div>
 
       <nav className="lenses">

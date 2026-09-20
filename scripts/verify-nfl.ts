@@ -2,8 +2,12 @@
 //   npx tsx scripts/verify-nfl.ts
 // The sample history in src/nfl/data is built so each scenario lights up a
 // specific signal; these checks assert that it does.
-import { oddsHistory } from '../src/nfl/data/oddsHistory';
-import { clvArchive } from '../src/nfl/data/clvArchive';
+// The suite asserts on the synthetic fixtures, which are deliberately built so
+// each scenario lights up one signal. It must NOT read the live files — those
+// change under it every time the poller runs, and its scenario checks would
+// then fail for reasons that have nothing to do with the code.
+import { sampleHistory as oddsHistory } from '../src/nfl/data/sampleHistory';
+import { sampleClv as clvArchive } from '../src/nfl/data/sampleClv';
 import { readSlate, sideLabel, scoreBand, readGameAt, LEAN_MIN, STRONG_MIN } from '../src/nfl/lib/sharp';
 import { summarize } from '../src/nfl/lib/clv';
 import { impliedMargin, noVig } from '../src/nfl/lib/market';
