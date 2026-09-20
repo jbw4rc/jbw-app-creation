@@ -55,16 +55,25 @@ export default function App() {
   );
   const laterCount = slate.length - thisWeek.length;
 
+  // Kicked-off games come off the board entirely. This is a pregame tool: the
+  // number it reads no longer exists, and nothing here can be acted on.
+  const now = Date.now();
+  const bettable = useMemo(
+    () => thisWeek.filter((g) => new Date(g.commenceTime).getTime() > now),
+    [thisWeek, now]
+  );
+  const startedCount = thisWeek.length - bettable.length;
+
   const ranked = useMemo(() => {
     const pick = (g: GameRead) =>
       lens === 'best' ? g.best : lens === 'spread' ? g.spread : g.total;
-    return [...(weekOnly ? thisWeek : slate)]
+    return [...(weekOnly ? bettable : slate.filter((g) => new Date(g.commenceTime).getTime() > now))]
       .map((g) => ({ game: g, read: pick(g) }))
       .filter((r) => r.read.score >= minScore)
       .sort((a, b) => b.read.score - a.read.score);
-  }, [slate, thisWeek, weekOnly, lens, minScore]);
+  }, [slate, bettable, weekOnly, lens, minScore, now]);
 
-  const scoped = weekOnly ? thisWeek : slate;
+  const scoped = weekOnly ? bettable : slate.filter((g) => new Date(g.commenceTime).getTime() > now);
   const strong = scoped.filter((g) => scoreBand(g.best.score).tone === 'strong').length;
   const leans = scoped.filter((g) => scoreBand(g.best.score).tone === 'lean').length;
 
@@ -153,6 +162,11 @@ export default function App() {
         <div className="summary__stat summary__stat--muted">
           <b>{scoped.length - strong - leans}</b> with no edge worth playing
         </div>
+        {startedCount > 0 && (
+          <div className="summary__stat summary__stat--muted">
+            <b>{startedCount}</b> already kicked off — removed
+          </div>
+        )}
         {laterCount > 0 && (
           <button className="linkbtn" onClick={() => setWeekOnly((v) => !v)}>
             {weekOnly
@@ -189,7 +203,11 @@ export default function App() {
 
       <main className="slate">
         {ranked.length === 0 && (
-          <p className="empty">Nothing on the board clears a score of {minScore}.</p>
+          <p className="empty">
+            {startedCount > 0 && minScore === 0
+              ? 'Every game this week has kicked off. Next week\u2019s board fills in as those lines open.'
+              : `Nothing on the board clears a score of ${minScore}.`}
+          </p>
         )}
         {ranked.map((r, i) => (
           <GameRow

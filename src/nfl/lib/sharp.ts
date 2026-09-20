@@ -152,10 +152,29 @@ function lineText(value: number, market: Market): string {
 }
 
 function buildMarketRead(
-  history: Snapshot[],
+  allHistory: Snapshot[],
   gameId: string,
   market: Market
 ): MarketRead | null {
+  // Once a game kicks off the feed keeps quoting it, but those are in-play
+  // prices and they are not this market. A blowout drags the number many
+  // points from the close, and every movement signal reads that as violent
+  // sharp action: a game that closed at -4.5 and sits at -11.5 at half-time
+  // scored 83 here, the highest on the board, on a line nobody could bet.
+  // The engine is a PREGAME engine — it never looks past kickoff.
+  let kickoff = NaN;
+  for (let i = allHistory.length - 1; i >= 0; i--) {
+    const g = findGame(allHistory[i].games, gameId);
+    if (g) {
+      kickoff = new Date(g.commenceTime).getTime();
+      break;
+    }
+  }
+  const history = Number.isFinite(kickoff)
+    ? allHistory.filter((s) => new Date(s.takenAt).getTime() < kickoff)
+    : allHistory;
+  if (history.length === 0) return null;
+
   const latest = history[history.length - 1];
   const game = findGame(latest.games, gameId);
   if (!game) return null;

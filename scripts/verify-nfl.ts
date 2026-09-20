@@ -177,9 +177,10 @@ console.log('\n— in-play prices must not become the close —');
   check('an in-play price never becomes the close',
     resolved.spread.closingLine !== -21);
 
-  // A game only ever seen after kickoff has no bettable price, so no grade.
-  const lateOnly = resolveGame([snap('2026-09-20T18:30:00Z', -21)], 'g1')!;
-  check('a game first seen after kickoff is not graded', lateOnly.spread.clv === null);
+  // A game only ever seen after kickoff has no bettable price at all, so the
+  // engine declines to read it rather than reporting an in-play number.
+  const lateOnly = resolveGame([snap('2026-09-20T18:30:00Z', -21)], 'g1');
+  check('a game seen only in-play produces no read at all', lateOnly === null);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.\n' : `\n${failures} check(s) failed.\n`);
