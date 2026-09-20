@@ -9,7 +9,8 @@
 import { sampleHistory as oddsHistory } from '../src/nfl/data/sampleHistory';
 import { sampleClv as clvArchive } from '../src/nfl/data/sampleClv';
 import { readSlate, sideLabel, scoreBand, readGameAt, LEAN_MIN, STRONG_MIN } from '../src/nfl/lib/sharp';
-import { summarize } from '../src/nfl/lib/clv';
+import { summarize, resolveGame } from '../src/nfl/lib/clv';
+import type { Snapshot } from '../src/nfl/types';
 import { impliedMargin, noVig } from '../src/nfl/lib/market';
 
 let failures = 0;
@@ -133,6 +134,52 @@ console.log('\n— closing line value —');
 
   console.log(`  record: ${summary.overall.n} flags, mean CLV ` +
     `${summary.overall.meanClv.toFixed(2)}, beat ${(summary.overall.beatRate * 100).toFixed(0)}%`);
+}
+
+console.log('\n— in-play prices must not become the close —');
+{
+  // Hand-built history: a sane number before kickoff, then a wild in-play
+  // number after it. The feed really does keep returning prices once a game is
+  // under way, and grading against one would corrupt the whole week silently.
+  const KICK = '2026-09-20T17:00:00Z';
+  const snap = (takenAt: string, homePoint: number): Snapshot => ({
+    takenAt,
+    games: [{
+      id: 'g1',
+      commenceTime: KICK,
+      homeTeam: 'Home Team',
+      awayTeam: 'Away Team',
+      books: [
+        { book: 'pinnacle', spread: { homePoint, homePrice: -105, awayPoint: -homePoint, awayPrice: -105 },
+          total: { point: 45, overPrice: -105, underPrice: -105 } },
+        { book: 'circasports', spread: { homePoint, homePrice: -105, awayPoint: -homePoint, awayPrice: -105 },
+          total: { point: 45, overPrice: -105, underPrice: -105 } },
+        { book: 'draftkings', spread: { homePoint: homePoint + 1, homePrice: -110, awayPoint: -homePoint - 1, awayPrice: -110 },
+          total: { point: 45.5, overPrice: -110, underPrice: -110 } },
+        { book: 'fanduel', spread: { homePoint: homePoint + 1, homePrice: -110, awayPoint: -homePoint - 1, awayPrice: -110 },
+          total: { point: 45.5, overPrice: -110, underPrice: -110 } },
+      ],
+    }],
+  });
+
+  const history = [
+    snap('2026-09-20T12:00:00Z', -3),
+    snap('2026-09-20T16:50:00Z', -3.5),   // last bettable number
+    snap('2026-09-20T18:30:00Z', -21),    // in-play blowout price
+  ];
+
+  const resolved = resolveGame(history, 'g1')!;
+  check('closing line is the last PRE-kickoff number',
+    Math.abs(resolved.spread.closingLine - -3.5) < 1e-9,
+    `got ${resolved.spread.closingLine}`);
+  check('the in-play snapshot is still kept in the record',
+    resolved.spread.reads.length === 3);
+  check('an in-play price never becomes the close',
+    resolved.spread.closingLine !== -21);
+
+  // A game only ever seen after kickoff has no bettable price, so no grade.
+  const lateOnly = resolveGame([snap('2026-09-20T18:30:00Z', -21)], 'g1')!;
+  check('a game first seen after kickoff is not graded', lateOnly.spread.clv === null);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.\n' : `\n${failures} check(s) failed.\n`);

@@ -29,7 +29,8 @@ function direction(side: Side | null): number {
 function resolveMarket(
   snapshots: Snapshot[],
   gameId: string,
-  market: Market
+  market: Market,
+  kickoff: string
 ): ResolvedMarket | null {
   const reads: ResolvedMarket['reads'] = [];
 
@@ -48,10 +49,36 @@ function resolveMarket(
   }
 
   if (reads.length === 0) return null;
-  const closing = reads[reads.length - 1];
 
-  // The first poll that cleared the lean band is the entry point we grade.
-  const flag = reads.find((r) => r.score >= LEAN_MIN && r.side !== null) ?? null;
+  // Grade only against numbers that existed BEFORE the game started. The feed
+  // keeps returning prices once a game is under way, and those are live in-play
+  // numbers that can sit points away from the close. Taking the last read
+  // blindly would let a snapshot polled at half-time become the "closing line",
+  // which would silently corrupt every grade for the week.
+  const kickoffAt = new Date(kickoff).getTime();
+  const preKick = reads.filter((r) => new Date(r.takenAt).getTime() < kickoffAt);
+
+  // No pre-kickoff read means nothing to grade — we never saw a bettable price.
+  if (preKick.length === 0) {
+    return {
+      market,
+      reads,
+      closingMu: NaN,
+      closingLine: NaN,
+      flaggedAt: null,
+      flaggedSide: null,
+      flaggedScore: 0,
+      flaggedMu: null,
+      flaggedLine: null,
+      clv: null,
+    };
+  }
+
+  const closing = preKick[preKick.length - 1];
+
+  // The first poll that cleared the lean band is the entry point we grade, and
+  // it too must predate kickoff — you cannot take a price that no longer exists.
+  const flag = preKick.find((r) => r.score >= LEAN_MIN && r.side !== null) ?? null;
 
   // A flag on the very last poll has no market left to move, so it is not
   // gradeable — counting it as zero CLV would quietly drag the average toward
@@ -84,8 +111,8 @@ export function resolveGame(snapshots: Snapshot[], gameId: string): ResolvedGame
 
   const latest = readGameAt(own, gameId);
   if (!latest) return null;
-  const spread = resolveMarket(own, gameId, 'spread');
-  const total = resolveMarket(own, gameId, 'total');
+  const spread = resolveMarket(own, gameId, 'spread', latest.commenceTime);
+  const total = resolveMarket(own, gameId, 'total', latest.commenceTime);
   if (!spread || !total) return null;
   return {
     id: latest.id,
