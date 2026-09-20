@@ -15,7 +15,11 @@ name: Build NFL odds
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * 3-7'          # 10pm ET Tue-Sat
+    # Day-of-week is 0-6 here, NOT the POSIX 0-7 where 7 also means Sunday.
+    # A range ending in 7 makes GitHub reject the whole file, and the run then
+    # fails instantly with no jobs and no logs, which looks nothing like a cron
+    # problem. Sunday is spelled 0, and only 0.
+    - cron: '0 2 * * 0,3,4,5,6'     # 10pm ET Tue-Sat
     - cron: '0 14 * * 2-6'         # 10am ET Tue-Sat
     - cron: '0 20 * * 2-6'         # 4pm ET Tue-Sat
     - cron: '0 13,15,16,17 * * 0'  # 9/11am, 12/1pm ET Sunday
