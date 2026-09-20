@@ -1,3 +1,7 @@
+> **This repo holds two apps.** The NBA apron tool documented below is served at
+> `/`. The NFL sharp-money board — **[Sharp Board](SHARP-BOARD.md)** — is served
+> at `/nfl.html` and documented separately.
+
 # Apron Room — NBA Trade & Free Agent Machine
 
 A planning tool for analyzing NBA rosters, trades, and free-agent signings
