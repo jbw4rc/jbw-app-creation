@@ -11,8 +11,9 @@ import { SignalList } from './SignalList';
 import { bookName, bookTier } from '../lib/books';
 import { impliedMargin, impliedTotal, hold } from '../lib/market';
 import {
-  deltaLabel, holdLabel, priceLabel, spreadLabel, totalLabel,
+  deltaLabel, durationLabel, holdLabel, priceLabel, spreadLabel, totalLabel,
 } from '../lib/format';
+import { PROVISIONAL_HOURS } from '../lib/sharp';
 import type { GameQuote } from '../types';
 
 function num(read: MarketRead, value: number): string {
@@ -77,20 +78,36 @@ export function MarketPanel({
           </span>
         </div>
         <div className="numbers__cell">
-          <span className="numbers__k">Since open</span>
+          {/* Never call our first observation "the open" unless it earned it. */}
+          <span className="numbers__k">
+            {read.isTrueOpen ? 'Since open' : 'Since first poll'}
+          </span>
           <span className="numbers__v">{deltaLabel(read.moveMu)}</span>
           <span className="numbers__s">
-            opened {num(read, read.openLine)} → now {num(read, read.sharp.line)}
+            {read.isTrueOpen ? 'opened' : `first seen ${durationLabel(read.windowHours)} ago at`}{' '}
+            {num(read, read.openLine)} → now {num(read, read.sharp.line)}
           </span>
         </div>
       </div>
 
       {read.coverage < 100 && (
         <p className="market__partial">
-          Partial read — {read.coverage} of 100 points of signal available.{' '}
-          {read.moveMu === undefined || Number.isNaN(read.moveMu)
+          Partial read — {read.coverage} of 100 points of signal could be computed.{' '}
+          {Number.isNaN(read.moveMu)
             ? 'Movement reads need at least two polls of line history.'
             : 'Some signals do not apply to this market.'}
+        </p>
+      )}
+
+      {/* Computable is not the same as meaningful. A full-coverage read built on
+          twenty minutes of market says every signal ran, not that any of them
+          had something to see. */}
+      {read.windowHours < PROVISIONAL_HOURS && read.windowHours > 0 && (
+        <p className="market__partial market__partial--warn">
+          Provisional — this line has only been watched for{' '}
+          {durationLabel(read.windowHours)}. The movement signals ran, but there is
+          barely any market history behind them, so a quiet reading here means
+          "not seen yet" rather than "did not happen".
         </p>
       )}
 

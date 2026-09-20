@@ -3,12 +3,12 @@ import { oddsHistory } from './data/oddsHistory';
 import { clvArchive } from './data/clvArchive';
 import { sampleHistory } from './data/sampleHistory';
 import { sampleClv } from './data/sampleClv';
-import { readSlate, scoreBand, sideLabel, STRONG_MIN } from './lib/sharp';
+import { readSlate, scoreBand, sideLabel, STRONG_MIN, PROVISIONAL_HOURS } from './lib/sharp';
 import { summarize } from './lib/clv';
 import { TrackRecord } from './components/TrackRecord';
 import type { GameRead } from './lib/sharp';
 import { GameRow } from './components/GameRow';
-import { endOfNflWeek, stampLabel } from './lib/format';
+import { durationLabel, endOfNflWeek, stampLabel } from './lib/format';
 import { findGame } from './lib/market';
 
 type View = 'board' | 'record';
@@ -25,6 +25,15 @@ const LENSES: { id: Lens; label: string; blurb: string }[] = [
 // means a fixture rebuild can never clobber real accumulated history.
 const history = oddsHistory.snapshots.length > 0 ? oddsHistory : sampleHistory;
 const archive = clvArchive.games.length > 0 ? clvArchive : sampleClv;
+
+/** How long the committed history actually spans, in hours. */
+const spanHours = (() => {
+  const s = history.snapshots;
+  if (s.length < 2) return 0;
+  return (
+    (new Date(s[s.length - 1].takenAt).getTime() - new Date(s[0].takenAt).getTime()) / 3_600_000
+  );
+})();
 
 export default function App() {
   const [view, setView] = useState<View>('board');
@@ -87,7 +96,10 @@ export default function App() {
           </div>
           <div>
             <span className="top__k">History</span>
-            <span className="top__v">{history.snapshots.length} snapshots</span>
+            <span className="top__v">
+              {history.snapshots.length} polls
+              {spanHours > 0 && ` · ${durationLabel(spanHours)}`}
+            </span>
           </div>
         </div>
       </header>
@@ -112,6 +124,17 @@ export default function App() {
 
       {view === 'board' && (
         <>
+      {!history.sample && spanHours < PROVISIONAL_HOURS && (
+        <div className="banner banner--warn">
+          <b>Provisional board.</b> Only {durationLabel(spanHours)} of market history
+          has been collected{history.snapshots.length < 2 ? ' so far' : ''}, so the
+          movement signals — reverse line movement, steam, price-versus-line — have
+          almost nothing to read yet. Low scores here mean "not observed", not "no
+          sharp money". This board is built to watch a line from Tuesday; it gets
+          meaningful once polling has run across a full week.
+        </div>
+      )}
+
       {history.sample && (
         <div className="banner banner--warn">
           <b>Sample data.</b> These are synthetic lines built to exercise every signal,

@@ -85,3 +85,11 @@ export function endOfNflWeek(now: Date = new Date()): number {
   }
   return d.getTime();
 }
+
+/** "18m" / "4h" / "3d" — a duration in hours, at the coarsest useful unit. */
+export function durationLabel(hours: number): string {
+  if (!Number.isFinite(hours) || hours <= 0) return '0m';
+  if (hours < 1) return `${Math.round(hours * 60)}m`;
+  if (hours < 48) return `${Math.round(hours)}h`;
+  return `${Math.round(hours / 24)}d`;
+}

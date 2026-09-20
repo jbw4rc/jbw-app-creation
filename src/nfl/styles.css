@@ -354,3 +354,7 @@ body {
   .kpis { flex-direction: row; }
 }
 .view__n { color: var(--ink-3); font-weight: 500; }
+
+/* Provisional: full coverage on a short window is the one case where the
+   numbers look more authoritative than they are. */
+.market__partial--warn { color: var(--square); border-left-color: var(--square); }
