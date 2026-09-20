@@ -13,7 +13,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-15T10:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -161,7 +161,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -309,7 +309,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -457,7 +457,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -605,7 +605,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -753,7 +753,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -901,7 +901,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -1049,7 +1049,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -1197,7 +1197,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -1345,7 +1345,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -1493,7 +1493,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -1641,7 +1641,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -1789,7 +1789,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -1942,7 +1942,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-16T10:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -2090,7 +2090,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -2238,7 +2238,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -2386,7 +2386,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -2534,7 +2534,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -2682,7 +2682,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -2830,7 +2830,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -2978,7 +2978,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -3126,7 +3126,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -3274,7 +3274,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -3422,7 +3422,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -3570,7 +3570,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -3718,7 +3718,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -3871,7 +3871,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-17T10:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -4019,7 +4019,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -4167,7 +4167,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -4315,7 +4315,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -4463,7 +4463,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -4611,7 +4611,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -4759,7 +4759,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -4907,7 +4907,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -5055,7 +5055,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -5203,7 +5203,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -5351,7 +5351,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -5499,7 +5499,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -5647,7 +5647,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -5800,7 +5800,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-18T10:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -5948,7 +5948,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -6096,7 +6096,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -6244,7 +6244,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -6392,7 +6392,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -6540,7 +6540,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -6688,7 +6688,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -6836,7 +6836,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -6984,7 +6984,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -7132,7 +7132,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -7280,7 +7280,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -7428,7 +7428,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -7576,7 +7576,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -7729,7 +7729,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-19T10:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -7877,7 +7877,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -8025,7 +8025,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -8173,7 +8173,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -8321,7 +8321,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -8469,7 +8469,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -8617,7 +8617,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -8765,7 +8765,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -8913,7 +8913,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -9061,7 +9061,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -9209,7 +9209,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -9357,7 +9357,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -9505,7 +9505,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -9658,7 +9658,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-20T00:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -9806,7 +9806,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -9954,7 +9954,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -10102,7 +10102,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -10250,7 +10250,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -10398,7 +10398,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -10546,7 +10546,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -10694,7 +10694,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -10842,7 +10842,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -10990,7 +10990,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -11138,7 +11138,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -11286,7 +11286,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -11434,7 +11434,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -11587,7 +11587,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-20T10:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -11735,7 +11735,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -11883,7 +11883,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -12031,7 +12031,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -12179,7 +12179,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -12327,7 +12327,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -12475,7 +12475,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -12623,7 +12623,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -12771,7 +12771,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -12919,7 +12919,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -13067,7 +13067,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -13215,7 +13215,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -13363,7 +13363,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",
@@ -13516,7 +13516,7 @@ export const oddsHistory: OddsHistory = {
       "takenAt": "2026-09-20T15:00:00.000Z",
       "games": [
         {
-          "id": "sample-0",
+          "id": "sample-w3-0",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Kansas City Chiefs",
           "awayTeam": "Baltimore Ravens",
@@ -13664,7 +13664,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-1",
+          "id": "sample-w3-1",
           "commenceTime": "2026-09-21T00:00:00.000Z",
           "homeTeam": "Seattle Seahawks",
           "awayTeam": "San Francisco 49ers",
@@ -13812,7 +13812,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-2",
+          "id": "sample-w3-2",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Philadelphia Eagles",
           "awayTeam": "Dallas Cowboys",
@@ -13960,7 +13960,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-3",
+          "id": "sample-w3-3",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Chicago Bears",
           "awayTeam": "Green Bay Packers",
@@ -14108,7 +14108,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-4",
+          "id": "sample-w3-4",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Miami Dolphins",
           "awayTeam": "Buffalo Bills",
@@ -14256,7 +14256,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-5",
+          "id": "sample-w3-5",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Minnesota Vikings",
           "awayTeam": "Detroit Lions",
@@ -14404,7 +14404,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-6",
+          "id": "sample-w3-6",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Pittsburgh Steelers",
           "awayTeam": "Cincinnati Bengals",
@@ -14552,7 +14552,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-7",
+          "id": "sample-w3-7",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Denver Broncos",
           "awayTeam": "Los Angeles Chargers",
@@ -14700,7 +14700,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-8",
+          "id": "sample-w3-8",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Jacksonville Jaguars",
           "awayTeam": "Houston Texans",
@@ -14848,7 +14848,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-9",
+          "id": "sample-w3-9",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "New England Patriots",
           "awayTeam": "New York Jets",
@@ -14996,7 +14996,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-10",
+          "id": "sample-w3-10",
           "commenceTime": "2026-09-20T17:00:00.000Z",
           "homeTeam": "Atlanta Falcons",
           "awayTeam": "Tampa Bay Buccaneers",
@@ -15144,7 +15144,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-11",
+          "id": "sample-w3-11",
           "commenceTime": "2026-09-20T20:00:00.000Z",
           "homeTeam": "Los Angeles Rams",
           "awayTeam": "Las Vegas Raiders",
@@ -15292,7 +15292,7 @@ export const oddsHistory: OddsHistory = {
           ]
         },
         {
-          "id": "sample-12",
+          "id": "sample-w3-12",
           "commenceTime": "2026-09-22T00:00:00.000Z",
           "homeTeam": "New Orleans Saints",
           "awayTeam": "Arizona Cardinals",

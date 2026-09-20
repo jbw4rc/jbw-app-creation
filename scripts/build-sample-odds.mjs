@@ -106,19 +106,56 @@ const GAMES = [
     totalPath: [45.0, 45.0, 44.9, 44.8, 44.8, 44.7, 44.6, 44.6], totalShade: -0.18 },
 ];
 
+// `--weeks-ago N` generates a finished week instead of the live one, so the
+// track-record panel has something to grade. Those weeks apply LATE_DRIFT: a
+// per-game nudge over the final polls that decides whether the market kept
+// moving toward the flagged side or came back against it.
+//
+// This matters for honesty. Every scenario above is built so the line moves
+// toward the sharp side, because that is what exercises the signals. Archiving
+// those unchanged would show a 100% beat rate and imply the model is perfect.
+// The drifts below are a deliberate mix — some continue, some stall, some
+// reverse — so the sample track record lands somewhere plausible instead of
+// advertising a number no model produces.
+const WEEKS_AGO = Number(
+  (process.argv.find((a) => a.startsWith('--weeks-ago=')) || '').split('=')[1] || 0
+);
+// Signed to oppose or extend each game's own sharp side, and big enough to
+// actually overturn a move rather than dent it — the first pass used drifts
+// far smaller than the base paths and produced a 100% beat rate.
+// Indices 0, 1 and 6 oppose their game's sharp side; 2, 3 and 7 extend it.
+// Totals need a bigger number than spreads to overturn, because the total
+// paths travel further over the week.
+const LATE_DRIFT = [1.8, -0.4, 0.4, -0.5, 0.3, 0.0, 3.0, 0.6, -0.2, 0.25, -0.3, 0.1, 0.4];
+/**
+ * Per-week magnitude, indexed by weeks-ago. All entries stay POSITIVE: a
+ * negative multiplier inverts every sign at once, which turned each opposing
+ * drift into a reinforcing one and pushed the sample beat rate back to ~95%.
+ */
+const WEEK_MULT = [0, 1, 0.55, 1.4];
+
 // Poll times: Tue 10:00Z through Sun 15:00Z, the shape the workflow polls on.
-const BASE = new Date('2026-09-15T10:00:00Z'); // Tuesday of the sample week
+const BASE = new Date(Date.parse('2026-09-15T10:00:00Z') - WEEKS_AGO * 7 * 86400000);
 const POLL_HOURS = [0, 24, 48, 72, 96, 110, 120, 125];
 // Kickoffs hang off the Sunday of that week; `day` offsets to Monday night.
-const SUNDAY = Date.UTC(2026, 8, 20);
+const SUNDAY = Date.UTC(2026, 8, 20) - WEEKS_AGO * 7 * 86400000;
 
 const snapshots = POLL_HOURS.map((h, t) => {
   const takenAt = new Date(BASE.getTime() + h * 3600 * 1000).toISOString();
   const games = GAMES.map((g, gi) => {
     // ET -> UTC is +4 during the season.
     const kickoff = new Date(SUNDAY + (g.day * 24 + g.hour + 4) * 3600 * 1000);
-    const sharpMu = g.marginPath[t];
-    const sharpTot = g.totalPath[t];
+    // In past-week mode the last three polls carry the drift, scaled in so the
+    // move lands gradually rather than as a phantom steam spike.
+    // Each drift's SIGN is matched to that game's own sharp side, so rotating
+    // the array across weeks would scramble the intent. Vary magnitude instead:
+    // a per-week multiplier keeps the sign meaningful and can invert a whole
+    // week, so successive sample weeks do not resolve identically.
+    const drift = WEEKS_AGO > 0 ? LATE_DRIFT[gi] * (WEEK_MULT[WEEKS_AGO] ?? 1) : 0;
+    const tail = Math.max(0, t - (POLL_HOURS.length - 4));
+    const lateMargin = drift * (tail / 3);
+    const sharpMu = g.marginPath[t] + lateMargin;
+    const sharpTot = g.totalPath[t] + lateMargin * 0.8;
     const books = [];
 
     for (const [key, hold] of SHARP) {
@@ -144,7 +181,7 @@ const snapshots = POLL_HOURS.map((h, t) => {
     }
 
     return {
-      id: `sample-${gi}`,
+      id: `sample-w${3 - WEEKS_AGO}-${gi}`,
       commenceTime: kickoff.toISOString(),
       homeTeam: g.home,
       awayTeam: g.away,
@@ -157,7 +194,7 @@ const snapshots = POLL_HOURS.map((h, t) => {
 const history = {
   updatedAt: snapshots[snapshots.length - 1].takenAt,
   sample: true,
-  week: 3,
+  week: 3 - WEEKS_AGO,
   season: 2026,
   snapshots,
 };
@@ -171,4 +208,7 @@ const banner =
 
 writeFileSync('src/nfl/data/oddsHistory.ts',
   `${banner}${JSON.stringify(history, null, 2)};\n`);
-console.log(`Wrote sample history: ${snapshots.length} snapshots x ${GAMES.length} games.`);
+console.log(
+  `Wrote sample history: ${snapshots.length} snapshots x ${GAMES.length} games` +
+    (WEEKS_AGO ? ` (week ${3 - WEEKS_AGO}, finished)` : ' (live week)')
+);

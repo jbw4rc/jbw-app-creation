@@ -25,8 +25,13 @@ const MARKETS = 'spreads,totals';
 
 /** Keep the file from growing without bound. */
 const MAX_SNAPSHOTS = 400;
-/** Drop games that kicked off more than this long ago. */
-const STALE_HOURS = 48;
+/**
+ * Backstop only. Finished games are normally removed by archive-odds.ts, which
+ * grades them into the CLV archive first. This exists so a broken archive step
+ * cannot grow the committed file without bound — it must stay well clear of the
+ * archive window, or it would delete games before they are ever graded.
+ */
+const STALE_HOURS = 24 * 14;
 
 const url =
   `https://api.the-odds-api.com/v4/sports/${SPORT}/odds` +
@@ -104,7 +109,7 @@ if (existsSync(OUT)) {
 
 history.snapshots.push(snapshot);
 
-// Prune: drop kicked-off games from old snapshots, then cap the series.
+// Prune: backstop only (see STALE_HOURS), then cap the series.
 const staleBefore = Date.now() - STALE_HOURS * 3600 * 1000;
 history.snapshots = history.snapshots
   .map((s) => ({

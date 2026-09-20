@@ -250,3 +250,107 @@ body {
   margin: 0 0 12px; font-size: 12px; color: var(--ink-3);
   border-left: 2px solid var(--line); padding-left: 10px;
 }
+
+/* ---------- track record ----------
+   Positive/negative use green and violet, not green and red: the red/green
+   pair separates by only ~6 under deuteranopia, and this panel is nothing but
+   a beat/missed readout. Every value also carries its sign and a word, so the
+   hue is reinforcement, never the channel. */
+:root {
+  --beat: #35d07f;
+  --missed: #c77dff;
+}
+
+.record { display: flex; flex-direction: column; gap: 22px; }
+.record__empty {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 28px; text-align: center;
+}
+.record__empty h3 { margin: 0 0 8px; font-size: 16px; }
+.record__empty p { margin: 0 auto; max-width: 62ch; color: var(--ink-2); font-size: 13.5px; }
+
+.record__hero {
+  display: grid; grid-template-columns: minmax(260px, 1.4fr) minmax(220px, 1fr);
+  gap: 16px;
+}
+.hero {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.hero__k { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+/* Proportional figures: tabular-nums makes a display-size number look loose. */
+.hero__v { font-size: 52px; line-height: 1; font-weight: 700; letter-spacing: -0.02em; }
+.hero__s { font-size: 12.5px; color: var(--ink-3); }
+
+/* Meter: fill carries state, track is a lighter step of the same ramp, and the
+   coin-flip baseline is drawn so the number cannot be read in isolation. */
+.meter {
+  position: relative; height: 8px; border-radius: 4px; margin: 4px 0 2px;
+  background: rgba(53, 208, 127, .14); overflow: hidden;
+}
+.meter__fill { height: 100%; border-radius: 4px; }
+.meter__fill[data-tone="beat"] { background: var(--beat); }
+.meter__fill[data-tone="missed"] { background: var(--missed); }
+.meter__baseline {
+  /* Drawn in the surface color so it reads as a notch cut through the fill,
+     which stays legible whether the fill has reached it or not. */
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: var(--panel);
+}
+
+.kpis { display: flex; flex-direction: column; gap: 16px; }
+.kpi {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px 16px; flex: 1;
+  display: flex; flex-direction: column; gap: 2px; justify-content: center;
+}
+.kpi__k { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+.kpi__v { font-size: 26px; font-weight: 700; line-height: 1.1; }
+.kpi__s { font-size: 12px; color: var(--ink-3); }
+
+.hero__v[data-tone="beat"], .kpi__v[data-tone="beat"] { color: var(--beat); }
+.hero__v[data-tone="missed"], .kpi__v[data-tone="missed"] { color: var(--missed); }
+
+.record__splits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.record__splits section, .record__rows {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px 16px;
+}
+.record__splits h4, .record__rows h4 {
+  margin: 0 0 8px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--ink-3); font-weight: 600;
+}
+
+.clvtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.clvtable th {
+  text-align: left; font-weight: 600; color: var(--ink-3); font-size: 10.5px;
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: 6px 8px; border-bottom: 1px solid var(--line);
+}
+.clvtable td { padding: 7px 8px; border-bottom: 1px solid rgba(38,44,55,.6); }
+/* Tabular figures belong in columns that must align, and only there. */
+.clvtable__num { font-variant-numeric: tabular-nums; text-align: right; }
+.clvtable__num[data-tone="beat"] { color: var(--beat); }
+.clvtable__num[data-tone="missed"] { color: var(--missed); }
+.clvtable__word { font-size: 12px; }
+.clvtable__word[data-tone="beat"] { color: var(--beat); }
+.clvtable__word[data-tone="missed"] { color: var(--missed); }
+.clvtable__when { display: block; font-size: 11px; color: var(--ink-3); }
+.clvtable--wide td:first-child { min-width: 150px; }
+
+/* ---------- view switch ---------- */
+.views { display: flex; gap: 6px; margin: 20px 0 0; }
+.view {
+  background: none; border: 0; border-bottom: 2px solid transparent;
+  color: var(--ink-3); font-family: inherit; font-size: 14px; font-weight: 600;
+  padding: 8px 4px; margin-right: 14px; cursor: pointer;
+}
+.view:hover { color: var(--ink-2); }
+.view--on { color: var(--ink); border-bottom-color: var(--sharp); }
+
+@media (max-width: 720px) {
+  .record__hero { grid-template-columns: 1fr; }
+  .kpis { flex-direction: row; }
+}
+.view__n { color: var(--ink-3); font-weight: 500; }

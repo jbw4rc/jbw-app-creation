@@ -69,6 +69,37 @@ theoretical 100. Full divergence credit needs a 1.5-point sharp/retail gap,
 which essentially never happens; a genuinely strong game looks more like 0.8
 points of shade plus a clean reverse move through a key number.
 
+## Grading itself: closing line value
+
+A board that names a sharp side every week and never checks itself is
+unfalsifiable. The **Track record** tab is the check.
+
+Once a game kicks off it can no longer change, so it is replayed once: the
+engine is re-run at every poll it was priced in, the **first** poll where the
+score cleared the lean band is taken as the entry, and the number available then
+is compared against where the market closed. Positive CLV means the market kept
+moving toward the flagged side — you got a better number than the market settled
+on.
+
+The measurement is strictly forward-looking. The signals read movement from
+*before* the flag; the grade measures movement *after* it. Nothing grades the
+engine on the data that triggered it, and `npm run verify:nfl` asserts that
+every graded flag closed strictly after it was flagged.
+
+Read the beat rate against **50%**, not against 100. A model finding real money
+lands in the fifties or low sixties. Anything dramatically higher usually means
+a bug, a tiny sample, or data leaking backwards — which is why the test suite
+fails the fixture if its beat rate exceeds 85%.
+
+**CLV is not profit.** Beating the close is the habit that makes bettors money
+over time, but every individual bet still wins or loses on the field, and no
+result is tracked here.
+
+Finished games are moved out of the live snapshot series and into
+`clvArchive.ts` by `scripts/archive-odds.ts`, which runs after every poll. That
+is also what keeps `oddsHistory.ts` from growing without bound — so if that step
+stops running, grades stop accruing.
+
 ## Getting live data
 
 The app ships with **synthetic sample data** so it is explorable immediately.
@@ -110,7 +141,17 @@ npm run dev              # http://localhost:5173/nfl.html
 npm run build            # type-check + build both apps
 npm run verify:nfl       # headless checks on the engine
 npm run build:sample-odds   # regenerate the synthetic fixture
+npm run archive:odds        # grade + retire finished games
 ODDS_API_KEY=... npm run build:odds   # pull the live board
+```
+
+Regenerating the whole sample set, including the graded past weeks:
+
+```bash
+for w in 3 2 1; do
+  node scripts/build-sample-odds.mjs --weeks-ago=$w && npm run archive:odds
+done
+node scripts/build-sample-odds.mjs
 ```
 
 ## Layout
@@ -124,11 +165,14 @@ src/nfl/
     books.ts                   which books are sharp, which are retail
     market.ts                  prices -> implied margin/total
     sharp.ts                   the five signals + Sharp Score
+    clv.ts                     closing-line-value grading
     format.ts                  betting-convention display helpers
   data/oddsHistory.ts          GENERATED snapshot series
-  components/                  board, game row, market panel, signals
+  data/clvArchive.ts           GENERATED graded games
+  components/                  board, game row, market panel, signals, record
 scripts/
   build-odds.mjs               live poll (CI)
+  archive-odds.ts              grade + retire finished games (CI)
   build-sample-odds.mjs        synthetic fixture generator
   verify-nfl.ts                engine checks
 ```
@@ -148,6 +192,10 @@ one polling window is smoothed into a drift, and genuine steam can be missed.
 retail shading, not from bet percentages. It is usually right and occasionally
 not — a retail book can be off the sharp number because of its own position, a
 stale line, or a limit it does not want to take, none of which is public money.
+
+**The sample track record is synthetic.** Its weeks are generated with
+deliberately mixed outcomes so the panel does not advertise a beat rate no real
+model produces. It measures nothing, and the first live game clears it out.
 
 **A sharp side is not a winner.** This tracks where money is going. Sharp
 bettors lose plenty of games, and following them into a number that has already

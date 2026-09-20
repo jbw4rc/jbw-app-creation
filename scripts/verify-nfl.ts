@@ -3,7 +3,9 @@
 // The sample history in src/nfl/data is built so each scenario lights up a
 // specific signal; these checks assert that it does.
 import { oddsHistory } from '../src/nfl/data/oddsHistory';
-import { readSlate, sideLabel, scoreBand } from '../src/nfl/lib/sharp';
+import { clvArchive } from '../src/nfl/data/clvArchive';
+import { readSlate, sideLabel, scoreBand, readGameAt, LEAN_MIN, STRONG_MIN } from '../src/nfl/lib/sharp';
+import { summarize } from '../src/nfl/lib/clv';
 import { impliedMargin, noVig } from '../src/nfl/lib/market';
 
 let failures = 0;
@@ -76,6 +78,57 @@ for (const g of slate.slice(0, 6)) {
       `  [${m.market}] sharp: ${sideLabel(m.sharpSide, g)}` +
       `  vs public: ${sideLabel(m.squareSide, g)}`
   );
+}
+
+console.log('\n— point-in-time replay —');
+{
+  const snaps = oddsHistory.snapshots;
+  const id = slate[0].id;
+  const atOpen = readGameAt(snaps.slice(0, 1), id)!;
+  const atNow = readGameAt(snaps, id)!;
+  check('a one-snapshot read produces no movement signals',
+    atOpen.spread.signals.filter((s) => s.id !== 'divergence').every((s) => s.strength === 0));
+  check('a one-snapshot read reports partial coverage',
+    atOpen.spread.coverage < atNow.spread.coverage,
+    `${atOpen.spread.coverage} vs ${atNow.spread.coverage}`);
+  check('full history matches the live board',
+    Math.abs(atNow.spread.score - slate[0].spread.score) < 1e-9);
+}
+
+console.log('\n— closing line value —');
+{
+  const summary = summarize(clvArchive, STRONG_MIN);
+  check('archive produced graded flags', summary.overall.n > 0, `n=${summary.overall.n}`);
+
+  // The grading window must open strictly after the flag, or the engine would
+  // be scored on the same movement that triggered it.
+  const rows = summary.rows;
+  check('every graded flag closed after it was flagged',
+    rows.every((r) => {
+      const reads = r.market.reads;
+      return r.market.flaggedAt !== null &&
+        r.market.flaggedAt < reads[reads.length - 1].takenAt;
+    }));
+  check('no flag is graded below the lean band',
+    rows.every((r) => r.market.flaggedScore >= LEAN_MIN));
+
+  // CLV must be the signed move toward the flagged side, not the raw move.
+  check('CLV sign follows the flagged side',
+    rows.every((r) => {
+      const dir = r.market.flaggedSide === 'home' || r.market.flaggedSide === 'over' ? 1 : -1;
+      const expected = dir * (r.market.closingMu - (r.market.flaggedMu as number));
+      return Math.abs(expected - (r.market.clv as number)) < 1e-9;
+    }));
+
+  // A fixture that grades near-perfectly is a broken fixture, not a good model.
+  check('sample beat rate is not implausibly high',
+    summary.overall.beatRate < 0.85,
+    `${(summary.overall.beatRate * 100).toFixed(0)}%`);
+  check('buckets sum to the overall count',
+    summary.byMarket.reduce((n, b) => n + b.n, 0) === summary.overall.n);
+
+  console.log(`  record: ${summary.overall.n} flags, mean CLV ` +
+    `${summary.overall.meanClv.toFixed(2)}, beat ${(summary.overall.beatRate * 100).toFixed(0)}%`);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.\n' : `\n${failures} check(s) failed.\n`);

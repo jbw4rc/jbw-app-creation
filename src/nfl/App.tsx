@@ -1,11 +1,15 @@
 import { useMemo, useState } from 'react';
 import { oddsHistory } from './data/oddsHistory';
-import { readSlate, scoreBand, sideLabel } from './lib/sharp';
+import { clvArchive } from './data/clvArchive';
+import { readSlate, scoreBand, sideLabel, STRONG_MIN } from './lib/sharp';
+import { summarize } from './lib/clv';
+import { TrackRecord } from './components/TrackRecord';
 import type { GameRead } from './lib/sharp';
 import { GameRow } from './components/GameRow';
 import { stampLabel } from './lib/format';
 import { findGame } from './lib/market';
 
+type View = 'board' | 'record';
 type Lens = 'best' | 'spread' | 'total';
 
 const LENSES: { id: Lens; label: string; blurb: string }[] = [
@@ -15,11 +19,13 @@ const LENSES: { id: Lens; label: string; blurb: string }[] = [
 ];
 
 export default function App() {
+  const [view, setView] = useState<View>('board');
   const [lens, setLens] = useState<Lens>('best');
   const [minScore, setMinScore] = useState(0);
   const [showMethod, setShowMethod] = useState(false);
 
   const slate = useMemo(() => readSlate(oddsHistory), []);
+  const record = useMemo(() => summarize(clvArchive, STRONG_MIN), []);
   const latest = oddsHistory.snapshots[oddsHistory.snapshots.length - 1];
 
   const ranked = useMemo(() => {
@@ -67,6 +73,26 @@ export default function App() {
         </div>
       </header>
 
+      <nav className="views">
+        <button
+          className={`view ${view === 'board' ? 'view--on' : ''}`}
+          onClick={() => setView('board')}
+        >
+          This week's board
+        </button>
+        <button
+          className={`view ${view === 'record' ? 'view--on' : ''}`}
+          onClick={() => setView('record')}
+        >
+          Track record
+          {record.overall.n > 0 && <span className="view__n"> {record.overall.n}</span>}
+        </button>
+      </nav>
+
+      {view === 'record' && <TrackRecord summary={record} sample={clvArchive.sample} />}
+
+      {view === 'board' && (
+        <>
       {oddsHistory.sample && (
         <div className="banner banner--warn">
           <b>Sample data.</b> These are synthetic lines built to exercise every signal,
@@ -125,6 +151,8 @@ export default function App() {
           />
         ))}
       </main>
+        </>
+      )}
 
       <footer className="foot">
         <button className="linkbtn" onClick={() => setShowMethod((v) => !v)}>

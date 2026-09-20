@@ -11,7 +11,9 @@
     "typecheck": "tsc -b --noEmit",
     "verify:nfl": "tsx scripts/verify-nfl.ts",
     "build:odds": "node scripts/build-odds.mjs",
-    "build:sample-odds": "node scripts/build-sample-odds.mjs"
+    "build:sample-odds": "node scripts/build-sample-odds.mjs",
+    "archive:odds": "tsx scripts/archive-odds.ts",
+    "build:sample": "node scripts/build-sample-odds.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -21,6 +23,7 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.23.15",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",
     "xlsx": "^0.18.5"

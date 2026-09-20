@@ -369,6 +369,35 @@ function buildMarketRead(
   };
 }
 
+/**
+ * The read for one game, as it stood at the END of the snapshots handed in.
+ *
+ * Pass a truncated history and you get the board exactly as the app would have
+ * shown it at that moment. That is what makes closing-line value measurable:
+ * we can replay what the engine said at each poll and then check what the
+ * market did afterwards.
+ */
+export function readGameAt(snapshots: Snapshot[], gameId: string): GameRead | null {
+  if (snapshots.length === 0) return null;
+  const latest = snapshots[snapshots.length - 1];
+  const game = findGame(latest.games, gameId);
+  if (!game) return null;
+
+  const spread = buildMarketRead(snapshots, gameId, 'spread');
+  const total = buildMarketRead(snapshots, gameId, 'total');
+  if (!spread || !total) return null;
+
+  return {
+    id: game.id,
+    commenceTime: game.commenceTime,
+    homeTeam: game.homeTeam,
+    awayTeam: game.awayTeam,
+    spread,
+    total,
+    best: spread.score >= total.score ? spread : total,
+  };
+}
+
 /** Build the full read for every game on the board, ranked strongest first. */
 export function readSlate(history: OddsHistory): GameRead[] {
   const snaps = history.snapshots;
@@ -377,22 +406,17 @@ export function readSlate(history: OddsHistory): GameRead[] {
 
   const reads: GameRead[] = [];
   for (const game of latest.games) {
-    const spread = buildMarketRead(snaps, game.id, 'spread');
-    const total = buildMarketRead(snaps, game.id, 'total');
-    if (!spread || !total) continue;
-    reads.push({
-      id: game.id,
-      commenceTime: game.commenceTime,
-      homeTeam: game.homeTeam,
-      awayTeam: game.awayTeam,
-      spread,
-      total,
-      best: spread.score >= total.score ? spread : total,
-    });
+    const read = readGameAt(snaps, game.id);
+    if (read) reads.push(read);
   }
   reads.sort((a, b) => b.best.score - a.best.score);
   return reads;
 }
+
+/** Score at or above which a game is called a strong sharp side. */
+export const STRONG_MIN = 45;
+/** Score at or above which a game is worth calling a lean — and worth grading. */
+export const LEAN_MIN = 22;
 
 /**
  * How to read a score, in words.
@@ -405,8 +429,8 @@ export function readSlate(history: OddsHistory): GameRead[] {
  * would make it useless.
  */
 export function scoreBand(score: number): { label: string; tone: 'strong' | 'lean' | 'noise' } {
-  if (score >= 45) return { label: 'Strong sharp side', tone: 'strong' };
-  if (score >= 22) return { label: 'Sharp lean', tone: 'lean' };
+  if (score >= STRONG_MIN) return { label: 'Strong sharp side', tone: 'strong' };
+  if (score >= LEAN_MIN) return { label: 'Sharp lean', tone: 'lean' };
   return { label: 'No clear edge', tone: 'noise' };
 }
 
