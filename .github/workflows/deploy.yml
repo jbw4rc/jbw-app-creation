@@ -3,6 +3,15 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # The odds poller commits to main, but GitHub deliberately does NOT trigger
+  # workflows from pushes made with GITHUB_TOKEN — it is loop prevention. That
+  # meant every snapshot landed in the repo and the published page never
+  # rebuilt: the data moved for hours while the site sat frozen on an old
+  # build. workflow_run is not suppressed the same way, so the deploy hangs off
+  # the poller finishing instead of off its push.
+  workflow_run:
+    workflows: ["Build NFL odds"]
+    types: [completed]
   workflow_dispatch:
 
 # Allow the workflow token to publish to Pages.
@@ -19,8 +28,17 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # On workflow_run, only publish when the poll actually succeeded; a failed
+    # poll has nothing new to show.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
     steps:
+      # workflow_run checks out the default branch by default, but be explicit
+      # so the build always picks up the snapshot the poller just committed.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-node@v4
         with:
