@@ -28,6 +28,10 @@ export type SignalId = keyof typeof WEIGHTS;
 const STEAM_MIN_MOVE = 0.35;
 /** Points per hour that counts as a full-strength steam move. */
 const STEAM_FULL_RATE = 0.12;
+/** Watch a game at least this long before calling its first number an opener. */
+export const TRUE_OPEN_HOURS = 48;
+/** Below this, movement reads exist but have almost no market to describe. */
+export const PROVISIONAL_HOURS = 6;
 
 export interface Signal {
   id: SignalId;
@@ -50,9 +54,19 @@ export interface MarketRead {
   sharp: Consensus;
   /** Retail consensus now. */
   retail: Consensus;
-  /** Sharp consensus at the first snapshot we have (the "open" we can see). */
+  /**
+   * Sharp consensus at the first snapshot we have. This is the earliest number
+   * WE observed, which is only the real opener if we were watching early — a
+   * distinction the UI has to make, or a board stood up three hours before
+   * kickoff will present eighteen minutes of drift as the week's line movement.
+   */
   openMu: number;
   openLine: number;
+  /** When we first priced this game, and how long we have watched it. */
+  firstSeenAt: string | null;
+  windowHours: number;
+  /** True once the window is long enough to call the baseline a real opener. */
+  isTrueOpen: boolean;
   /** Total movement in the sharp number since then, in points. */
   moveMu: number;
   signals: Signal[];
@@ -152,6 +166,7 @@ function buildMarketRead(
   // --- Opening number: the earliest snapshot that priced this game. ---
   let openMu = NaN;
   let openLine = NaN;
+  let firstSeenAt: string | null = null;
   for (const snap of history) {
     const g = findGame(snap.games, gameId);
     if (!g) continue;
@@ -159,9 +174,18 @@ function buildMarketRead(
     if (Number.isFinite(c.mu)) {
       openMu = c.mu;
       openLine = c.line;
+      firstSeenAt = snap.takenAt;
       break;
     }
   }
+
+  const windowHours = firstSeenAt
+    ? (new Date(latest.takenAt).getTime() - new Date(firstSeenAt).getTime()) / 3_600_000
+    : 0;
+  // NFL numbers open early in the week. Watch a game for two days or more and
+  // the earliest number we hold is genuinely its opener; anything less and it
+  // is just where the line happened to be when we started looking.
+  const isTrueOpen = windowHours >= TRUE_OPEN_HOURS;
 
   const moveMu = Number.isFinite(sharp.mu) && Number.isFinite(openMu) ? sharp.mu - openMu : NaN;
   const signals: Signal[] = [];
@@ -214,10 +238,17 @@ function buildMarketRead(
         : agrees && strength > 0.05
           ? `The number moved ${Math.abs(moveMu).toFixed(2)} pts toward ${sideLabel(moveSide, game)} — ` +
             `away from the side the public is on. Books do not move against their own hold by accident.`
-          : moveSide
-            ? `Moved ${Math.abs(moveMu).toFixed(2)} pts toward ${sideLabel(moveSide, game)}, the same side ` +
-              `the public is on. That is ordinary public drift, not a sharp move.`
-            : 'The number has not moved.',
+          // A move that agrees but scores below the display threshold is still a
+          // move against the public. Saying otherwise — as this branch used to,
+          // by falling through to the drift message — states the opposite of
+          // what happened.
+          : agrees
+            ? `Moved ${Math.abs(moveMu).toFixed(2)} pts toward ${sideLabel(moveSide, game)}, against the ` +
+              `public side, but too small to read as a genuine reverse move yet.`
+            : moveSide
+              ? `Moved ${Math.abs(moveMu).toFixed(2)} pts toward ${sideLabel(moveSide, game)}, the same side ` +
+                `the public is on. That is ordinary public drift, not a sharp move.`
+              : 'The number has not moved.',
       side: agrees ? moveSide : null,
       strength,
       points: signed(agrees ? moveSide : null, WEIGHTS.reverseMove * strength),
@@ -360,6 +391,9 @@ function buildMarketRead(
     retail,
     openMu,
     openLine,
+    firstSeenAt,
+    windowHours,
+    isTrueOpen,
     moveMu,
     signals,
     score: clamp(Math.abs(net), 0, 100),
