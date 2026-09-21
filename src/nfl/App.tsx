@@ -8,7 +8,7 @@ import { summarize } from './lib/clv';
 import { TrackRecord } from './components/TrackRecord';
 import type { GameRead } from './lib/sharp';
 import { GameRow } from './components/GameRow';
-import { durationLabel, endOfNflWeek, stampLabel } from './lib/format';
+import { agoLabel, durationLabel, endOfNflWeek, hoursSince, stampLabel } from './lib/format';
 import { findGame } from './lib/market';
 
 type View = 'board' | 'record';
@@ -58,6 +58,7 @@ export default function App() {
   // Kicked-off games come off the board entirely. This is a pregame tool: the
   // number it reads no longer exists, and nothing here can be acted on.
   const now = Date.now();
+  const staleHours = hoursSince(history.updatedAt, now);
   const bettable = useMemo(
     () => thisWeek.filter((g) => new Date(g.commenceTime).getTime() > now),
     [thisWeek, now]
@@ -101,7 +102,10 @@ export default function App() {
           </div>
           <div>
             <span className="top__k">Last poll</span>
-            <span className="top__v">{stampLabel(history.updatedAt)}</span>
+            <span className="top__v" data-stale={staleHours > 3 ? 'yes' : undefined}>
+              {agoLabel(history.updatedAt, now)}
+            </span>
+            <span className="top__sub">{stampLabel(history.updatedAt)}</span>
           </div>
           <div>
             <span className="top__k">History</span>
@@ -133,6 +137,14 @@ export default function App() {
 
       {view === 'board' && (
         <>
+      {!history.sample && staleHours > 3 && (
+        <div className="banner banner--warn">
+          <b>Stale board — last polled {agoLabel(history.updatedAt, now)}.</b> The
+          lines have almost certainly moved since. Treat everything below as a
+          snapshot of {stampLabel(history.updatedAt)}, not as the market now.
+        </div>
+      )}
+
       {!history.sample && spanHours < PROVISIONAL_HOURS && (
         <div className="banner banner--warn">
           <b>Provisional board.</b> Only {durationLabel(spanHours)} of market history
