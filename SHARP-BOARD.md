@@ -147,6 +147,7 @@ npm install
 npm run dev              # http://localhost:5173/nfl.html
 npm run build            # type-check + build both apps
 npm run verify:nfl       # headless checks on the engine
+npm run verify:render    # drives the real page, compares it to the engine
 npm run build:sample-odds   # regenerate the synthetic fixture
 npm run archive:odds        # grade + retire finished games
 ODDS_API_KEY=... npm run build:odds   # pull the live board
@@ -183,6 +184,23 @@ scripts/
   build-sample-odds.mjs        synthetic fixture generator
   verify-nfl.ts                engine checks
 ```
+
+## Why there are two test commands
+
+`verify:nfl` checks the engine against fixtures. `verify:render` drives the
+actual page in a browser and compares what it displays against what the engine
+computed.
+
+The second exists because every display bug in this project escaped the first:
+a board that ranked in-play games at the top with scores of 83 while the engine
+was fine, a table whose header lost a column so every row shifted right, a
+timestamp that looked identical at ten minutes and twelve hours old, and a site
+that served a stale build for hours while every workflow reported success.
+Type checks and fixture tests cannot see any of those. Both bugs it was written
+for were reproduced and confirmed to fail it before it was committed.
+
+It needs a Chromium for Playwright — `npx playwright install chromium` on a
+normal machine.
 
 ## Honest caveats
 
