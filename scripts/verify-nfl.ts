@@ -131,6 +131,17 @@ console.log('\n— closing line value —');
     `${(summary.overall.beatRate * 100).toFixed(0)}%`);
   check('buckets sum to the overall count',
     summary.byMarket.reduce((n, b) => n + b.n, 0) === summary.overall.n);
+  check('strength buckets also sum to the overall count',
+    summary.byBand.reduce((n, b) => n + b.n, 0) === summary.overall.n);
+
+  // Entry is recorded at the first crossing of the lean band, so it always sits
+  // near that threshold; peak is what the read actually reached. If these were
+  // the same the strength split would be meaningless.
+  check('peak is never below the entry score',
+    rows.every((r) => r.peak >= r.market.flaggedScore - 1e-9));
+  check('at least one read peaked above its entry score',
+    rows.some((r) => r.peak > r.market.flaggedScore + 1e-9),
+    `max gap ${Math.max(...rows.map((r) => r.peak - r.market.flaggedScore)).toFixed(1)}`);
 
   console.log(`  record: ${summary.overall.n} flags, mean CLV ` +
     `${summary.overall.meanClv.toFixed(2)}, beat ${(summary.overall.beatRate * 100).toFixed(0)}%`);

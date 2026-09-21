@@ -124,6 +124,30 @@ export function resolveGame(snapshots: Snapshot[], gameId: string): ResolvedGame
   };
 }
 
+/**
+ * The highest score this market reached while it was still bettable.
+ *
+ * Bucketing by the FLAGGED score could never work: a flag is recorded the
+ * first time a read crosses the lean band, so the stored score always sits
+ * near that threshold and the "strong" bucket stayed empty by construction —
+ * Titans peaked at 52 and was filed under "lean" at 41. Since the question the
+ * split exists to answer is "do stronger reads earn better CLV", it has to
+ * bucket on the strongest reading the board actually showed.
+ *
+ * Derived from the stored reads rather than a new field, so it works on rows
+ * archived before this existed.
+ */
+export function peakScore(game: ResolvedGame, market: ResolvedMarket): number {
+  const kickoff = new Date(game.commenceTime).getTime();
+  let peak = 0;
+  for (const r of market.reads) {
+    if (new Date(r.takenAt).getTime() >= kickoff) continue;
+    if (r.side === null) continue;
+    if (r.score > peak) peak = r.score;
+  }
+  return peak;
+}
+
 export interface ClvStats {
   label: string;
   /** Gradeable flags in this bucket. */
@@ -154,6 +178,8 @@ export interface ClvSummary {
   rows: {
     game: ResolvedGame;
     market: ResolvedMarket;
+    /** Highest pregame score this read reached; what the strength split uses. */
+    peak: number;
   }[];
 }
 
@@ -162,7 +188,9 @@ export function summarize(archive: ClvArchive, strongMin: number): ClvSummary {
   const rows: ClvSummary['rows'] = [];
   for (const game of archive.games) {
     for (const market of [game.spread, game.total]) {
-      if (market.clv !== null) rows.push({ game, market });
+      if (market.clv !== null) {
+        rows.push({ game, market, peak: peakScore(game, market) });
+      }
     }
   }
   rows.sort((a, b) => b.game.commenceTime.localeCompare(a.game.commenceTime));
@@ -173,8 +201,9 @@ export function summarize(archive: ClvArchive, strongMin: number): ClvSummary {
   return {
     overall: stats('All flags', all),
     byBand: [
-      stats('Strong', rows.filter((r) => r.market.flaggedScore >= strongMin).map(clvOf)),
-      stats('Lean', rows.filter((r) => r.market.flaggedScore < strongMin).map(clvOf)),
+      // Bucketed on the PEAK pregame score, not the entry score — see peakScore.
+      stats('Strong', rows.filter((r) => r.peak >= strongMin).map(clvOf)),
+      stats('Lean', rows.filter((r) => r.peak < strongMin).map(clvOf)),
     ],
     byMarket: [
       stats('Spreads', rows.filter((r) => r.market.market === 'spread').map(clvOf)),

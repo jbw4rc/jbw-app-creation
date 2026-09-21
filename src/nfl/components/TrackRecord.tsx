@@ -117,7 +117,7 @@ export function TrackRecord({ summary, sample }: { summary: ClvSummary; sample: 
 
       <div className="record__splits">
         <section>
-          <h4>By strength</h4>
+          <h4>By strength (peak score)</h4>
           <StatRow rows={summary.byBand} />
         </section>
         <section>
@@ -133,8 +133,9 @@ export function TrackRecord({ summary, sample }: { summary: ClvSummary; sample: 
             <tr>
               <th>Game</th>
               <th>Market</th>
-              <th>Flagged</th>
-              <th>Score</th>
+              <th>Side</th>
+              <th>Entry</th>
+              <th>Peak</th>
               <th>CLV</th>
               <th />
             </tr>
@@ -159,6 +160,7 @@ export function TrackRecord({ summary, sample }: { summary: ClvSummary; sample: 
                   <td>{r.market.market}</td>
                   <td>{side}</td>
                   <td className="clvtable__num">{Math.round(r.market.flaggedScore)}</td>
+                  <td className="clvtable__num">{Math.round(r.peak)}</td>
                   <td className="clvtable__num" data-tone={v.tone}>
                     {deltaLabel(r.market.clv as number)}
                   </td>
@@ -185,6 +187,13 @@ export function TrackRecord({ summary, sample }: { summary: ClvSummary; sample: 
           than the market settled on, which is the habit that makes bettors money
           over time. Any individual bet still wins or loses on the field, and no
           result is tracked here.
+        </p>
+        <p>
+          <b>Entry vs peak.</b> Entry is the score when the read first crossed the
+          lean band — the moment you could have acted. Peak is the highest it
+          reached before kickoff. The strength split buckets on peak, because entry
+          is always near the threshold by definition and would leave the strong
+          bucket permanently empty.
         </p>
         <p className="method__caveat">
           Read the beat rate against 50%, not against 100. A model that finds real
