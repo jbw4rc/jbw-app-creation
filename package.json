@@ -13,7 +13,8 @@
     "build:odds": "node scripts/build-odds.mjs",
     "build:sample-odds": "node scripts/build-sample-odds.mjs",
     "archive:odds": "tsx scripts/archive-odds.ts",
-    "build:sample": "node scripts/build-sample-odds.mjs"
+    "build:sample": "node scripts/build-sample-odds.mjs",
+    "postbuild": "node scripts/copy-paris-trip.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
