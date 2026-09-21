@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Paris — Mom &amp; Dad</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" crossorigin="">
+<style>
+:root{
+  --bg:#f7f5f1; --card:#ffffff; --ink:#1d2024; --muted:#5b6169; --line:#dcd7cf;
+  --accent:#1d3557; --accent-ink:#ffffff; --chip:#eeeae4; --ok:#2a7d4f;
+  --tue:#d1495b; --wed:#2e86ab; --thu:#7d5ba6; --sat:#e07a3f;
+  --suna:#2a9d6e; --sunb:#6d8f1f; --mon:#a4803b; --extra:#8a8f98; --hotel:#1d3557;
+  --gold:#b8860b;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#15181c; --card:#1e2228; --ink:#eceff3; --muted:#a3acb7; --line:#333a43;
+    --accent:#7fb2d8; --accent-ink:#10141a; --chip:#2a3038; --ok:#5dd196;
+    --tue:#f0707f; --wed:#5fb4d8; --thu:#a98ad0; --sat:#f09a5f;
+    --suna:#4fc493; --sunb:#a5c74a; --mon:#d0a955; --extra:#9aa3ae; --hotel:#7fb2d8;
+    --gold:#e0b23c;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px 48px}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 0 0}
+header .wrap{padding-bottom:0}
+h1{margin:0;font-size:1.5rem;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:1rem;margin:4px 0 12px}
+.hotelbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.hotelbar a{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;
+  border-radius:999px;background:var(--accent);color:var(--accent-ink);
+  text-decoration:none;font-weight:600;font-size:.95rem;
+}
+.hotelbar a.ghost{background:var(--chip);color:var(--ink);border:1px solid var(--line)}
+nav{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:0;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{
+  flex:0 0 auto;min-height:46px;padding:10px 14px;border:0;border-bottom:3px solid transparent;
+  background:none;color:var(--muted);font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit;
+}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+section[hidden]{display:none}
+h2{font-size:1.25rem;margin:22px 0 10px}
+h3{font-size:1.08rem;margin:0 0 6px}
+p{margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 14px}
+.card.day{border-left:6px solid var(--line)}
+.d-tue6{border-left-color:var(--tue)} .d-wed7{border-left-color:var(--wed)}
+.d-thu8{border-left-color:var(--thu)} .d-fri9{border-left-color:var(--muted)}
+.d-sat10{border-left-color:var(--sat)} .d-sun11a{border-left-color:var(--suna)}
+.d-sun11b{border-left-color:var(--sunb)} .d-mon12{border-left-color:var(--mon)}
+.card .when{color:var(--muted);font-size:.92rem;margin:0 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+ul.plan{list-style:none;margin:0;padding:0}
+ul.plan>li{padding:10px 0;border-top:1px solid var(--line)}
+ul.plan>li:first-child{border-top:0}
+.t{font-weight:700;color:var(--ink)}
+.leg{display:block;margin-top:6px;color:var(--muted);font-size:.93rem}
+.leg b{color:var(--ink);font-weight:600}
+button.pl{
+  font:inherit;font-weight:700;color:var(--accent);background:none;border:0;padding:2px 0;
+  cursor:pointer;text-align:left;text-decoration:underline;text-underline-offset:3px;
+}
+button.pl::after{content:" ⌖";text-decoration:none;font-weight:400}
+.frow{position:relative;margin:0 0 8px}
+.frow::after{content:"";position:absolute;right:-16px;top:24px;bottom:6px;width:34px;pointer-events:none;
+  background:linear-gradient(to right,rgba(0,0,0,0),var(--bg))}
+.frow .lbl{display:block;font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin:0 0 5px}
+.chips{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 42px 4px 0}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto}
+.chip{
+  min-height:40px;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);
+  background:var(--chip);color:var(--muted);font:inherit;font-size:.93rem;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.chip[aria-pressed="true"]{background:var(--card);color:var(--ink);border-color:currentColor}
+.chip .dot{width:12px;height:12px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.chip .gly{font-size:15px;line-height:1;opacity:.55;filter:grayscale(1)}
+.chip[aria-pressed="true"] .gly{opacity:1;filter:none}
+.chip.c-tue6[aria-pressed="true"]{color:var(--tue)} .chip.c-wed7[aria-pressed="true"]{color:var(--wed)}
+.chip.c-thu8[aria-pressed="true"]{color:var(--thu)} .chip.c-sat10[aria-pressed="true"]{color:var(--sat)}
+.chip.c-sun11a[aria-pressed="true"]{color:var(--suna)} .chip.c-sun11b[aria-pressed="true"]{color:var(--sunb)}
+.chip.c-mon12[aria-pressed="true"]{color:var(--mon)} .chip.c-extras[aria-pressed="true"]{color:var(--extra)}
+.chip.c-hotel[aria-pressed="true"]{color:var(--hotel)}
+.chiprow-actions{display:flex;gap:8px;margin:0 0 12px}
+.chiprow-actions .hint{color:var(--muted);font-size:.9rem;align-self:center;flex:1;min-width:150px}
+.chiprow-actions button{
+  min-height:40px;padding:7px 14px;border-radius:10px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink);font:inherit;font-size:.92rem;font-weight:600;cursor:pointer;
+}
+#map{height:62vh;min-height:360px;border-radius:14px;border:1px solid var(--line);background:var(--chip)}
+#tilewarn{display:none;margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--chip);border:1px solid var(--line);font-size:.93rem;color:var(--muted)}
+.count{color:var(--muted);font-size:.93rem;margin:10px 0 0}
+.pin{
+  width:30px;height:30px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);
+  border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+}
+.pin span{transform:rotate(45deg);font-size:14px;line-height:1}
+.p-tue6{background:var(--tue)} .p-wed7{background:var(--wed)} .p-thu8{background:var(--thu)}
+.p-sat10{background:var(--sat)} .p-sun11a{background:var(--suna)} .p-sun11b{background:var(--sunb)}
+.p-mon12{background:var(--mon)} .p-extras{background:var(--extra);opacity:.75}
+.p-hotel{background:var(--hotel);width:38px;height:38px;border-radius:50%;transform:none;border:3px solid var(--gold)}
+.p-hotel span{transform:none;font-size:18px}
+.p-star{width:38px;height:38px;box-shadow:0 0 0 4px rgba(184,134,11,.45),0 1px 4px rgba(0,0,0,.4)}
+.p-star span{font-size:17px}
+.p-booked{border:2px dashed #fff;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.28) 0 5px,transparent 5px 10px)}
+.leaflet-popup-content{margin:12px 14px;font:inherit;font-size:16px;min-width:200px}
+.pop-n{font-weight:700;font-size:1.06rem;display:block}
+.pop-m{color:#5b6169;font-size:.9rem;display:block;margin:2px 0 6px}
+.pop-note{display:block;margin-bottom:10px;color:#1d2024}
+.pop a{display:block;min-height:44px;line-height:28px;text-align:center;border-radius:10px;text-decoration:none;font-weight:700;padding:8px 12px;margin-top:6px}
+.pop a.go{background:#1d3557;color:#fff}
+.pop a.walk{background:#eeeae4;color:#1d2024;border:1px solid #dcd7cf}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin-bottom:14px}
+.check{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.check:first-of-type{border-top:0}
+.check input{width:26px;height:26px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--ok)}
+.check label{flex:1;cursor:pointer}
+.check .meta{display:block;color:var(--muted);font-size:.93rem;margin-top:2px}
+.check input:checked + label .t{text-decoration:line-through;color:var(--muted)}
+.tbd{display:inline-block;background:var(--chip);border:1px dashed var(--muted);color:var(--muted);
+  border-radius:6px;padding:0 7px;font-size:.85rem;font-weight:700;letter-spacing:.03em}
+.note{background:var(--chip);border-radius:10px;padding:10px 12px;font-size:.94rem;color:var(--muted);margin:0 0 12px}
+.opt{border-top:1px dashed var(--line);margin-top:14px;padding-top:12px}
+.listgrp{margin-bottom:18px}
+.listgrp h3{margin-bottom:8px}
+.listitem{padding:10px 0;border-top:1px solid var(--line)}
+.listitem b{display:block}
+.listitem .co{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;color:var(--muted)}
+.listitem a{color:var(--accent);font-weight:600}
+footer{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:26px;padding-top:14px}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Paris — Mom &amp; Dad</h1>
+    <p class="sub">Tue Oct 6 – Mon Oct 12, 2026 · Pullman Paris Montparnasse</p>
+    <div class="hotelbar">
+      <a href="tel:+33144364436">📞 Call hotel</a>
+      <a class="ghost" href="https://www.google.com/maps/dir/?api=1&amp;destination=48.8384551,2.320393">🏠 Directions to hotel</a>
+    </div>
+    <nav id="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="map">Map</button>
+      <button role="tab" aria-selected="false" data-tab="days">Day by day</button>
+      <button role="tab" aria-selected="false" data-tab="book">Bookings</button>
+      <button role="tab" aria-selected="false" data-tab="move">Getting around</button>
+      <button role="tab" aria-selected="false" data-tab="markets">Markets</button>
+      <button role="tab" aria-selected="false" data-tab="all">All places</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============ MAP ============ -->
+<section id="tab-map">
+  <h2>Map</h2>
+  <div class="frow"><span class="lbl">Days — swipe for more</span><div class="chips" id="dayChips"></div></div>
+  <div class="frow"><span class="lbl">Type — swipe for more</span><div class="chips" id="typeChips"></div></div>
+  <div class="chiprow-actions">
+    <button type="button" id="selAll">Show everything</button>
+    <span class="hint">Tap one chip to see just that day or type. Tap more to add them back.</span>
+  </div>
+  <div id="map"></div>
+  <p id="tilewarn">No internet right now, so the map background can't load. The pins and all the trip details still work — the <b>All places</b> tab has every address and note.</p>
+  <p class="count" id="count"></p>
+  <p class="count">Tap any pin for its note, a <b>Directions</b> button and a <b>Walk from hotel</b> link. The gold-ringed circle is the hotel; the striped pin is the already-booked Eiffel Tower dinner.</p>
+</section>
+
+<!-- ============ DAY BY DAY ============ -->
+<section id="tab-days" hidden>
+  <h2>Day by day</h2>
+  <p class="note">Each day is a menu, not a schedule. Do as much or as little as you like. Tap any <b>underlined place</b> to jump to it on the map.</p>
+
+  <div class="card day d-tue6">
+    <h3>Tue Oct 6 — Arrival</h3>
+    <p class="when">Late afternoon · stay close to the hotel</p>
+    <ul class="plan">
+      <li><span class="t">Settle in.</span> Everything tonight is within a 10-minute walk.</li>
+      <li><span class="t">Dinner:</span> <button class="pl" data-p="Le Dôme">Le Dôme</button> for seafood, or <button class="pl" data-p="La Closerie des Lilas">La Closerie des Lilas</button> — Hemingway's old hangout, names engraved on the bar.
+        <span class="leg"><b>Walk</b> · a few minutes from the hotel. Closerie opens noon.</span></li>
+      <li><span class="t">Nightcap:</span> <button class="pl" data-p="Le Rosebud">Le Rosebud</button>, a 1960s jazz-era cocktail bar.
+        <span class="leg"><b>Walk</b> · about 10 min. Opens 6pm.</span></li>
+      <li><span class="t">Tomorrow's coffee:</span> <button class="pl" data-p="Le Select">Le Select</button> — morning coffee at the bar, right by the hotel.</li>
+    </ul>
+  </div>
+
+  <div class="card day d-wed7">
+    <h3>Wed Oct 7 — Orsay, Orangerie &amp; Saint-Germain</h3>
+    <p class="when">Free day</p>
+    <ul class="plan">
+      <li><span class="t">Morning · <button class="pl" data-p="Marché Edgar-Quinet">Marché Edgar-Quinet</button></span> — Wednesday market. Rotisserie chicken and oysters.
+        <span class="leg"><b>Walk</b> · 5 min from the hotel. Market runs 7am–1:30pm.</span></li>
+      <li><span class="t">~9:30 · <button class="pl" data-p="Musée d'Orsay">Musée d'Orsay</button></span> <span class="tbd">TIMED TICKET</span> — start on the 5th floor with the Impressionists. Coffee first at <button class="pl" data-p="Les Antiquaires">Les Antiquaires</button>, two blocks away.
+        <span class="leg"><b>Hotel → Orsay:</b> walk 35 min · metro Line 12 to Solférino, ~20 min, $6 · taxi 12 min, ~$14–18</span></li>
+      <li><span class="t">After lunch · <button class="pl" data-p="Musée de l'Orangerie">Musée de l'Orangerie</button></span> <span class="tbd">TIMED TICKET</span> — Monet's Water Lilies, about an hour.
+        <span class="leg"><b>Orsay → Orangerie:</b> walk 10 min over the footbridge and through the Tuileries</span></li>
+      <li><span class="t">Afternoon · Saint-Germain cafés</span> — <button class="pl" data-p="Les Deux Magots">Les Deux Magots</button> (order the hot chocolate), <button class="pl" data-p="Café de Flore">Café de Flore</button>, <button class="pl" data-p="La Palette">La Palette</button>, <button class="pl" data-p="Café de la Mairie">Café de la Mairie</button>.
+        <span class="leg"><b>Orangerie → Saint-Germain:</b> walk 25 min · taxi 10 min, ~$12–16</span></li>
+      <li><span class="t">Shops nearby</span> — <button class="pl" data-p="Pierre Hermé">Pierre Hermé</button> (macarons, try the Ispahan), <button class="pl" data-p="Poilâne">Poilâne</button> (bread, apple tart, butter cookies), <button class="pl" data-p="La Dernière Goutte">La Dernière Goutte</button> (wine; the owner speaks English).
+        <span class="leg"><b>Saint-Germain → hotel:</b> walk 25 min · metro Line 4, 15 min, $6 · taxi ~$14–17</span></li>
+      <li><span class="t">Evening · <button class="pl" data-p="Le Baron Rouge">Le Baron Rouge</button></span> for a pre-dinner glass, then dinner at <button class="pl" data-p="Bistrot Paul Bert">Bistrot Paul Bert</button> <span class="tbd">RESERVE</span> — steak au poivre.
+        <span class="leg"><b>Baron Rouge → Paul Bert:</b> 10 min walk</span>
+        <span class="leg"><b>Hotel → Paul Bert:</b> too far to walk · metro ~35 min, 1 change, $6 · taxi 20 min, ~$22–29. <b>Taxi home</b> ~$23–32.</span></li>
+    </ul>
+  </div>
+
+  <div class="card day d-thu8">
+    <h3>Thu Oct 8 — Louvre, Invalides, Rue Cler</h3>
+    <p class="when">Free until dinner · friends arrive late afternoon</p>
+    <ul class="plan">
+      <li><span class="t">9:00 · <button class="pl" data-p="Louvre">Louvre</button></span> <span class="tbd">TIMED TICKET</span> — book the 9am slot; Thursday is its quietest day. About 3 hours: pick 3–4 must-sees and don't try to do more.
+        <span class="leg"><b>Hotel → Louvre:</b> too far to walk · metro ~25 min, 1 change, $6 · bus 95 direct, 30 min, ~$5 · taxi 15 min, ~$17–21</span></li>
+      <li><span class="t">12:30 · lunch at <button class="pl" data-p="Le Nemours">Le Nemours</button></span> — terrace under the Palais-Royal arcades, steps from the Louvre. Optional: walk through the Palais-Royal garden to <button class="pl" data-p="Legrand Filles et Fils">Legrand Filles et Fils</button>, a historic wine shop in Galerie Vivienne.</li>
+      <li><span class="t">2:30 · <button class="pl" data-p="Napoleon's Tomb (Invalides)">Napoleon's Tomb</button></span> — walk in, no ticket slot needed, about an hour for the dome.
+        <span class="leg"><b>Louvre → Invalides:</b> walk 40 min · metro ~20 min, 1 change, $6 · taxi 12 min, ~$14–18</span></li>
+      <li><span class="t">4:00 · <button class="pl" data-p="Rue Cler">Rue Cler</button> — the highlight of the afternoon.</span> A pedestrian market street: cheese shops, bakeries, produce stands, butchers, flower stalls. Wander it end to end, pick up cheese at <button class="pl" data-p="Marie-Anne Cantin">Marie-Anne Cantin</button>, then settle in at <button class="pl" data-p="Café du Marché">Café du Marché</button>. An easy place to meet the friends when they arrive.
+        <span class="leg"><b>Invalides → Rue Cler → Eiffel Tower:</b> about 10 min walk between each</span></li>
+      <li><span class="t">Evening · dinner at the <button class="pl" data-p="Eiffel Tower">Eiffel Tower</button></span> with the Augers/Whittkets — already arranged. The tower sparkles on the hour after dark; keep bags zipped and in front.
+        <span class="leg"><b>Eiffel Tower → hotel (night):</b> metro Line 6, 15 min, $6 · taxi 12 min, ~$17–23</span></li>
+      <li><span class="t">Nearby extras, if they want them:</span> <button class="pl" data-p="Le Rubis">Le Rubis</button>, <button class="pl" data-p="Willi's Wine Bar">Willi's Wine Bar</button>, <button class="pl" data-p="Stohrer">Stohrer</button> (oldest pastry shop in Paris — the baba au rhum).</li>
+    </ul>
+  </div>
+
+  <div class="card day d-fri9">
+    <h3>Fri Oct 9 — Normandy</h3>
+    <p class="when">All day · booked tour</p>
+    <ul class="plan">
+      <li><span class="t">Pickup point and times:</span> <span class="tbd">TBD</span> — confirm with the tour company.</li>
+    </ul>
+  </div>
+
+  <div class="card day d-sat10">
+    <h3>Sat Oct 10 — Market &amp; Montmartre food tour</h3>
+    <p class="when">Tour 11am – 4pm</p>
+    <ul class="plan">
+      <li><span class="t">Early morning · <button class="pl" data-p="Marché Edgar-Quinet">Marché Edgar-Quinet</button></span> — Saturday market by the hotel. Light shopping only, since the food tour follows.
+        <span class="leg"><b>Walk</b> · 5 min from the hotel</span></li>
+      <li><span class="t">~10:15 · head to Montmartre</span>
+        <span class="leg"><b>Hotel → Abbesses:</b> metro Line 12 from Montparnasse-Bienvenüe, about 30 min, no changes, $6 · taxi 25–30 min, ~$23–32</span></li>
+      <li><span class="t">11:00–4:00 · Montmartre food tour.</span> Meeting point: <span class="tbd">TBD</span>.</li>
+      <li><span class="t">Evening:</span> keep it easy near the hotel.</li>
+      <li><span class="t">Cheese to bring home:</span> buy it today or before 1pm Sunday — most cheese shops are closed Monday, and shops will vacuum-pack it for the flight.</li>
+    </ul>
+  </div>
+
+  <div class="card day d-sun11a">
+    <h3>Sun Oct 11 — Option A: with the panoramic tour</h3>
+    <p class="when">Tour 8:30am – 12:30pm</p>
+    <ul class="plan">
+      <li><span class="t">8:30–12:30 · panoramic tour.</span> Meeting point: <span class="tbd">TBD</span>.</li>
+      <li><span class="t">~1:00 · lunch at <button class="pl" data-p="Le Saint-Régis">Le Saint-Régis</button></span> on Île Saint-Louis, then <button class="pl" data-p="Berthillon">Berthillon</button> for the best sorbet in Paris.
+        <span class="leg"><b>Tour end → Île Saint-Louis:</b> depends where the tour drops you · taxi ~$12–20</span></li>
+      <li><span class="t">Afternoon · <button class="pl" data-p="Notre-Dame de Paris">Notre-Dame</button></span>, then <button class="pl" data-p="Sainte-Chapelle">Sainte-Chapelle</button> <span class="tbd">BOOK 3:30pm</span>. The <button class="pl" data-p="Marché aux Fleurs">Marché aux Fleurs</button> sits between the two and is open daily.
+        <span class="leg"><b>Island sights:</b> about 5 min walk between each</span></li>
+      <li><span class="t">~5:00 · rest at the hotel.</span>
+        <span class="leg"><b>Sainte-Chapelle → hotel:</b> walk 40 min · metro Line 4 from Cité, 15 min, $6 · taxi ~$16–21</span></li>
+      <li><span class="t">7:30 · dinner at <button class="pl" data-p="Benoit">Benoit</button></span> <span class="tbd">RESERVE</span> — 1912 bistro. Get the profiteroles.
+        <span class="leg"><b>Hotel ↔ Benoit:</b> metro Line 4 to Châtelet + 5 min walk, 15 min, $6 · taxi 15 min, ~$17–23 each way (taxis cost more all day Sunday)</span></li>
+    </ul>
+    <div class="opt">
+      <h3>Option B: no tour</h3>
+      <ul class="plan">
+        <li><span class="t">9:30 · <button class="pl" data-p="Sainte-Chapelle">Sainte-Chapelle</button></span> <span class="tbd">BOOK 9:30am</span> — morning light is best — then <button class="pl" data-p="Notre-Dame de Paris">Notre-Dame</button>.
+          <span class="leg"><b>Hotel → Cité:</b> metro Line 4, 15 min, $6 · taxi ~$16–21</span></li>
+        <li><span class="t">11:30 · cross to the Left Bank</span> — croissant at <button class="pl" data-p="La Maison d'Isabelle">La Maison d'Isabelle</button> (award-winning; the line moves fast) and cheese next door at <button class="pl" data-p="Fromagerie Laurent Dubois">Laurent Dubois</button>, which closes at 1pm on Sunday.</li>
+        <li><span class="t">12:30 · lunch at <button class="pl" data-p="Le Saint-Régis">Le Saint-Régis</button></span>, then <button class="pl" data-p="Berthillon">Berthillon</button>.</li>
+        <li><span class="t">Afternoon · pick one:</span> <button class="pl" data-p="Jardin du Luxembourg">Luxembourg Gardens</button> (two green chairs by the fountain) with <button class="pl" data-p="Café de la Mairie">Café de la Mairie</button> — easy, and on the way home — <b>or</b> the <button class="pl" data-p="Arc de Triomphe">Arc de Triomphe</button> rooftop and the Champs-Élysées.
+          <span class="leg"><b>Islands → Luxembourg:</b> walk 25 min · taxi ~$12–16. <b>Luxembourg → hotel:</b> 20 min walk.</span>
+          <span class="leg"><b>Islands → Arc:</b> metro Line 1, 20 min, $6 · taxi 20 min, ~$21–27. <b>Arc → hotel:</b> metro Line 6, 20 min, $6 — partly above ground, good views.</span></li>
+        <li><span class="t">~5:00 · rest</span>, then <span class="t">7:30 · dinner at <button class="pl" data-p="Benoit">Benoit</button></span> <span class="tbd">RESERVE</span>.</li>
+      </ul>
+    </div>
+    <p class="note"><b>Closed Sunday:</b> Poilâne, Barthélémy, Legrand, Le Rubis, Willi's Wine Bar, Bistrot Paul Bert. Most cheese shops close around 1pm.</p>
+  </div>
+
+  <div class="card day d-mon12">
+    <h3>Mon Oct 12 — Departure</h3>
+    <p class="when">Departure time: <span class="tbd">TBD</span></p>
+    <ul class="plan">
+      <li><span class="t">If there's a free morning,</span> stay near the hotel.</li>
+      <li><span class="t">Open Monday · <button class="pl" data-p="Poilâne">Poilâne</button></span> from 7:15am — bread and butter cookies travel well.</li>
+      <li><span class="t">Open Monday · <button class="pl" data-p="La Grande Épicerie de Paris">La Grande Épicerie de Paris</button></span> from 8:30am — butter, cheese, gifts and wine to take home, big wine cellar downstairs.
+        <span class="leg"><b>Walk</b> · about 15 min from the hotel, or a short taxi</span></li>
+      <li><span class="t">Last coffee at <button class="pl" data-p="Le Select">Le Select</button>.</span></li>
+    </ul>
+    <p class="note"><b>Closed Monday:</b> Orsay, Versailles, Berthillon, Bistrot Paul Bert, and most cheese shops and top bakeries — Isabelle, Laurent Dubois, Cantin, Quatrehomme, Barthélémy, Blé Sucré. Buy take-home cheese Saturday or before 1pm Sunday; shops will vacuum-pack it.</p>
+  </div>
+
+  <div class="card day">
+    <h3>Extras — not scheduled</h3>
+    <p>Versailles doesn't fit this trip: every free day is taken, and it's closed Monday. It stays on the map for a future visit. The rest are markets and food shops for spare moments — they're the grey pins.</p>
+  </div>
+</section>
+
+<!-- ============ BOOKINGS ============ -->
+<section id="tab-book" hidden>
+  <h2>Bookings checklist</h2>
+  <p class="note">Tick these off as you go — they're saved on this phone. <b>Time slots are still required with the pass</b>: book each one free on the venue's own site, choosing the Museum Pass option. No pass number needed. Show the pass <i>and</i> the slot confirmation at the door.</p>
+
+  <div class="card" id="checklist">
+    <div class="check">
+      <input type="checkbox" id="b1"><label for="b1"><span class="t">Buy 2 × 6-day Paris Museum Pass</span>
+        <span class="meta">€125 each (about $143) · <b>parismuseumpass.fr only</b> · buy now. The clock starts at the first scan (Orsay, Wed morning) and runs 144 hours, covering every museum day through Sunday. The 4-day pass would expire before Sainte-Chapelle.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b2"><label for="b2"><span class="t">Louvre — Thu Oct 8, 9:00am</span>
+        <span class="meta">Book this one first, it sells out. Free pass-holder slot at ticket.louvre.fr.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b3"><label for="b3"><span class="t">Musée d'Orsay — Wed Oct 7, ~9:30am</span>
+        <span class="meta">Mandatory free pass-holder slot: pick the Paris Museum Pass voucher.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b4"><label for="b4"><span class="t">Musée de l'Orangerie — Wed Oct 7, early afternoon</span>
+        <span class="meta">Free pass-holder slot: choose Admission, then the "Countermark Paris Museum Pass" line.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b5"><label for="b5"><span class="t">Sainte-Chapelle — Sun Oct 11, 3:30pm (option A) or 9:30am (option B)</span>
+        <span class="meta">Decide on the panoramic tour first. Free pass-holder slot at tickets.monuments-nationaux.fr: "Visit of the monument," then the "I already have a ticket" line.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b6"><label for="b6"><span class="t">Notre-Dame — Sun Oct 11</span>
+        <span class="meta">Free entry. An optional free time-slot reservation skips the main line.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b7"><label for="b7"><span class="t">Notre-Dame towers — Sun Oct 11 (optional)</span>
+        <span class="meta">Covered by the pass. Free slot at tickets.monuments-nationaux.fr, Paris Museum Pass line. Opens 72 hours ahead.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b8"><label for="b8"><span class="t">Napoleon's Tomb (Thu) &amp; Arc de Triomphe (Sun B)</span>
+        <span class="meta">Covered by the pass, walk-in — nothing to book. Just tick when you've noted it.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b9"><label for="b9"><span class="t">Bistrot Paul Bert — Wed Oct 7 dinner</span>
+        <span class="meta">Reserve by phone. Hard to reach: call around 10:30am or 4pm Paris time.</span></label>
+    </div>
+    <div class="check">
+      <input type="checkbox" id="b10"><label for="b10"><span class="t">Benoit — Sun Oct 11, 7:30pm</span>
+        <span class="meta">Reserve: <a href="tel:+33142722576">+33 1 42 72 25 76</a></span></label>
+    </div>
+  </div>
+
+  <h3>What the pass covers</h3>
+  <p>Louvre €32 · Sainte-Chapelle €22 · Napoleon's Tomb €17 · Orsay €16 · Orangerie ~€12.50 — plus the Arc de Triomphe €22 and the Notre-Dame towers €16 if you want them. It skips the ticket lines (not security), and it's one purchase instead of five.</p>
+</section>
+
+<!-- ============ GETTING AROUND ============ -->
+<section id="tab-move" hidden>
+  <h2>Getting around</h2>
+  <p class="note">Prices below are for <b>both of you together</b>, at about $1.14 per euro.</p>
+  <div class="card">
+    <h3>Metro</h3>
+    <p>€2.55 per person per ride (about $6 for two). Paper tickets are gone — use a <b>Navigo Easy card</b> (€2 at any station, 10-ride pack €17.35) or the Bonjour RATP app. Buses need a separate ticket.</p>
+    <h3>Taxi</h3>
+    <p>Priced per car, €8 minimum. Higher rates on weekday evenings and all day Sunday. <b>G7</b> is the main taxi app; Uber also works.</p>
+    <h3>Your lines from the hotel</h3>
+    <p><b>Line 4</b> — Saint-Germain, Cité, Châtelet.<br><b>Line 12</b> — Solférino for Orsay, Concorde, Abbesses for Montmartre.<br><b>Line 6</b> — Bir-Hakeim for the Eiffel Tower, Étoile for the Arc.</p>
+    <h3>Safety</h3>
+    <p>Pickpockets work Lines 1, 4 and 6 near the big sights. Keep a zipped bag in front of you.</p>
+  </div>
+  <h3>Every leg, three ways</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Leg</th><th>Walk</th><th>Metro</th><th>Taxi</th></tr></thead>
+      <tbody id="legs"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ MARKETS ============ -->
+<section id="tab-markets" hidden>
+  <h2>Markets</h2>
+  <p class="note">Mornings, roughly 7am–1:30pm. Dad's department.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Market</th><th>Days</th><th>Fits</th></tr></thead>
+      <tbody id="mkts"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ ALL PLACES ============ -->
+<section id="tab-all" hidden>
+  <h2>All places</h2>
+  <p class="note">Every pin in plain text with its coordinates — this works with no internet at all. The map background needs data, but this list doesn't.</p>
+  <div id="alllist"></div>
+</section>
+
+<footer>
+  <p>Hours and prices were checked in September 2026 — confirm on the official sites before you count on them. Tour meeting points and the departure time are still TBD.</p>
+  <p>Hotel: Pullman Paris Montparnasse, 19 Rue du Commandant René Mouchotte, 75014 Paris · <a href="tel:+33144364436">+33 1 44 36 44 36</a></p>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" crossorigin=""></script>
+<script>
+(function(){
+"use strict";
+var PLACES = [{"name":"Pullman Paris Montparnasse (HOTEL)","lat":48.8384551,"lng":2.320393,"day":"Home base","type":"Hotel","notes":"19 Rue du Commandant René Mouchotte, 75014. +33 1 44 36 44 36. Next to Gare Montparnasse (trains to Versailles-Chantiers). Rooftop bar.","keys":["hotel"]},{"name":"Le Select","lat":48.8426118,"lng":2.3284069,"day":"Tue Oct 6","type":"Café","notes":"Lost Generation haunt near the hotel. Morning coffee at the bar.","keys":["tue6"]},{"name":"Le Dôme","lat":48.8420072,"lng":2.3289451,"day":"Tue Oct 6","type":"Café","notes":"Historic art deco brasserie across from Le Select. A drink on the covered terrace; famous for seafood.","keys":["tue6"]},{"name":"Le Rosebud","lat":48.8416605,"lng":2.3282787,"day":"Tue Oct 6","type":"Bar","notes":"1960s jazz-era cocktail bar on Rue Delambre. Nightcap near the hotel. Opens 6pm.","keys":["tue6"]},{"name":"La Closerie des Lilas","lat":48.8401436,"lng":2.3360432,"day":"Tue Oct 6","type":"Café","notes":"Hemingway's hangout; famous names engraved on the bar. Drink in the piano bar. Opens noon.","keys":["tue6"]},{"name":"Jardin du Luxembourg","lat":48.8466144,"lng":2.3363309,"day":"Sun Oct 11 (option B)","type":"Sight","notes":"Grab two green chairs by the fountain and relax.","keys":["sun11b"]},{"name":"Café de la Mairie","lat":48.8515084,"lng":2.3337044,"day":"Wed Oct 7","type":"Café","notes":"Locals' terrace on Place Saint-Sulpice. Coffee or wine; skip the food.","keys":["wed7"]},{"name":"Les Deux Magots","lat":48.854052,"lng":2.3331062,"day":"Wed Oct 7","type":"Café","notes":"Famous and pricey but worth it once. Order the hot chocolate.","keys":["wed7"]},{"name":"Café de Flore","lat":48.8541588,"lng":2.3326046,"day":"Wed Oct 7","type":"Café","notes":"Next door to Deux Magots. Sit on the terrace.","keys":["wed7"]},{"name":"La Palette","lat":48.8554318,"lng":2.3368618,"day":"Wed Oct 7","type":"Café","notes":"Gallery-street terrace on Rue de Seine. Stick to wine; cocktails are overpriced.","keys":["wed7"]},{"name":"Les Antiquaires","lat":48.8586582,"lng":2.3288088,"day":"Wed Oct 7","type":"Café","notes":"Corner bistro two blocks from Orsay. Coffee before or lunch after.","keys":["wed7"]},{"name":"Musée d'Orsay","lat":48.8599614,"lng":2.3265614,"day":"Wed Oct 7","type":"Museum","notes":"Book timed ticket. Closed Mondays. Start on the 5th floor (Impressionists).","keys":["wed7"]},{"name":"Musée de l'Orangerie","lat":48.8637884,"lng":2.3226724,"day":"Wed Oct 7","type":"Museum","notes":"Monet's Water Lilies. Book timed ticket. Closed Tuesdays. About 1 hour.","keys":["wed7"]},{"name":"Arc de Triomphe","lat":48.8737917,"lng":2.2950275,"day":"Sun Oct 11 (option B)","type":"Sight","notes":"Option B afternoon: rooftop views + Champs-Élysées. Covered by the museum pass, walk-in. Use the underground tunnel to reach it.","keys":["sun11b"]},{"name":"Sainte-Chapelle","lat":48.855375,"lng":2.3449609,"day":"Sun Oct 11","type":"Sight","notes":"Book timed ticket: 3:30pm (option A) or 9:30am (option B). Morning light is best.","keys":["sun11a","sun11b"]},{"name":"Notre-Dame de Paris","lat":48.8529682,"lng":2.3499021,"day":"Sun Oct 11","type":"Sight","notes":"Free entry. Reserve a free time slot online to skip the main line.","keys":["sun11a","sun11b"]},{"name":"Le Saint-Régis","lat":48.8529059,"lng":2.3537978,"day":"Sun Oct 11","type":"Café","notes":"Just over the bridge on Île Saint-Louis. Coffee stop after Notre-Dame.","keys":["sun11a","sun11b"]},{"name":"Berthillon","lat":48.8517135,"lng":2.3567206,"day":"Sun Oct 11","type":"Café","notes":"Best sorbet in Paris. Closed Mon & Tue.","keys":["sun11a","sun11b"]},{"name":"Benoit","lat":48.8584202,"lng":2.3500687,"day":"Sun Oct 11","type":"Restaurant","notes":"RESERVE Sunday dinner 7:30pm. 1912 bistro, open daily 12-2 and 7-10pm. Get the profiteroles.","keys":["sun11a","sun11b"]},{"name":"Eiffel Tower","lat":48.8583701,"lng":2.2944813,"day":"Thu Oct 8","type":"Existing plan","notes":"Dinner with the friends (already arranged). The tower sparkles on the hour after dark. Watch for pickpockets.","keys":["thu8"]},{"name":"Rue Cler","lat":48.8577001,"lng":2.3059504,"day":"Thu Oct 8","type":"Market","notes":"HIGHLIGHT. Pedestrian market street: cheese shops, bakeries, produce, flowers. Best Tue-Sat; most shops closed Mon, quiet Sun afternoon.","keys":["thu8"]},{"name":"Café du Marché","lat":48.856669,"lng":2.306326,"day":"Thu Oct 8","type":"Café","notes":"The Rue Cler café. Terrace lunch and people-watching.","keys":["thu8"]},{"name":"Napoleon's Tomb (Invalides)","lat":48.8550614,"lng":2.3125393,"day":"Thu Oct 8","type":"Sight","notes":"10 min walk from Rue Cler. About an hour for the dome.","keys":["thu8"]},{"name":"Le Nemours","lat":48.8630568,"lng":2.3365269,"day":"Thu Oct 8","type":"Café","notes":"Terrace under the Palais-Royal arcades steps from the Louvre. Coffee before / recovery after.","keys":["thu8"]},{"name":"Louvre","lat":48.8606111,"lng":2.337644,"day":"Thu Oct 8","type":"Museum","notes":"Book earliest timed slot. Closed Tuesdays. Pick 3-4 must-sees.","keys":["thu8"]},{"name":"Le Rubis","lat":48.866177,"lng":2.331403,"day":"Extra (near Louvre)","type":"Wine bar","notes":"Old-school zinc wine bar full of regulars. Chalkboard menu. Closed Sunday.","keys":["extras"]},{"name":"Willi's Wine Bar","lat":48.866314,"lng":2.338319,"day":"Extra (near Louvre)","type":"Wine bar","notes":"Paris wine-bar institution since 1980. Great early dinner. Closed Sunday.","keys":["extras"]},{"name":"Le Baron Rouge","lat":48.8494461,"lng":2.3773588,"day":"Wed Oct 7","type":"Wine bar","notes":"Standing-room wine bar by the Aligre market. Pre-dinner glass; 10 min walk to Paul Bert.","keys":["wed7"]},{"name":"Bistrot Paul Bert","lat":48.8522102,"lng":2.3850177,"day":"Wed Oct 7","type":"Restaurant","notes":"RESERVE (call ~10:30am or 4pm Paris time). Steak au poivre. Closed Sun & Mon.","keys":["wed7"]},{"name":"Marché Edgar-Quinet","lat":48.8415657,"lng":2.3238078,"day":"Wed Oct 7 + Sat Oct 10","type":"Market","notes":"WED & SAT mornings (7am-1:30/2:30pm). 5 min walk from hotel. Rotisserie chicken + oysters.","keys":["wed7","sat10"]},{"name":"Marché Raspail","lat":48.8498686,"lng":2.3270825,"day":"Extra (not scheduled)","type":"Market","notes":"TUE & FRI mornings; SUNDAY is the famous organic market. Near Luxembourg.","keys":["extras"]},{"name":"Poilâne","lat":48.8512944,"lng":2.3289972,"day":"Wed Oct 7 + Mon Oct 12","type":"Bakery","notes":"THE legendary bread bakery. Get a slice of the big P loaf, the apple tart, and the butter cookies. Closed Sun.","keys":["wed7","mon12"]},{"name":"Pierre Hermé","lat":48.8514868,"lng":2.332762,"day":"Wed Oct 7","type":"Bakery","notes":"Best macarons in Paris. Try the Ispahan (rose/raspberry/lychee). Takeaway only.","keys":["wed7"]},{"name":"La Grande Épicerie de Paris","lat":48.8503167,"lng":2.3239433,"day":"Mon Oct 12","type":"Food hall","notes":"Gorgeous gourmet food hall. Butter, cheese, gifts to bring home; big wine cellar downstairs. Open daily.","keys":["mon12"]},{"name":"Fromagerie Quatrehomme","lat":48.8481026,"lng":2.3195897,"day":"Extra (not scheduled)","type":"Cheese shop","notes":"Top cheesemonger; staff will pick for you and vacuum-pack for the flight. Closed Mon.","keys":["extras"]},{"name":"La Dernière Goutte","lat":48.8539463,"lng":2.3361959,"day":"Wed Oct 7","type":"Wine shop","notes":"Tiny, friendly wine shop; owner speaks English and loves recommending bottles. Great Burgundy.","keys":["wed7"]},{"name":"Barthélémy","lat":48.8544587,"lng":2.3255338,"day":"Extra (not scheduled)","type":"Cheese shop","notes":"Classic old cheese shop ~10 min walk from Orsay. Vacuum-packs for travel. Closed Sun & Mon.","keys":["extras"]},{"name":"La Maison d'Isabelle","lat":48.8498436,"lng":2.3482751,"day":"Sun Oct 11 (option B)","type":"Bakery","notes":"Award-winning croissant, just across the bridge from Notre-Dame. Short line moves fast. Closed Mon.","keys":["sun11b"]},{"name":"Fromagerie Laurent Dubois","lat":48.8498024,"lng":2.3485006,"day":"Sun Oct 11 (option B)","type":"Cheese shop","notes":"Next door to Isabelle. Ask to taste the aged Comté. Closed Mon.","keys":["sun11b"]},{"name":"Marché Maubert","lat":48.8499215,"lng":2.3485543,"day":"Extra (not scheduled)","type":"Market","notes":"TUE, THU & SAT mornings. Small, local market 5 min from Notre-Dame.","keys":["extras"]},{"name":"Marché aux Fleurs","lat":48.8551453,"lng":2.3476661,"day":"Sun Oct 11","type":"Market","notes":"Flower market between Sainte-Chapelle and Notre-Dame. Open daily.","keys":["sun11a","sun11b"]},{"name":"Marché Saxe-Breteuil","lat":48.8481169,"lng":2.3104749,"day":"Extra (not scheduled)","type":"Market","notes":"THU & SAT mornings. Big, beautiful market with the Eiffel Tower in view. Go before 11.","keys":["extras"]},{"name":"Marie-Anne Cantin","lat":48.8564772,"lng":2.3055702,"day":"Thu Oct 8","type":"Cheese shop","notes":"Top cheese shop right off Rue Cler; ask for a 5-cheese tasting plate for a Champ de Mars picnic. Closed Mon.","keys":["thu8"]},{"name":"Stohrer","lat":48.8652644,"lng":2.3468149,"day":"Extra (near Louvre)","type":"Bakery","notes":"Oldest pastry shop in Paris (1730) on the Rue Montorgueil market street, ~15 min from the Louvre. Get the baba au rhum.","keys":["extras"]},{"name":"Legrand Filles et Fils","lat":48.8663131,"lng":2.3398759,"day":"Thu Oct 8","type":"Wine shop","notes":"Historic wine shop + tasting bar in Galerie Vivienne, steps from Palais-Royal. Closed Sun.","keys":["thu8"]},{"name":"Marché d'Aligre","lat":48.8500235,"lng":2.3789591,"day":"Extra (not scheduled)","type":"Market","notes":"TUE-SUN mornings (closed Mon); busiest Sat & Sun. Outdoor stalls + covered hall + flea market. Morning trip, separate from dinner.","keys":["extras"]},{"name":"Blé Sucré","lat":48.8505998,"lng":2.3766946,"day":"Extra (not scheduled)","type":"Bakery","notes":"Locals' pick for croissant and pain au chocolat, right by Aligre. Closed Mon.","keys":["extras"]},{"name":"Palace of Versailles","lat":48.8048649,"lng":2.1203554,"day":"Extra (not scheduled)","type":"Sight","notes":"CLOSED MON. Book timed tickets ahead; take earliest slot. Train from Gare Montparnasse to Versailles-Chantiers (~15 min) then ~20 min walk or taxi.","keys":["extras"]},{"name":"Marché Notre-Dame (Versailles)","lat":48.8065744,"lng":2.1321226,"day":"Extra (not scheduled)","type":"Market","notes":"Outdoor market TUE, FRI & SUN mornings; covered halls open Tue-Sun. Build a picnic for the palace gardens.","keys":["extras"]}];
+var HOTEL = [48.8384551, 2.320393];
+
+/* The hotel is the anchor for everything, so its pin always stays on the map
+   and is not one of the filters. */
+var DAYS = [
+  ['tue6','Tue 6'], ['wed7','Wed 7'], ['thu8','Thu 8'], ['sat10','Sat 10'],
+  ['sun11a','Sun 11 A'], ['sun11b','Sun 11 B'], ['mon12','Mon 12'], ['extras','Extras']
+];
+var DAY_KEYS = DAYS.map(function(d){ return d[0]; });
+var LIST_GROUPS = [['hotel','Home base']].concat(DAYS);
+var GLYPH = {
+  'Hotel':'🏠','Café':'☕','Bar':'🍸','Wine bar':'🍷','Wine shop':'🍾','Restaurant':'🍽',
+  'Museum':'🖼','Sight':'🏛','Market':'🧺','Bakery':'🥐','Cheese shop':'🧀',
+  'Food hall':'🛒','Existing plan':'🎟'
+};
+var TYPES = [];
+PLACES.forEach(function(p){ if(p.type !== 'Hotel' && TYPES.indexOf(p.type) < 0) TYPES.push(p.type); });
+var FILTERABLE = PLACES.filter(function(p){ return p.type !== 'Hotel'; });
+
+var LEGS = [
+  ['Hotel → Orsay','35 min','Line 12 to Solférino, ~20 min, $6','12 min, ~$14–18'],
+  ['Orsay → Orangerie','10 min (footbridge + Tuileries)','n/a','n/a'],
+  ['Orangerie → Saint-Germain','25 min','n/a','10 min, ~$12–16'],
+  ['Saint-Germain → hotel','25 min','Line 4, 15 min, $6','~$14–17'],
+  ['Hotel → Paul Bert','too far','~35 min, 1 change, $6','20 min, ~$22–29 (home ~$23–32)'],
+  ['Hotel → Louvre','too far','~25 min, 1 change, $6; or bus 95 direct, 30 min, ~$5','15 min, ~$17–21'],
+  ['Louvre → Napoleon’s Tomb','40 min','~20 min, 1 change, $6','12 min, ~$14–18'],
+  ['Invalides → Rue Cler → Eiffel Tower','10 min each','n/a','n/a'],
+  ['Eiffel Tower dinner → hotel (night)','too far','Line 6, 15 min, $6','12 min, ~$17–23'],
+  ['Hotel → Montmartre (Abbesses)','too far','Line 12, 30 min, no change, $6','25–30 min, ~$23–32'],
+  ['Tour end → Île Saint-Louis (Sun A)','depends','depends','~$12–20'],
+  ['Island sights (each hop)','5 min','n/a','n/a'],
+  ['Sainte-Chapelle ↔ hotel','40 min','Line 4 (Cité), 15 min, $6','~$16–21'],
+  ['Hotel ↔ Benoit','too far','Line 4 to Châtelet + 5 min walk, 15 min, $6','15 min, ~$17–23 each way'],
+  ['Islands → Luxembourg (Sun B)','25 min','n/a','~$12–16'],
+  ['Luxembourg → hotel','20 min','n/a','n/a'],
+  ['Islands → Arc de Triomphe (Sun B)','too far','Line 1, 20 min, $6','20 min, ~$21–27'],
+  ['Arc de Triomphe → hotel','too far','Line 6, 20 min, $6 (partly above ground, good views)','~$21–27']
+];
+var MKTS = [
+  ['Marché Edgar-Quinet','Wed, Sat','Wed Oct 7 + Sat Oct 10 (by the hotel)'],
+  ['Marché aux Fleurs','Daily, 8am–7:30pm','Sun Oct 11'],
+  ['Marché Raspail','Tue, Fri; Sun is the big organic market','Extra'],
+  ['Marché Maubert','Tue, Thu, Sat','Extra'],
+  ['Marché Saxe-Breteuil','Thu, Sat (Eiffel Tower view)','Extra'],
+  ['Marché d’Aligre','Tue–Sun (closed Mon)','Extra'],
+  ['Marché Notre-Dame (Versailles)','Outdoor Tue, Fri, Sun; halls Tue–Sun','Extra (Versailles)']
+];
+
+function el(tag, cls, text){ var n = document.createElement(tag); if(cls) n.className = cls; if(text != null) n.textContent = text; return n; }
+function dirUrl(p){ return 'https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng; }
+function walkUrl(p){ return dirUrl(p) + '&origin=' + HOTEL[0] + ',' + HOTEL[1] + '&travelmode=walking'; }
+function primaryDay(p){ return p.keys[0]; }
+
+/* ---------- tabs ---------- */
+var tabs = document.querySelectorAll('#tabs button');
+function show(name){
+  for(var i = 0; i < tabs.length; i++){
+    var on = tabs[i].getAttribute('data-tab') === name;
+    tabs[i].setAttribute('aria-selected', on ? 'true' : 'false');
+    document.getElementById('tab-' + tabs[i].getAttribute('data-tab')).hidden = !on;
+  }
+  if(name === 'map' && map) setTimeout(function(){ map.invalidateSize(); }, 30);
+}
+for(var i = 0; i < tabs.length; i++){
+  tabs[i].addEventListener('click', function(){ show(this.getAttribute('data-tab')); window.scrollTo(0, 0); });
+}
+
+/* ---------- filters ---------- */
+var activeDays = {}, activeTypes = {};
+DAY_KEYS.forEach(function(k){ activeDays[k] = true; });
+TYPES.forEach(function(t){ activeTypes[t] = true; });
+var dayChipEls = [], typeChipEls = [];
+
+function allOn(keys, state){
+  for(var i = 0; i < keys.length; i++){ if(!state[keys[i]]) return false; }
+  return true;
+}
+function noneOn(keys, state){
+  for(var i = 0; i < keys.length; i++){ if(state[keys[i]]) return false; }
+  return true;
+}
+/* Tapping a chip while the whole row is on isolates it, so "just Wednesday" is one tap.
+   After that, taps add and remove. A row can never be emptied into a blank map:
+   turning off the last one snaps the row back to all. */
+function toggle(key, keys, state){
+  if(allOn(keys, state)){
+    keys.forEach(function(k){ state[k] = (k === key); });
+  } else {
+    state[key] = !state[key];
+    if(noneOn(keys, state)) keys.forEach(function(k){ state[k] = true; });
+  }
+  sync();
+  render();
+}
+function sync(){
+  dayChipEls.forEach(function(b, i){ b.setAttribute('aria-pressed', activeDays[DAY_KEYS[i]] ? 'true' : 'false'); });
+  typeChipEls.forEach(function(b, i){ b.setAttribute('aria-pressed', activeTypes[TYPES[i]] ? 'true' : 'false'); });
+}
+function chip(parent, cls, label, onTap, glyph){
+  var b = el('button', 'chip ' + cls);
+  b.type = 'button';
+  b.setAttribute('aria-pressed', 'true');
+  b.appendChild(glyph ? el('span', 'gly', glyph) : el('span', 'dot'));
+  b.appendChild(document.createTextNode(label));
+  b.addEventListener('click', onTap);
+  parent.appendChild(b);
+  return b;
+}
+DAYS.forEach(function(d){
+  dayChipEls.push(chip(document.getElementById('dayChips'), 'c-' + d[0], d[1],
+    function(){ toggle(d[0], DAY_KEYS, activeDays); }));
+});
+TYPES.forEach(function(t){
+  typeChipEls.push(chip(document.getElementById('typeChips'), 'c-type', t,
+    function(){ toggle(t, TYPES, activeTypes); }, GLYPH[t] || '📍'));
+});
+document.getElementById('selAll').addEventListener('click', function(){
+  DAY_KEYS.forEach(function(k){ activeDays[k] = true; });
+  TYPES.forEach(function(t){ activeTypes[t] = true; });
+  sync();
+  render();
+});
+
+function visible(p){
+  if(p.type === 'Hotel') return true;
+  if(!activeTypes[p.type]) return false;
+  for(var i = 0; i < p.keys.length; i++){ if(activeDays[p.keys[i]]) return true; }
+  return false;
+}
+
+/* ---------- map ---------- */
+var map = null, layer = null, markers = {};
+function icon(p){
+  var cls = 'pin p-' + primaryDay(p);
+  var size = 30, anchor = [15, 30];
+  if(p.type === 'Hotel'){ cls = 'pin p-hotel'; size = 38; anchor = [19, 19]; }
+  else if(/Rue Cler/.test(p.name)){ cls += ' p-star'; size = 38; anchor = [19, 38]; }
+  else if(p.type === 'Existing plan'){ cls += ' p-booked'; }
+  var g = p.type === 'Hotel' ? '🏠' : (/Rue Cler/.test(p.name) ? '⭐' : (GLYPH[p.type] || '📍'));
+  return L.divIcon({
+    className: '',
+    html: '<div class="' + cls + '"><span>' + g + '</span></div>',
+    iconSize: [size, size],
+    iconAnchor: anchor,
+    popupAnchor: [0, -(anchor[1] - 2)]
+  });
+}
+function popup(p){
+  var d = el('div', 'pop');
+  d.appendChild(el('span', 'pop-n', p.name));
+  d.appendChild(el('span', 'pop-m', p.type + ' · ' + p.day));
+  d.appendChild(el('span', 'pop-note', p.notes));
+  var a = el('a', 'go', '➤ Directions'); a.href = dirUrl(p); a.target = '_blank'; a.rel = 'noopener';
+  d.appendChild(a);
+  if(p.type !== 'Hotel'){
+    var w = el('a', 'walk', '🚶 Walk from hotel'); w.href = walkUrl(p); w.target = '_blank'; w.rel = 'noopener';
+    d.appendChild(w);
+  }
+  return d;
+}
+try {
+  if(typeof L === 'undefined') throw new Error('Leaflet unavailable');
+  map = L.map('map', { center: [48.8566, 2.3300], zoom: 13, scrollWheelZoom: false });
+  var tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+  });
+  tiles.on('tileerror', function(){ document.getElementById('tilewarn').style.display = 'block'; });
+  tiles.addTo(map);
+  layer = L.layerGroup().addTo(map);
+  PLACES.forEach(function(p){
+    var m = L.marker([p.lat, p.lng], { icon: icon(p), title: p.name });
+    m.bindPopup(popup(p));
+    markers[p.name] = m;
+  });
+} catch(e){
+  var mapBox = document.getElementById('map');
+  mapBox.style.display = 'none';
+  var warn = document.getElementById('tilewarn');
+  warn.style.display = 'block';
+  warn.innerHTML = 'The map needs an internet connection to load. Everything else works offline — open the <b>All places</b> tab for every address, note and Directions link.';
+}
+function render(){
+  var n = 0;
+  PLACES.forEach(function(p){
+    var on = visible(p), m = markers[p.name];
+    if(on && p.type !== 'Hotel') n++;
+    if(!m || !layer) return;
+    if(on && !layer.hasLayer(m)) layer.addLayer(m);
+    if(!on && layer.hasLayer(m)) layer.removeLayer(m);
+  });
+  document.getElementById('count').textContent =
+    'Showing ' + n + ' of ' + FILTERABLE.length + ' places, plus the hotel.';
+}
+
+/* ---------- fly to a place from the day cards ---------- */
+function flyTo(name){
+  var p = null;
+  PLACES.forEach(function(x){ if(x.name === name) p = x; });
+  if(!p) return;
+  show('map');
+  var m = markers[p.name];
+  if(!map || !m){ window.scrollTo(0, 0); return; }
+  for(var i = 0; i < p.keys.length; i++){ activeDays[p.keys[i]] = true; }
+  if(p.type !== 'Hotel') activeTypes[p.type] = true;
+  sync();
+  render();
+  map.invalidateSize();
+  map.flyTo([p.lat, p.lng], 16, { duration: .6 });
+  m.openPopup();
+  document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+var plBtns = document.querySelectorAll('button.pl'), missing = [];
+for(var j = 0; j < plBtns.length; j++){
+  (function(b){
+    var name = b.getAttribute('data-p'), found = false;
+    PLACES.forEach(function(x){ if(x.name === name) found = true; });
+    if(!found) missing.push(name);
+    b.addEventListener('click', function(){ flyTo(name); });
+  })(plBtns[j]);
+}
+if(missing.length && window.console) console.warn('Unmatched place links:', missing);
+
+/* ---------- tables ---------- */
+function fillTable(id, rows){
+  var tb = document.getElementById(id);
+  rows.forEach(function(r){
+    var tr = el('tr');
+    r.forEach(function(c, i){
+      var td = el('td', null, c);
+      if(i === 0) td.style.fontWeight = '600';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+}
+fillTable('legs', LEGS);
+fillTable('mkts', MKTS);
+
+/* ---------- offline text list ---------- */
+(function(){
+  var host = document.getElementById('alllist');
+  LIST_GROUPS.forEach(function(d){
+    var inDay = PLACES.filter(function(p){
+      return d[0] === 'sun11b'
+        ? (p.keys.indexOf('sun11b') >= 0 && p.keys.indexOf('sun11a') < 0)
+        : p.keys.indexOf(d[0]) >= 0;
+    });
+    if(!inDay.length) return;
+    var g = el('div', 'listgrp');
+    g.appendChild(el('h3', null, d[1] === 'Sun 11 B' ? 'Sun 11 — option B only' : d[1]));
+    inDay.forEach(function(p){
+      var it = el('div', 'listitem');
+      it.appendChild(el('b', null, p.name + ' — ' + p.type));
+      it.appendChild(el('div', 'co', p.lat + ', ' + p.lng));
+      it.appendChild(el('div', null, p.notes));
+      var a = el('a', null, 'Directions →'); a.href = dirUrl(p); a.target = '_blank'; a.rel = 'noopener';
+      it.appendChild(a);
+      g.appendChild(it);
+    });
+    host.appendChild(g);
+  });
+})();
+
+/* ---------- checklist persistence ---------- */
+(function(){
+  var boxes = document.querySelectorAll('#checklist input[type=checkbox]');
+  function load(){
+    try {
+      var raw = window.localStorage.getItem('paris-bookings');
+      if(!raw) return;
+      var saved = JSON.parse(raw);
+      for(var i = 0; i < boxes.length; i++){ boxes[i].checked = !!saved[boxes[i].id]; }
+    } catch(e){}
+  }
+  function save(){
+    try {
+      var out = {};
+      for(var i = 0; i < boxes.length; i++){ out[boxes[i].id] = boxes[i].checked; }
+      window.localStorage.setItem('paris-bookings', JSON.stringify(out));
+    } catch(e){}
+  }
+  load();
+  for(var i = 0; i < boxes.length; i++){ boxes[i].addEventListener('change', save); }
+})();
+
+render();
+window.__parisDebug = { places: PLACES, missing: missing, markers: markers };
+})();
+</script>
+</body>
+</html>

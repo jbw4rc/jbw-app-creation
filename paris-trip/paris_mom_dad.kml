@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Paris for Mom &amp; Dad - Oct 6-12, 2026</name>
+    <description>Trip pins by day. Hotel: Pullman Paris Montparnasse.</description>
+    <Style id="style-hotel">
+      <IconStyle>
+        <color>ff57351d</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff57351d</color></LabelStyle>
+    </Style>
+    <Style id="style-tue6">
+      <IconStyle>
+        <color>ff5b49d1</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff5b49d1</color></LabelStyle>
+    </Style>
+    <Style id="style-wed7">
+      <IconStyle>
+        <color>ffab862e</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ffab862e</color></LabelStyle>
+    </Style>
+    <Style id="style-thu8">
+      <IconStyle>
+        <color>ffa65b7d</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ffa65b7d</color></LabelStyle>
+    </Style>
+    <Style id="style-sat10">
+      <IconStyle>
+        <color>ff3f7ae0</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff3f7ae0</color></LabelStyle>
+    </Style>
+    <Style id="style-sun11a">
+      <IconStyle>
+        <color>ff6e9d2a</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff6e9d2a</color></LabelStyle>
+    </Style>
+    <Style id="style-sun11b">
+      <IconStyle>
+        <color>ff2aa87f</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff2aa87f</color></LabelStyle>
+    </Style>
+    <Style id="style-mon12">
+      <IconStyle>
+        <color>ff3b80a4</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff3b80a4</color></LabelStyle>
+    </Style>
+    <Style id="style-extras">
+      <IconStyle>
+        <color>ff988f8a</color>
+        <scale>1.1</scale>
+        <Icon><href>http://maps.google.com/mapfiles/kml/paddle/wht-blank.png</href></Icon>
+      </IconStyle>
+      <LabelStyle><color>ff988f8a</color></LabelStyle>
+    </Style>
+    <Folder>
+      <name>Home base</name>
+      <Placemark>
+        <name>Pullman Paris Montparnasse (HOTEL)</name>
+        <description>Hotel - Home base. 19 Rue du Commandant René Mouchotte, 75014. +33 1 44 36 44 36. Next to Gare Montparnasse (trains to Versailles-Chantiers). Rooftop bar.</description>
+        <styleUrl>#style-hotel</styleUrl>
+        <Point><coordinates>2.320393,48.8384551,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Tue Oct 6 - Arrival</name>
+      <Placemark>
+        <name>Le Select</name>
+        <description>Café - Tue Oct 6. Lost Generation haunt near the hotel. Morning coffee at the bar.</description>
+        <styleUrl>#style-tue6</styleUrl>
+        <Point><coordinates>2.3284069,48.8426118,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Le Dôme</name>
+        <description>Café - Tue Oct 6. Historic art deco brasserie across from Le Select. A drink on the covered terrace; famous for seafood.</description>
+        <styleUrl>#style-tue6</styleUrl>
+        <Point><coordinates>2.3289451,48.8420072,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Le Rosebud</name>
+        <description>Bar - Tue Oct 6. 1960s jazz-era cocktail bar on Rue Delambre. Nightcap near the hotel. Opens 6pm.</description>
+        <styleUrl>#style-tue6</styleUrl>
+        <Point><coordinates>2.3282787,48.8416605,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>La Closerie des Lilas</name>
+        <description>Café - Tue Oct 6. Hemingway's hangout; famous names engraved on the bar. Drink in the piano bar. Opens noon.</description>
+        <styleUrl>#style-tue6</styleUrl>
+        <Point><coordinates>2.3360432,48.8401436,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Wed Oct 7 - Orsay, Orangerie, Saint-Germain</name>
+      <Placemark>
+        <name>Café de la Mairie</name>
+        <description>Café - Wed Oct 7. Locals' terrace on Place Saint-Sulpice. Coffee or wine; skip the food.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3337044,48.8515084,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Les Deux Magots</name>
+        <description>Café - Wed Oct 7. Famous and pricey but worth it once. Order the hot chocolate.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3331062,48.854052,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Café de Flore</name>
+        <description>Café - Wed Oct 7. Next door to Deux Magots. Sit on the terrace.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3326046,48.8541588,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>La Palette</name>
+        <description>Café - Wed Oct 7. Gallery-street terrace on Rue de Seine. Stick to wine; cocktails are overpriced.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3368618,48.8554318,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Les Antiquaires</name>
+        <description>Café - Wed Oct 7. Corner bistro two blocks from Orsay. Coffee before or lunch after.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3288088,48.8586582,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Musée d'Orsay</name>
+        <description>Museum - Wed Oct 7. Book timed ticket. Closed Mondays. Start on the 5th floor (Impressionists).</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3265614,48.8599614,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Musée de l'Orangerie</name>
+        <description>Museum - Wed Oct 7. Monet's Water Lilies. Book timed ticket. Closed Tuesdays. About 1 hour.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3226724,48.8637884,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Le Baron Rouge</name>
+        <description>Wine bar - Wed Oct 7. Standing-room wine bar by the Aligre market. Pre-dinner glass; 10 min walk to Paul Bert.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3773588,48.8494461,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Bistrot Paul Bert</name>
+        <description>Restaurant - Wed Oct 7. RESERVE (call ~10:30am or 4pm Paris time). Steak au poivre. Closed Sun &amp; Mon.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3850177,48.8522102,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché Edgar-Quinet</name>
+        <description>Market - Wed Oct 7 + Sat Oct 10. WED &amp; SAT mornings (7am-1:30/2:30pm). 5 min walk from hotel. Rotisserie chicken + oysters.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3238078,48.8415657,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Poilâne</name>
+        <description>Bakery - Wed Oct 7 + Mon Oct 12. THE legendary bread bakery. Get a slice of the big P loaf, the apple tart, and the butter cookies. Closed Sun.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3289972,48.8512944,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Pierre Hermé</name>
+        <description>Bakery - Wed Oct 7. Best macarons in Paris. Try the Ispahan (rose/raspberry/lychee). Takeaway only.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.332762,48.8514868,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>La Dernière Goutte</name>
+        <description>Wine shop - Wed Oct 7. Tiny, friendly wine shop; owner speaks English and loves recommending bottles. Great Burgundy.</description>
+        <styleUrl>#style-wed7</styleUrl>
+        <Point><coordinates>2.3361959,48.8539463,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Thu Oct 8 - Louvre, Invalides, Rue Cler</name>
+      <Placemark>
+        <name>Eiffel Tower</name>
+        <description>Existing plan - Thu Oct 8. Dinner with the friends (already arranged). The tower sparkles on the hour after dark. Watch for pickpockets.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.2944813,48.8583701,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Rue Cler</name>
+        <description>Market - Thu Oct 8. HIGHLIGHT. Pedestrian market street: cheese shops, bakeries, produce, flowers. Best Tue-Sat; most shops closed Mon, quiet Sun afternoon.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.3059504,48.8577001,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Café du Marché</name>
+        <description>Café - Thu Oct 8. The Rue Cler café. Terrace lunch and people-watching.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.306326,48.856669,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Napoleon's Tomb (Invalides)</name>
+        <description>Sight - Thu Oct 8. 10 min walk from Rue Cler. About an hour for the dome.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.3125393,48.8550614,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Le Nemours</name>
+        <description>Café - Thu Oct 8. Terrace under the Palais-Royal arcades steps from the Louvre. Coffee before / recovery after.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.3365269,48.8630568,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Louvre</name>
+        <description>Museum - Thu Oct 8. Book earliest timed slot. Closed Tuesdays. Pick 3-4 must-sees.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.337644,48.8606111,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marie-Anne Cantin</name>
+        <description>Cheese shop - Thu Oct 8. Top cheese shop right off Rue Cler; ask for a 5-cheese tasting plate for a Champ de Mars picnic. Closed Mon.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.3055702,48.8564772,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Legrand Filles et Fils</name>
+        <description>Wine shop - Thu Oct 8. Historic wine shop + tasting bar in Galerie Vivienne, steps from Palais-Royal. Closed Sun.</description>
+        <styleUrl>#style-thu8</styleUrl>
+        <Point><coordinates>2.3398759,48.8663131,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Sat Oct 10 - Market &amp; Montmartre</name>
+      <Placemark>
+        <name>Marché Edgar-Quinet</name>
+        <description>Market - Wed Oct 7 + Sat Oct 10. WED &amp; SAT mornings (7am-1:30/2:30pm). 5 min walk from hotel. Rotisserie chicken + oysters.</description>
+        <styleUrl>#style-sat10</styleUrl>
+        <Point><coordinates>2.3238078,48.8415657,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Sun Oct 11 - Islands (both options)</name>
+      <Placemark>
+        <name>Sainte-Chapelle</name>
+        <description>Sight - Sun Oct 11. Book timed ticket: 3:30pm (option A) or 9:30am (option B). Morning light is best.</description>
+        <styleUrl>#style-sun11a</styleUrl>
+        <Point><coordinates>2.3449609,48.855375,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Notre-Dame de Paris</name>
+        <description>Sight - Sun Oct 11. Free entry. Reserve a free time slot online to skip the main line.</description>
+        <styleUrl>#style-sun11a</styleUrl>
+        <Point><coordinates>2.3499021,48.8529682,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Le Saint-Régis</name>
+        <description>Café - Sun Oct 11. Just over the bridge on Île Saint-Louis. Coffee stop after Notre-Dame.</description>
+        <styleUrl>#style-sun11a</styleUrl>
+        <Point><coordinates>2.3537978,48.8529059,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Berthillon</name>
+        <description>Café - Sun Oct 11. Best sorbet in Paris. Closed Mon &amp; Tue.</description>
+        <styleUrl>#style-sun11a</styleUrl>
+        <Point><coordinates>2.3567206,48.8517135,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Benoit</name>
+        <description>Restaurant - Sun Oct 11. RESERVE Sunday dinner 7:30pm. 1912 bistro, open daily 12-2 and 7-10pm. Get the profiteroles.</description>
+        <styleUrl>#style-sun11a</styleUrl>
+        <Point><coordinates>2.3500687,48.8584202,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché aux Fleurs</name>
+        <description>Market - Sun Oct 11. Flower market between Sainte-Chapelle and Notre-Dame. Open daily.</description>
+        <styleUrl>#style-sun11a</styleUrl>
+        <Point><coordinates>2.3476661,48.8551453,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Sun Oct 11 - Option B only</name>
+      <Placemark>
+        <name>Jardin du Luxembourg</name>
+        <description>Sight - Sun Oct 11 (option B). Grab two green chairs by the fountain and relax.</description>
+        <styleUrl>#style-sun11b</styleUrl>
+        <Point><coordinates>2.3363309,48.8466144,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Arc de Triomphe</name>
+        <description>Sight - Sun Oct 11 (option B). Option B afternoon: rooftop views + Champs-Élysées. Covered by the museum pass, walk-in. Use the underground tunnel to reach it.</description>
+        <styleUrl>#style-sun11b</styleUrl>
+        <Point><coordinates>2.2950275,48.8737917,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>La Maison d'Isabelle</name>
+        <description>Bakery - Sun Oct 11 (option B). Award-winning croissant, just across the bridge from Notre-Dame. Short line moves fast. Closed Mon.</description>
+        <styleUrl>#style-sun11b</styleUrl>
+        <Point><coordinates>2.3482751,48.8498436,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Fromagerie Laurent Dubois</name>
+        <description>Cheese shop - Sun Oct 11 (option B). Next door to Isabelle. Ask to taste the aged Comté. Closed Mon.</description>
+        <styleUrl>#style-sun11b</styleUrl>
+        <Point><coordinates>2.3485006,48.8498024,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Mon Oct 12 - Departure day</name>
+      <Placemark>
+        <name>Poilâne</name>
+        <description>Bakery - Wed Oct 7 + Mon Oct 12. THE legendary bread bakery. Get a slice of the big P loaf, the apple tart, and the butter cookies. Closed Sun.</description>
+        <styleUrl>#style-mon12</styleUrl>
+        <Point><coordinates>2.3289972,48.8512944,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>La Grande Épicerie de Paris</name>
+        <description>Food hall - Mon Oct 12. Gorgeous gourmet food hall. Butter, cheese, gifts to bring home; big wine cellar downstairs. Open daily.</description>
+        <styleUrl>#style-mon12</styleUrl>
+        <Point><coordinates>2.3239433,48.8503167,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>Extras - not scheduled</name>
+      <Placemark>
+        <name>Le Rubis</name>
+        <description>Wine bar - Extra (near Louvre). Old-school zinc wine bar full of regulars. Chalkboard menu. Closed Sunday.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.331403,48.866177,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Willi's Wine Bar</name>
+        <description>Wine bar - Extra (near Louvre). Paris wine-bar institution since 1980. Great early dinner. Closed Sunday.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.338319,48.866314,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché Raspail</name>
+        <description>Market - Extra (not scheduled). TUE &amp; FRI mornings; SUNDAY is the famous organic market. Near Luxembourg.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3270825,48.8498686,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Fromagerie Quatrehomme</name>
+        <description>Cheese shop - Extra (not scheduled). Top cheesemonger; staff will pick for you and vacuum-pack for the flight. Closed Mon.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3195897,48.8481026,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Barthélémy</name>
+        <description>Cheese shop - Extra (not scheduled). Classic old cheese shop ~10 min walk from Orsay. Vacuum-packs for travel. Closed Sun &amp; Mon.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3255338,48.8544587,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché Maubert</name>
+        <description>Market - Extra (not scheduled). TUE, THU &amp; SAT mornings. Small, local market 5 min from Notre-Dame.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3485543,48.8499215,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché Saxe-Breteuil</name>
+        <description>Market - Extra (not scheduled). THU &amp; SAT mornings. Big, beautiful market with the Eiffel Tower in view. Go before 11.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3104749,48.8481169,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Stohrer</name>
+        <description>Bakery - Extra (near Louvre). Oldest pastry shop in Paris (1730) on the Rue Montorgueil market street, ~15 min from the Louvre. Get the baba au rhum.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3468149,48.8652644,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché d'Aligre</name>
+        <description>Market - Extra (not scheduled). TUE-SUN mornings (closed Mon); busiest Sat &amp; Sun. Outdoor stalls + covered hall + flea market. Morning trip, separate from dinner.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3789591,48.8500235,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Blé Sucré</name>
+        <description>Bakery - Extra (not scheduled). Locals' pick for croissant and pain au chocolat, right by Aligre. Closed Mon.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.3766946,48.8505998,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Palace of Versailles</name>
+        <description>Sight - Extra (not scheduled). CLOSED MON. Book timed tickets ahead; take earliest slot. Train from Gare Montparnasse to Versailles-Chantiers (~15 min) then ~20 min walk or taxi.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.1203554,48.8048649,0</coordinates></Point>
+      </Placemark>
+      <Placemark>
+        <name>Marché Notre-Dame (Versailles)</name>
+        <description>Market - Extra (not scheduled). Outdoor market TUE, FRI &amp; SUN mornings; covered halls open Tue-Sun. Build a picnic for the palace gardens.</description>
+        <styleUrl>#style-extras</styleUrl>
+        <Point><coordinates>2.1321226,48.8065744,0</coordinates></Point>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>
