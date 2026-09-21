@@ -93,3 +93,30 @@ export function durationLabel(hours: number): string {
   if (hours < 48) return `${Math.round(hours)}h`;
   return `${Math.round(hours / 24)}d`;
 }
+
+/**
+ * "12 min ago" / "3h ago" / "2d ago" — how old a timestamp is.
+ *
+ * The board used to show only an absolute time, which reads identically
+ * whether it is ten minutes or twelve hours old — and since it renders in the
+ * viewer's own timezone, a poll taken at 00:04 UTC appears as "8:04 PM",
+ * indistinguishable from stale data at a glance. Freshness has to be explicit.
+ */
+export function agoLabel(iso: string | null | undefined, now: number = Date.now()): string {
+  if (!iso) return '';
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return '';
+  const mins = Math.max(0, (now - t) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${Math.round(mins)} min ago`;
+  const hours = mins / 60;
+  if (hours < 48) return `${Math.round(hours)}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
+/** Hours since a timestamp; Infinity when unknown. */
+export function hoursSince(iso: string | null | undefined, now: number = Date.now()): number {
+  if (!iso) return Infinity;
+  const t = new Date(iso).getTime();
+  return Number.isNaN(t) ? Infinity : (now - t) / 3_600_000;
+}

@@ -358,3 +358,9 @@ body {
 /* Provisional: full coverage on a short window is the one case where the
    numbers look more authoritative than they are. */
 .market__partial--warn { color: var(--square); border-left-color: var(--square); }
+
+/* Freshness is the first thing to read, and staleness must be impossible to
+   miss — an absolute timestamp alone looks identical at 10 minutes and 12
+   hours, especially rendered in the viewer's own timezone. */
+.top__sub { font-size: 11px; color: var(--ink-3); }
+.top__v[data-stale="yes"] { color: var(--square); }
