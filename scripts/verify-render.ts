@@ -18,6 +18,8 @@ import { oddsHistory } from '../src/nfl/data/oddsHistory';
 import { sampleHistory } from '../src/nfl/data/sampleHistory';
 import { readSlate } from '../src/nfl/lib/sharp';
 import { endOfNflWeek } from '../src/nfl/lib/format';
+import { findGame } from '../src/nfl/lib/market';
+import { recommend } from '../src/nfl/lib/edge';
 
 const PORT = 5199;
 const URL = `http://localhost:${PORT}/nfl.html`;
@@ -38,6 +40,11 @@ const expected = readSlate(history)
   .sort((a, b) => b.best.score - a.best.score);
 
 console.log(`engine expects ${expected.length} bettable game(s) on the board`);
+
+// And what it says a DraftKings bettor should do with each of them.
+const latest = history.snapshots[history.snapshots.length - 1];
+const dkRecs = expected.map((g) => recommend(g, findGame(latest.games, g.id), ['draftkings']));
+const dkBets = dkRecs.filter((r) => r.verdict === 'bet').length;
 
 const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort'], {
   stdio: 'ignore',
@@ -95,6 +102,29 @@ try {
   check('every listed game is still in the future',
     rows === expected.length && expected.every((g) => new Date(g.commenceTime).getTime() > now),
     `${times.length} row time(s) rendered`);
+
+  console.log('\n— picking a book turns the board into bets —');
+  check('no bet lines before any book is picked', (await page.locator('.bet').count()) === 0);
+  const dkChip = page.getByRole('button', { name: 'DraftKings', exact: true });
+  if (rows > 0 && (await dkChip.count())) {
+    await dkChip.click();
+    await page.waitForTimeout(250);
+    const lines = await page.locator('.bet').count();
+    check('every game gets a bet line', lines === rows, `${lines} line(s), ${rows} row(s)`);
+    const bets = await page.locator('.bet[data-verdict="bet"]').count();
+    check('the page shows the bets the engine finds', bets === dkBets,
+      `page ${bets}, engine ${dkBets}`);
+    const title = await page.locator('.yours__title').innerText();
+    check('the summary names the book', /DraftKings/.test(title), title);
+
+    // The pick is a per-device preference and has to survive a reload.
+    await page.reload({ waitUntil: 'networkidle' });
+    check('the picked book survives a reload',
+      (await page.locator('.bet').count()) === rows &&
+        (await page.getByRole('button', { name: 'DraftKings', exact: true }).getAttribute('aria-pressed')) === 'true');
+  } else {
+    check('the DraftKings chip is on the page', rows === 0);
+  }
 
   console.log('\n— tables are not column-shifted —');
   // Tables only exist on the track-record tab and inside an expanded game, so

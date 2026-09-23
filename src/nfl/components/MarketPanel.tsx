@@ -15,6 +15,11 @@ import {
 } from '../lib/format';
 import { PROVISIONAL_HOURS } from '../lib/sharp';
 import type { GameQuote } from '../types';
+import type { BetOption } from '../lib/edge';
+import { betLabel } from '../lib/edge';
+import { evLabel } from './BetLine';
+
+const pct = (p: number) => `${(p * 100).toFixed(1)}%`;
 
 function num(read: MarketRead, value: number): string {
   return read.market === 'spread' ? spreadLabel(value) : totalLabel(value);
@@ -24,11 +29,15 @@ export function MarketPanel({
   read,
   game,
   quote,
+  options,
 }: {
   read: MarketRead;
   game: GameRead;
   quote: GameQuote | undefined;
+  /** Every priced side at the viewer's books, when they have picked some. */
+  options?: BetOption[];
 }) {
+  const mine = (options ?? []).filter((o) => o.market === read.market);
   const [showBooks, setShowBooks] = useState(false);
   const gap = read.sharp.mu - read.retail.mu;
   const label = read.market === 'spread' ? 'Spread' : 'Total';
@@ -56,7 +65,7 @@ export function MarketPanel({
               : num(read, read.sharp.line)}
           </span>
           <span className="numbers__s">
-            {read.sharp.count} books · {holdLabel(read.sharp.hold)} hold
+            {read.sharp.count} independent · {holdLabel(read.sharp.hold)} hold
           </span>
         </div>
         <div className="numbers__cell">
@@ -67,7 +76,7 @@ export function MarketPanel({
               : num(read, read.retail.line)}
           </span>
           <span className="numbers__s">
-            {read.retail.count} books · {holdLabel(read.retail.hold)} hold
+            {read.retail.count} independent · {holdLabel(read.retail.hold)} hold
           </span>
         </div>
         <div className="numbers__cell numbers__cell--accent">
@@ -112,6 +121,38 @@ export function MarketPanel({
       )}
 
       <SignalList read={read} game={game} />
+
+      {/* Every side at the viewer's books, priced as if the sharp number is the
+          truth. Win/push/lose are shown because a push on 3 or 7 is real
+          money back, and it is what makes -3 and -3.5 different bets. */}
+      {mine.length > 0 && (
+        <table className="books books--mine">
+          <thead>
+            <tr>
+              <th>At your books</th>
+              <th>Price</th>
+              <th>Win</th>
+              <th>Push</th>
+              <th>Lose</th>
+              <th>Per $100</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mine.map((o) => (
+              <tr key={`${o.book}-${o.side}`} data-ev={o.ev >= 0 ? 'pos' : 'neg'}>
+                <td>
+                  <b>{betLabel(o, game)}</b> <span className="books__tier">{bookName(o.book)}</span>
+                </td>
+                <td className="books__num">{priceLabel(o.price)}</td>
+                <td className="books__num">{pct(o.win)}</td>
+                <td className="books__num">{o.push > 0 ? pct(o.push) : '—'}</td>
+                <td className="books__num">{pct(o.lose)}</td>
+                <td className="books__num books__ev">{evLabel(o.ev)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <button className="linkbtn" onClick={() => setShowBooks((v) => !v)}>
         {showBooks ? 'Hide' : 'Show'} all {quote?.books.length ?? 0} books

@@ -8,15 +8,20 @@ import { ScoreDial } from './ScoreDial';
 import { MarketPanel } from './MarketPanel';
 import { kickoffLabel, nickname } from '../lib/format';
 import type { GameQuote } from '../types';
+import type { Recommendation } from '../lib/edge';
+import { BetLine } from './BetLine';
 
 export function GameRow({
   read,
   rank,
   quote,
+  rec,
 }: {
   read: GameRead;
   rank: number;
   quote: GameQuote | undefined;
+  /** Null until the viewer has picked their books. */
+  rec: Recommendation | null;
 }) {
   const [open, setOpen] = useState(false);
   const best = read.best;
@@ -54,10 +59,13 @@ export function GameRow({
         <span className="game__chev" aria-hidden>{open ? '−' : '+'}</span>
       </button>
 
+      {rec && <BetLine rec={rec} game={read} />}
+
       {open && (
         <div className="game__body">
-          <MarketPanel read={read.spread} game={read} quote={quote} />
-          <MarketPanel read={read.total} game={read} quote={quote} />
+          {rec && rec.best && <p className="bet__why">{rec.reason}</p>}
+          <MarketPanel read={read.spread} game={read} quote={quote} options={rec?.options} />
+          <MarketPanel read={read.total} game={read} quote={quote} options={rec?.options} />
         </div>
       )}
     </article>

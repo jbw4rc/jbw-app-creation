@@ -364,3 +364,86 @@ body {
    hours, especially rendered in the viewer's own timezone. */
 .top__sub { font-size: 11px; color: var(--ink-3); }
 .top__v[data-stale="yes"] { color: var(--square); }
+
+/* ---------- your books and your bets ----------
+   Verdict colour is never the only channel: every verdict also carries its
+   word (Bet / Thin / Pass) and a signed dollar figure. */
+.picker { display: flex; align-items: flex-start; gap: 12px; margin: 18px 0 8px; flex-wrap: wrap; }
+.picker__k {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3);
+  padding-top: 7px; min-width: 76px;
+}
+.picker__chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; flex: 1; min-width: 0; }
+.chip {
+  font: inherit; font-size: 12.5px; color: var(--ink-2); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; cursor: pointer;
+}
+.chip:hover { color: var(--ink); background: var(--panel-2); }
+.chip--on { color: var(--bg); background: var(--ink); border-color: var(--ink); font-weight: 600; }
+.picker__hint { margin: 4px 0 16px; font-size: 13px; color: var(--ink-3); max-width: 70ch; }
+
+.yours {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 16px; margin: 6px 0 16px;
+}
+.yours__title { margin: 0 0 6px; font-size: 15px; }
+.yours__none { margin: 0; font-size: 13px; color: var(--ink-2); max-width: 70ch; }
+.yours__list { list-style: none; margin: 0; padding: 0; }
+.yours__row {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) auto; gap: 12px;
+  align-items: baseline; padding: 8px 0; border-top: 1px solid var(--line);
+}
+.yours__row:first-child { border-top: 0; }
+.yours__game { font-size: 13.5px; font-weight: 600; display: flex; flex-direction: column; }
+.yours__time { font-size: 11.5px; color: var(--ink-3); font-weight: 400; }
+.yours__slip { font-size: 14px; font-variant-numeric: tabular-nums; }
+.yours__slip b { color: var(--sharp); }
+.yours__book { color: var(--ink-3); font-size: 12.5px; }
+.yours__thin {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3);
+  border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; margin-right: 6px;
+}
+.yours__row[data-verdict="thin"] .yours__slip b { color: var(--ink-2); }
+.yours__ev {
+  font-family: var(--mono); font-size: 13.5px; text-align: right; display: flex; flex-direction: column;
+}
+.yours__row[data-verdict="bet"] .yours__ev { color: var(--sharp); font-weight: 650; }
+.yours__row[data-verdict="thin"] .yours__ev { color: var(--ink-2); }
+.yours__to { font-size: 11px; color: var(--ink-3); font-weight: 400; font-family: inherit; }
+.yours__foot { margin: 8px 0 0; font-size: 12px; color: var(--ink-3); }
+
+.bet {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 8px 16px 10px 52px; border-top: 1px dashed var(--line); font-size: 13.5px;
+}
+.bet__verdict {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+  border-radius: 4px; padding: 2px 7px; border: 1px solid var(--line); color: var(--ink-3);
+}
+.bet[data-verdict="bet"] .bet__verdict { background: var(--sharp); border-color: var(--sharp); color: #0b1a12; }
+.bet[data-verdict="thin"] .bet__verdict { color: var(--ink-2); }
+.bet__slip { font-variant-numeric: tabular-nums; }
+.bet__slip b { color: var(--ink); }
+.bet[data-verdict="bet"] .bet__slip b { color: var(--sharp); }
+.bet__slip--none { color: var(--ink-3); }
+.bet__price { font-family: var(--mono); }
+.bet__book { color: var(--ink-3); }
+.bet__ev { margin-left: auto; font-family: var(--mono); color: var(--ink-3); }
+.bet[data-verdict="bet"] .bet__ev { color: var(--sharp); font-weight: 650; }
+.bet__per, .bet__to { font-family: inherit; font-size: 12px; color: var(--ink-3); font-weight: 400; }
+.bet__why {
+  margin: 12px 0 0; font-size: 13px; color: var(--ink-2);
+  border-left: 2px solid var(--line); padding-left: 10px;
+}
+.books--mine { margin: 4px 0 12px; }
+.books--mine th:first-child { text-transform: none; }
+.books--mine tr[data-ev="pos"] .books__ev { color: var(--sharp); font-weight: 600; }
+.books--mine tr[data-ev="neg"] .books__ev { color: var(--ink-3); }
+
+@media (max-width: 720px) {
+  .bet { padding-left: 16px; }
+  .bet__ev { margin-left: 0; width: 100%; }
+  .yours__row { grid-template-columns: 1fr auto; }
+  .yours__game { grid-column: 1 / -1; }
+  .books--mine { display: block; overflow-x: auto; }
+}

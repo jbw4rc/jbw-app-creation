@@ -11,9 +11,10 @@
     "typecheck": "tsc -b --noEmit",
     "verify:nfl": "tsx scripts/verify-nfl.ts",
     "build:odds": "node scripts/build-odds.mjs",
-    "build:sample-odds": "node scripts/build-sample-odds.mjs",
+    "build:sample-odds": "tsx scripts/build-sample-odds.ts",
     "archive:odds": "tsx scripts/archive-odds.ts",
-    "build:sample": "node scripts/build-sample-odds.mjs",
+    "bets": "tsx scripts/bets.ts",
+    "build:sample": "tsx scripts/build-sample-odds.ts",
     "postbuild": "node scripts/copy-paris-trip.mjs",
     "verify:render": "tsx scripts/verify-render.ts"
   },
