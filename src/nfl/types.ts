@@ -54,6 +54,8 @@ export interface OddsHistory {
   /** NFL week these games belong to, when known. */
   week: number | null;
   season: number | null;
+  /** The Odds API credit balance as of the latest poll, when known. */
+  quota?: { used: number; remaining: number; at: string };
   snapshots: Snapshot[];
 }
 

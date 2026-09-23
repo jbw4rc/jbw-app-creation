@@ -43,10 +43,9 @@ const res = await fetch(url);
 if (!res.ok) {
   throw new Error(`Odds API ${res.status}: ${(await res.text()).slice(0, 300)}`);
 }
-console.log(
-  `  credits used ${res.headers.get('x-requests-used')}, ` +
-    `remaining ${res.headers.get('x-requests-remaining')}`
-);
+const used = Number(res.headers.get('x-requests-used'));
+const remaining = Number(res.headers.get('x-requests-remaining'));
+console.log(`  credits used ${used}, remaining ${remaining}`);
 
 const raw = await res.json();
 console.log(`  ${raw.length} games on the board`);
@@ -137,6 +136,11 @@ history.snapshots = history.snapshots
 
 history.updatedAt = snapshot.takenAt;
 history.sample = false;
+// Recorded so the site's refresh button can show what a poll costs against
+// what is left. Missing headers leave the last known figure in place.
+if (Number.isFinite(used) && Number.isFinite(remaining) && res.headers.get('x-requests-remaining') !== null) {
+  history.quota = { used, remaining, at: snapshot.takenAt };
+}
 history.season = nflSeason(new Date());
 history.week = nflWeek(new Date());
 

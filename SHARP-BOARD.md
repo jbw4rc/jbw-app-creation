@@ -174,6 +174,31 @@ reverse-line-movement are computed from — so **the reads get better the longer
 it runs.** On the very first poll there is no history, the movement signals
 report "n/a", and each game shows a partial read of 30 available points.
 
+### Refreshing from the site
+
+The header has a **Refresh odds** button and an **API credits** readout.
+
+The site is static on GitHub Pages, so it cannot hold a secret: anything in
+the page is public. The button uses a GitHub token that the viewer pastes once
+and that stays in that browser's storage. The page calls GitHub's API to run
+`build-odds.yml` on main, watches that run and the deploy that follows, and
+then reloads onto the new build (about three minutes). The Odds API key never
+leaves the repo secrets.
+
+The token should be a fine-grained token on `jbw4rc/jbw-app-creation` only,
+with **Actions: Read and write** and nothing else. The most anyone holding it
+could do is run this repo's workflows. A token GitHub rejects is forgotten and
+the setup panel reopens.
+
+Guard rails: the button locks for 15 minutes after any poll. Below 40 credits
+it asks for confirmation before each refresh. Polls are queued with
+`concurrency` so the button, a check-in and a cron slot never race.
+
+The credits readout comes from The Odds API's `x-requests-remaining` header,
+which each poll records into `oddsHistory.ts` as `quota`. It turns amber below
+40 (about ten polls; time to cycle the key) and red when a poll can no longer
+be afforded.
+
 ### The credit budget
 
 Free tier is 500 credits/month. A poll costs `regions × markets` = 4 credits
@@ -230,6 +255,7 @@ src/nfl/
     outcomes.ts                push-aware margin/total distributions
     market.ts                  prices -> implied margin/total, consensus
     edge.ts                    what to bet at your books (EV per $100)
+    refresh.ts                 run a poll from the page via the GitHub API
     sharp.ts                   the five signals + Sharp Score
     clv.ts                     closing-line-value grading
     format.ts                  betting-convention display helpers
