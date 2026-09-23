@@ -28,14 +28,16 @@ on:
     - cron: '0 14 * * 1-6'         # 10am ET Mon-Sat
     - cron: '0 20 * * 1-6'         # 4pm ET Mon-Sat
     - cron: '0 13,15,16,17 * * 0'  # 9/11am, 12/1pm ET Sunday
-  push:
-    branches: [claude/nfl-sharp-money-tracker-qd1wbn]
-    paths:
-      - 'scripts/build-odds.mjs'
-      - '.github/workflows/build-odds.yml'
 
 permissions:
   contents: write
+
+# The site's refresh button, a scheduled check-in and a cron slot can all land
+# at once. Queue them instead of running two polls that race to push, and
+# never cancel one mid-way: the credits are already spent by then.
+concurrency:
+  group: build-odds
+  cancel-in-progress: false
 
 jobs:
   build:

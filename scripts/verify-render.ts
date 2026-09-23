@@ -160,6 +160,82 @@ try {
   const meta = await page.locator('.top__meta').innerText();
   check('header shows relative age', /ago|just now/i.test(meta), meta.replace(/\n/g, ' '));
 
+  console.log('\n— credits left are always on screen —');
+  if (!history.sample) {
+    const credits = await page.locator('.credits').innerText();
+    check('the header shows the API credit balance',
+      history.quota ? credits.includes(`${history.quota.remaining} left`) : /next poll/.test(credits),
+      credits.replace(/\n/g, ' '));
+  }
+
+  console.log('\n— the refresh button drives a poll and reloads —');
+  // GitHub is faked at the network layer, so this exercises the real button,
+  // the real request sequence and the real reload, without spending a credit.
+  if (!history.sample) {
+    const ctx = await browser.newContext({ viewport: { width: 1180, height: 1000 } });
+    const p2 = await ctx.newPage();
+    // Past the cooldown, so the button is live.
+    await p2.clock.setFixedTime(new Date(new Date(history.updatedAt).getTime() + 20 * 60_000));
+    const calls: { method: string; url: string; auth: string | null }[] = [];
+    let pollChecks = 0;
+    let tokenOk = true;
+    await p2.route('https://api.github.com/**', async (route) => {
+      const req = route.request();
+      calls.push({ method: req.method(), url: req.url(), auth: req.headers()['authorization'] ?? null });
+      if (!tokenOk) return route.fulfill({ status: 401, body: '{}' });
+      const url = req.url();
+      const json = (o: unknown) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(o) });
+      const run = (id: number, status: string, conclusion: string | null) =>
+        ({ id, status, conclusion, html_url: '' });
+      if (req.method() === 'POST') return route.fulfill({ status: 204, body: '' });
+      if (url.includes('build-odds.yml/runs?per_page=1')) return json({ workflow_runs: [run(100, 'completed', 'success')] });
+      if (url.includes('deploy.yml/runs?per_page=1')) return json({ workflow_runs: [run(200, 'completed', 'success')] });
+      if (url.includes('build-odds.yml/runs')) {
+        pollChecks++;
+        return json({ workflow_runs: [pollChecks < 2 ? run(101, 'in_progress', null) : run(101, 'completed', 'success'), run(100, 'completed', 'success')] });
+      }
+      if (url.includes('deploy.yml/runs')) return json({ workflow_runs: [run(201, 'completed', 'success'), run(200, 'completed', 'success')] });
+      return route.fulfill({ status: 500, body: '' });
+    });
+    await p2.goto(URL, { waitUntil: 'networkidle' });
+
+    const btn = p2.getByRole('button', { name: 'Refresh odds' });
+    check('refresh button is live once the cooldown has passed', await btn.isEnabled());
+    await btn.click();
+    check('with no token it asks for one instead of calling GitHub',
+      (await p2.locator('.refresh__setup').count()) === 1 && calls.length === 0);
+
+    await p2.getByLabel('GitHub token').fill('github_pat_TEST');
+    await p2.getByRole('button', { name: 'Save and refresh' }).click();
+    await p2.waitForURL(/[?&]r=\d+/, { timeout: 60_000 }).catch(() => undefined);
+    check('the page reloads onto the new build when the deploy finishes', /[?&]r=\d+/.test(p2.url()), p2.url());
+    const dispatch = calls.find((c) => c.method === 'POST');
+    check('it dispatched the poll workflow on main',
+      !!dispatch && dispatch.url.endsWith('/actions/workflows/build-odds.yml/dispatches'));
+    check('every GitHub call carried the token',
+      calls.length > 0 && calls.every((c) => c.auth === 'Bearer github_pat_TEST'));
+    check('the token stays on this device across the reload',
+      (await p2.evaluate(() => localStorage.getItem('sharpboard.ghToken'))) === 'github_pat_TEST');
+
+    // A revoked token must be forgotten, and the viewer told why.
+    tokenOk = false;
+    await p2.getByRole('button', { name: 'Refresh odds' }).click();
+    await p2.locator('.refresh__error').waitFor({ timeout: 10_000 });
+    check('a rejected token is cleared and setup reopens',
+      (await p2.evaluate(() => localStorage.getItem('sharpboard.ghToken'))) === null &&
+        (await p2.locator('.refresh__setup').count()) === 1,
+      (await p2.locator('.refresh__error').innerText()).slice(0, 60));
+
+    // Inside the cooldown the button is locked.
+    const p3 = await ctx.newPage();
+    await p3.clock.setFixedTime(new Date(new Date(history.updatedAt).getTime() + 5 * 60_000));
+    await p3.goto(URL, { waitUntil: 'networkidle' });
+    check('refresh is locked for 15 minutes after a poll',
+      !(await p3.getByRole('button', { name: 'Refresh odds' }).isEnabled()),
+      await p3.locator('.refresh__note').innerText());
+    await ctx.close();
+  }
+
   await browser.close();
 } finally {
   shutdown();

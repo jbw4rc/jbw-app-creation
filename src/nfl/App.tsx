@@ -14,6 +14,8 @@ import { recommend } from './lib/edge';
 import type { Recommendation } from './lib/edge';
 import { BookPicker } from './components/BookPicker';
 import { YourBets } from './components/YourBets';
+import { RefreshButton } from './components/RefreshButton';
+import { CREDITS_PER_POLL, LOW_CREDITS } from './lib/refresh';
 
 type View = 'board' | 'record';
 type Lens = 'value' | 'best' | 'spread' | 'total';
@@ -50,6 +52,13 @@ function saveBooks(books: string[]) {
   } catch {
     /* preference just won't persist */
   }
+}
+
+/** Tone for the credit readout: fine, low (cycle soon), or out. */
+function creditLevel(remaining: number | undefined): string | undefined {
+  if (remaining === undefined) return undefined;
+  if (remaining < CREDITS_PER_POLL) return 'out';
+  return remaining < LOW_CREDITS ? 'low' : 'ok';
 }
 
 /** How long the committed history actually spans, in hours. */
@@ -170,6 +179,52 @@ export default function App() {
             </span>
           </div>
         </div>
+        {!history.sample && (
+          <div className="top__ops">
+            <div className="credits" data-level={creditLevel(history.quota?.remaining)}>
+              <span className="top__k">API credits</span>
+              {history.quota ? (
+                <>
+                  <span className="top__v">
+                    {history.quota.remaining} left
+                    <span className="credits__of"> of {history.quota.used + history.quota.remaining}</span>
+                  </span>
+                  <span
+                    className="credits__bar"
+                    role="meter"
+                    aria-label="API credits remaining"
+                    aria-valuemin={0}
+                    aria-valuemax={history.quota.used + history.quota.remaining}
+                    aria-valuenow={history.quota.remaining}
+                  >
+                    <span
+                      className="credits__fill"
+                      style={{
+                        width: `${(100 * history.quota.remaining) / Math.max(1, history.quota.used + history.quota.remaining)}%`,
+                      }}
+                    />
+                  </span>
+                  <span className="top__sub">
+                    {history.quota.remaining < CREDITS_PER_POLL
+                      ? 'Out — polls will fail until the key is cycled'
+                      : history.quota.remaining < LOW_CREDITS
+                        ? `Low — ~${Math.floor(history.quota.remaining / CREDITS_PER_POLL)} polls left, time to cycle the key`
+                        : `~${Math.floor(history.quota.remaining / CREDITS_PER_POLL)} polls left · ${CREDITS_PER_POLL} per poll`}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="top__v">—</span>
+                  <span className="top__sub">shows after the next poll</span>
+                </>
+              )}
+            </div>
+            <RefreshButton
+              updatedAt={history.updatedAt}
+              remaining={history.quota?.remaining ?? null}
+            />
+          </div>
+        )}
       </header>
 
       <nav className="views">
