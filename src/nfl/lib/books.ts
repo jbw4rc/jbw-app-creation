@@ -21,6 +21,14 @@ interface BookInfo {
   key: string;
   name: string;
   tier: BookTier;
+  /**
+   * The company behind the book. Sister brands share one line, so they are one
+   * opinion however many keys the feed lists them under. LowVig is BetOnline's
+   * reduced-juice brand: counted separately, the pair made BetOnline alone look
+   * like a two-book sharp consensus, and every "bet" on the first cut of the
+   * recommendation engine rested on exactly that.
+   */
+  operator?: string;
 }
 
 // Keys match The Odds API's `bookmakers[].key`.
@@ -29,8 +37,8 @@ const BOOKS: BookInfo[] = [
   // the others take sharp action and move in step with it.
   { key: 'pinnacle', name: 'Pinnacle', tier: 'sharp' },
   { key: 'circasports', name: 'Circa', tier: 'sharp' },
-  { key: 'betonlineag', name: 'BetOnline', tier: 'sharp' },
-  { key: 'lowvig', name: 'LowVig', tier: 'sharp' },
+  { key: 'betonlineag', name: 'BetOnline', tier: 'sharp', operator: 'betonline' },
+  { key: 'lowvig', name: 'LowVig', tier: 'sharp', operator: 'betonline' },
   { key: 'bookmaker', name: 'BookMaker', tier: 'sharp' },
   { key: 'betcris', name: 'Betcris', tier: 'sharp' },
   { key: 'matchbook', name: 'Matchbook', tier: 'sharp' },
@@ -56,6 +64,22 @@ const BY_KEY = new Map(BOOKS.map((b) => [b.key, b]));
  */
 export function bookTier(key: string): BookTier {
   return BY_KEY.get(key)?.tier ?? 'other';
+}
+
+/** The operator behind a book, so sister brands count once. */
+export function bookOperator(key: string): string {
+  return BY_KEY.get(key)?.operator ?? key;
+}
+
+/**
+ * Books whose prices ARE the market: they take the biggest bets, move first,
+ * and are what everyone else copies. The whole premise rests on them, so a
+ * fair value that includes neither is an opinion rather than a price.
+ */
+const MARKET_MAKERS = new Set(['pinnacle', 'circasports']);
+
+export function isMarketMaker(key: string): boolean {
+  return MARKET_MAKERS.has(key);
 }
 
 /** Display name for a book key, falling back to the raw key. */

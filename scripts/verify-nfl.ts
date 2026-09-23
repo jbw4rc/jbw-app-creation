@@ -11,7 +11,11 @@ import { sampleClv as clvArchive } from '../src/nfl/data/sampleClv';
 import { readSlate, sideLabel, scoreBand, readGameAt, LEAN_MIN, STRONG_MIN } from '../src/nfl/lib/sharp';
 import { summarize, resolveGame } from '../src/nfl/lib/clv';
 import type { Snapshot } from '../src/nfl/types';
-import { impliedMargin, noVig } from '../src/nfl/lib/market';
+import { impliedMargin, noVig, findGame } from '../src/nfl/lib/market';
+import { spreadOutcomeAt } from '../src/nfl/lib/outcomes';
+import { evPer100, recommend, BET_MIN_EV } from '../src/nfl/lib/edge';
+import type { GameRead } from '../src/nfl/lib/sharp';
+import type { BookQuote, GameQuote } from '../src/nfl/types';
 
 let failures = 0;
 const check = (name: string, pass: boolean, extra = '') => {
@@ -21,9 +25,11 @@ const check = (name: string, pass: boolean, extra = '') => {
 
 console.log('\n— price plumbing —');
 check('no-vig of -110/-110 is 0.500', Math.abs(noVig(-110, -110) - 0.5) < 1e-9);
+// Even money on a key number is not exactly the number: with pushes modelled,
+// the margins either side of 3 are not symmetric. Close, not equal.
 check(
-  'home -3 at even money implies mu = 3',
-  Math.abs(impliedMargin({ homePoint: -3, homePrice: 100, awayPoint: 3, awayPrice: 100 }) - 3) < 0.01
+  'home -3 at even money implies mu ≈ 3',
+  Math.abs(impliedMargin({ homePoint: -3, homePrice: 100, awayPoint: 3, awayPrice: 100 }) - 3) < 0.15
 );
 check(
   'juicing the home side raises implied margin',
@@ -243,6 +249,78 @@ console.log('\n— in-play prices must not become the close —');
   // engine declines to read it rather than reporting an in-play number.
   const lateOnly = resolveGame([snap('2026-09-20T18:30:00Z', -21)], 'g1');
   check('a game seen only in-play produces no read at all', lateOnly === null);
+}
+
+console.log('\n— key numbers and pushes —');
+{
+  const on3 = spreadOutcomeAt(3, -3);
+  const on7 = spreadOutcomeAt(7, -7);
+  const off = spreadOutcomeAt(3, -3.5);
+  check('a game expected by 3 lands on exactly 3 about 8% of the time',
+    on3.push > 0.07 && on3.push < 0.1, `${(on3.push * 100).toFixed(1)}%`);
+  check('7 is the second key number', on7.push > 0.04 && on7.push < on3.push,
+    `${(on7.push * 100).toFixed(1)}%`);
+  check('a half-point line can never push', off.push === 0);
+  check('outcome probabilities sum to one',
+    Math.abs(on3.win + on3.push + on3.lose - 1) < 1e-9);
+
+  // The case that exposed the push-blind model: -3 (-125) and -3.5 (-110) are
+  // close to the same bet. A bell curve with no pushes put them 0.84 apart,
+  // which the engine then scored as a big sharp/public divergence.
+  const a = impliedMargin({ homePoint: -3, homePrice: -125, awayPoint: 3, awayPrice: 110 });
+  const b = impliedMargin({ homePoint: -3.5, homePrice: -110, awayPoint: 3.5, awayPrice: -110 });
+  check('-3 (-125/+110) and -3.5 (-110) read as nearly the same number',
+    Math.abs(a - b) < 0.3, `${a.toFixed(2)} vs ${b.toFixed(2)}`);
+}
+
+console.log('\n— what to bet —');
+{
+  check('-110 at a coin flip loses about $4.55 per $100',
+    Math.abs(evPer100({ win: 0.5, push: 0, lose: 0.5 }, -110) + 4.545) < 0.01);
+  check('a push refunds the stake — no EV either way',
+    Math.abs(evPer100({ win: 0.46, push: 0.08, lose: 0.46 }, 100)) < 1e-9);
+
+  const latest = oddsHistory.snapshots[oddsHistory.snapshots.length - 1];
+  const reads = readSlate(oddsHistory);
+  const recs = reads.map((r) => ({ r, rec: recommend(r, findGame(latest.games, r.id), ['draftkings']) }));
+  check('no books picked means no bets', reads.every((r) =>
+    recommend(r, findGame(latest.games, r.id), []).verdict === 'pass'));
+  check('every recommendation takes the best option on offer', recs.every(({ rec }) =>
+    rec.options.every((o) => !rec.best || o.ev <= rec.best.ev + 1e-9)));
+  check('only the selected books are ever recommended', recs.every(({ rec }) =>
+    rec.options.every((o) => o.book === 'draftkings')));
+  check('a bet always clears the EV bar', recs.every(({ rec }) =>
+    rec.verdict !== 'bet' || rec.best!.ev >= BET_MIN_EV));
+
+  // Build one game where a single operator's two brands disagree with retail by
+  // a mile. BetOnline and LowVig are one company: that is one opinion, not a
+  // consensus, and it must not produce a bet however large the gap.
+  const q = (book: string, homePoint: number, homePrice: number, awayPrice: number): BookQuote => ({
+    book,
+    spread: { homePoint, homePrice, awayPoint: -homePoint, awayPrice },
+  });
+  const game = (books: BookQuote[]): GameQuote => ({
+    id: 'edge', commenceTime: '2026-09-20T17:00:00Z', homeTeam: 'Home Hawks', awayTeam: 'Away Owls', books,
+  });
+  const readOf = (g: GameQuote): GameRead => readGameAt([{ takenAt: '2026-09-18T12:00:00Z', games: [g] }], 'edge')!;
+  const dk = q('draftkings', -3, -110, -110);
+
+  const sisters = game([q('betonlineag', -6, -110, -110), q('lowvig', -6, -108, -108), dk]);
+  const r1 = readOf(sisters);
+  check('sister brands count as one sharp operator', r1.spread.sharp.count === 1);
+  check('one operator alone never produces a bet',
+    recommend(r1, sisters, ['draftkings']).verdict !== 'bet');
+
+  const noMaker = game([q('betonlineag', -6, -110, -110), q('bookmaker', -6, -110, -110), dk]);
+  const r2 = readOf(noMaker);
+  const rec2 = recommend(r2, noMaker, ['draftkings']);
+  check('without Pinnacle or Circa a big edge is capped at thin',
+    rec2.verdict === 'thin' && rec2.best!.ev >= BET_MIN_EV, rec2.reason);
+
+  const real = game([q('pinnacle', -6, -110, -110), q('bookmaker', -6, -110, -110), dk]);
+  const rec3 = recommend(readOf(real), real, ['draftkings']);
+  check('a market-maker-backed edge is a bet on the right side',
+    rec3.verdict === 'bet' && rec3.best!.side === 'home' && rec3.best!.line === -3, rec3.reason);
 }
 
 console.log(failures === 0 ? '\nAll checks passed.\n' : `\n${failures} check(s) failed.\n`);

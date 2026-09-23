@@ -31,11 +31,25 @@ but you cannot compare them by eye, and comparing juice alone is worse — a
 half-point through 3 is worth several times a half-point through 9.
 
 So every quote is stripped of vig and converted into the single number it
-implies: **the expected margin (or total) that book is pricing**, assuming NFL
-results scatter normally around the line (σ ≈ 13.45 for margins, ≈ 10 for
-totals). Now every book is one scalar and they are all directly comparable,
-whatever line and juice each posted. Every signal below is expressed in points
-of that scale.
+implies: **the expected margin (or total) that book is pricing**. Now every book
+is one scalar and they are all directly comparable, whatever line and juice
+each posted. Every signal below is expressed in points of that scale.
+
+**Pushes are modelled.** NFL margins are not a smooth bell curve: about 8% of
+games land on exactly 3 and about 5% on exactly 7. `lib/outcomes.ts` builds a
+discrete margin distribution — a normal envelope (σ ≈ 13.45) reweighted on the
+key numbers 3, 7, 10, 6, 4, 14 and 1 — and a line's price is read as "win vs
+lose, given no push". The first version used a plain bell curve with no pushes,
+which made Pinnacle −3 (−125) and DraftKings −3.5 (−110) look 0.84 points
+apart when they are about 0.2 apart. That gap was being scored as sharp/public
+divergence; three of the four strongest reads on the first live board were
+this artifact. The key-number weights are calibrated to published NFL
+frequencies, not fit to this app's data, so treat them as good, not exact.
+Totals use σ ≈ 10 with no key-number weighting.
+
+**Sister brands count once.** BetOnline and LowVig are one company quoting one
+line. Consensus medians are taken across operators, not book keys, so a single
+shop cannot pose as two sharp books.
 
 ## The five signals
 
@@ -68,6 +82,48 @@ The bands are calibrated to what the engine can actually produce, not to the
 theoretical 100. Full divergence credit needs a 1.5-point sharp/retail gap,
 which essentially never happens; a genuinely strong game looks more like 0.8
 points of shade plus a clean reverse move through a key number.
+
+## What to bet
+
+The score says where the money went. It does not say whether anything is left
+to bet: you can only bet the prices at your own books, and a big gap can be
+fully paid for by a half-point.
+
+So the board has a second read. Pick your books (the chips under the summary —
+saved per device) and every game gets a call priced at those books only:
+
+1. Treat the sharp consensus as the fair expected margin/total.
+2. For every side at every book you picked, work out how often it wins, pushes
+   and loses at the posted number, and what that is worth per $100 at the
+   posted price. A push returns the stake.
+3. Take the best option across both markets.
+
+| Worth per $100 | Verdict |
+|---|---|
+| +$2.00 or more, fair price includes Pinnacle or Circa | **Bet** |
+| +$0.50 to +$2.00, or a bigger edge with no Pinnacle/Circa behind it | Thin: not a bet |
+| below +$0.50 | Pass |
+
+A bet shows the exact slip (`Rams −2.5 −110 at DraftKings`), its value, and
+**"good to"**: the worst price at which it still clears +$2, so you know when
+the book has moved too far. Expanding a game shows every side at your books
+with win/push/lose percentages.
+
+Markets with fewer than two independent sharp operators are skipped. The
+market-maker rule exists because the first cut of this engine produced four
+DraftKings "bets" that all rested on BetOnline and LowVig alone, which is one
+operator.
+
+Most of the time the answer is pass. Retail books charge about 4.5% on a
+standard −110/−110 line, so a price has to be meaningfully off the sharp number
+before it is worth anything. That is the normal state of the market, not a
+bug.
+
+From the command line, for scheduled check-ins:
+
+```bash
+npm run bets -- draftkings            # or several: draftkings fanduel
+```
 
 ## Grading itself: closing line value
 
@@ -157,9 +213,9 @@ Regenerating the whole sample set, including the graded past weeks:
 
 ```bash
 for w in 3 2 1; do
-  node scripts/build-sample-odds.mjs --weeks-ago=$w && npm run archive:odds
+  npx tsx scripts/build-sample-odds.ts --weeks-ago=$w && npm run archive:odds
 done
-node scripts/build-sample-odds.mjs
+npx tsx scripts/build-sample-odds.ts
 ```
 
 ## Layout
@@ -170,8 +226,10 @@ src/nfl/
   types.ts                     snapshot/quote domain types
   lib/
     stats.ts                   normal CDF/quantile, median
-    books.ts                   which books are sharp, which are retail
-    market.ts                  prices -> implied margin/total
+    books.ts                   sharp/retail tiers, operators, market-makers
+    outcomes.ts                push-aware margin/total distributions
+    market.ts                  prices -> implied margin/total, consensus
+    edge.ts                    what to bet at your books (EV per $100)
     sharp.ts                   the five signals + Sharp Score
     clv.ts                     closing-line-value grading
     format.ts                  betting-convention display helpers
@@ -181,8 +239,11 @@ src/nfl/
 scripts/
   build-odds.mjs               live poll (CI)
   archive-odds.ts              grade + retire finished games (CI)
-  build-sample-odds.mjs        synthetic fixture generator
+  build-sample-odds.ts         synthetic fixture generator
+  bets.ts                      what to bet at given books, as text
+  rebuild-archive.ts           regrade the archive from git history
   verify-nfl.ts                engine checks
+  verify-render.ts             browser checks against the engine
 ```
 
 ## Why there are two test commands
@@ -217,6 +278,12 @@ one polling window is smoothed into a drift, and genuine steam can be missed.
 retail shading, not from bet percentages. It is usually right and occasionally
 not — a retail book can be off the sharp number because of its own position, a
 stale line, or a limit it does not want to take, none of which is public money.
+
+**The live track record was regraded once.** When pushes were added to the
+model, `scripts/rebuild-archive.ts` replayed every archived game from the polls
+stored in git. The first live week went from 8 flags / 50% beat to 11 flags /
+45% beat, with average CLV about zero either way. That is far too small a
+sample to judge anything by.
 
 **The sample track record is synthetic.** Its weeks are generated with
 deliberately mixed outcomes so the panel does not advertise a beat rate no real

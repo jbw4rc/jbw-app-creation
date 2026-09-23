@@ -10,11 +10,16 @@ import type { GameRead } from './lib/sharp';
 import { GameRow } from './components/GameRow';
 import { agoLabel, durationLabel, endOfNflWeek, hoursSince, stampLabel } from './lib/format';
 import { findGame } from './lib/market';
+import { recommend } from './lib/edge';
+import type { Recommendation } from './lib/edge';
+import { BookPicker } from './components/BookPicker';
+import { YourBets } from './components/YourBets';
 
 type View = 'board' | 'record';
-type Lens = 'best' | 'spread' | 'total';
+type Lens = 'value' | 'best' | 'spread' | 'total';
 
 const LENSES: { id: Lens; label: string; blurb: string }[] = [
+  { id: 'value', label: 'Best bets', blurb: 'Rank by what the best price at your books is worth' },
   { id: 'best', label: 'Strongest play', blurb: 'Rank each game by whichever market is louder' },
   { id: 'spread', label: 'Spreads only', blurb: 'Rank by the spread read alone' },
   { id: 'total', label: 'Totals only', blurb: 'Rank by the total read alone' },
@@ -25,6 +30,27 @@ const LENSES: { id: Lens; label: string; blurb: string }[] = [
 // means a fixture rebuild can never clobber real accumulated history.
 const history = oddsHistory.snapshots.length > 0 ? oddsHistory : sampleHistory;
 const archive = clvArchive.games.length > 0 ? clvArchive : sampleClv;
+
+// Your books are a per-device preference, so browser storage is the right home
+// for them. Storage can be missing or throw (private mode, blocked site data);
+// the board then just starts with nothing picked.
+const BOOKS_KEY = 'sharpboard.books';
+function loadBooks(): string[] {
+  try {
+    const raw = localStorage.getItem(BOOKS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((b): b is string => typeof b === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+function saveBooks(books: string[]) {
+  try {
+    localStorage.setItem(BOOKS_KEY, JSON.stringify(books));
+  } catch {
+    /* preference just won't persist */
+  }
+}
 
 /** How long the committed history actually spans, in hours. */
 const spanHours = (() => {
@@ -37,7 +63,16 @@ const spanHours = (() => {
 
 export default function App() {
   const [view, setView] = useState<View>('board');
-  const [lens, setLens] = useState<Lens>('best');
+  const [books, setBooksState] = useState<string[]>(loadBooks);
+  const [lens, setLens] = useState<Lens>(() => (loadBooks().length > 0 ? 'value' : 'best'));
+  const setBooks = (next: string[]) => {
+    // Picking your first book switches the board to your bets; clearing them
+    // all drops back to the money read, since there is nothing left to price.
+    if (books.length === 0 && next.length > 0) setLens('value');
+    if (next.length === 0 && lens === 'value') setLens('best');
+    setBooksState(next);
+    saveBooks(next);
+  };
   const [minScore, setMinScore] = useState(0);
   const [weekOnly, setWeekOnly] = useState(true);
   const [showMethod, setShowMethod] = useState(false);
@@ -45,6 +80,23 @@ export default function App() {
   const slate = useMemo(() => readSlate(history), []);
   const record = useMemo(() => summarize(archive, STRONG_MIN), []);
   const latest = history.snapshots[history.snapshots.length - 1];
+
+  const available = useMemo(() => {
+    const seen = new Set<string>();
+    for (const g of latest?.games ?? []) for (const b of g.books) seen.add(b.book);
+    return [...seen].sort();
+  }, [latest]);
+
+  // One call per game at the viewer's books. Null means no books picked yet,
+  // which is different from "picked, and nothing is worth betting".
+  const recs = useMemo(() => {
+    const m = new Map<string, Recommendation | null>();
+    for (const g of slate) {
+      m.set(g.id, books.length > 0 ? recommend(g, findGame(latest.games, g.id), books) : null);
+    }
+    return m;
+  }, [slate, latest, books]);
+  const evOf = (id: string) => recs.get(id)?.best?.ev ?? -Infinity;
 
   // The API posts next week's openers alongside this week's slate; those lines
   // have had no real money through them, so they default to hidden.
@@ -67,12 +119,15 @@ export default function App() {
 
   const ranked = useMemo(() => {
     const pick = (g: GameRead) =>
-      lens === 'best' ? g.best : lens === 'spread' ? g.spread : g.total;
+      lens === 'best' || lens === 'value' ? g.best : lens === 'spread' ? g.spread : g.total;
+    const byValue = lens === 'value' && books.length > 0;
     return [...(weekOnly ? bettable : slate.filter((g) => new Date(g.commenceTime).getTime() > now))]
       .map((g) => ({ game: g, read: pick(g) }))
       .filter((r) => r.read.score >= minScore)
-      .sort((a, b) => b.read.score - a.read.score);
-  }, [slate, bettable, weekOnly, lens, minScore, now]);
+      .sort((a, b) =>
+        byValue ? evOf(b.game.id) - evOf(a.game.id) : b.read.score - a.read.score
+      );
+  }, [slate, bettable, weekOnly, lens, minScore, now, recs, books]);
 
   const scoped = weekOnly ? bettable : slate.filter((g) => new Date(g.commenceTime).getTime() > now);
   const strong = scoped.filter((g) => scoreBand(g.best.score).tone === 'strong').length;
@@ -188,8 +243,22 @@ export default function App() {
         )}
       </div>
 
+      <BookPicker available={available} selected={books} onChange={setBooks} />
+
+      {books.length > 0 ? (
+        <YourBets
+          books={books}
+          rows={scoped.map((g) => ({ game: g, rec: recs.get(g.id)! })).filter((r) => r.rec)}
+        />
+      ) : (
+        <p className="picker__hint">
+          Pick the books you bet at and every game gets a plain call — the exact bet, the price,
+          and what it is worth — priced at your books only.
+        </p>
+      )}
+
       <nav className="lenses">
-        {LENSES.map((l) => (
+        {LENSES.filter((l) => l.id !== 'value' || books.length > 0).map((l) => (
           <button
             key={l.id}
             className={`lens ${lens === l.id ? 'lens--on' : ''}`}
@@ -227,6 +296,7 @@ export default function App() {
             read={r.game}
             rank={i + 1}
             quote={findGame(latest.games, r.game.id)}
+            rec={recs.get(r.game.id) ?? null}
           />
         ))}
       </main>
@@ -259,6 +329,19 @@ export default function App() {
               book gave up a key number. Signals that agree add up; signals that
               disagree cancel. A game with one loud move and three reads pointing back
               the other way ranks below a game where everything lines up.
+            </p>
+            <p>
+              <b>The bet</b> is a separate question from the score. The score says
+              where the money went; the bet asks whether what is left at your books
+              is worth taking. It treats the sharp books' number as the fair price
+              and works out, for every side at every book you picked, how often it
+              wins, pushes and loses — a push on 3 or 7 gives your stake back, which
+              is why −3 and −3.5 are different bets — and what that is worth per
+              $100. Worth $2 or more is a <b>bet</b>; a smaller positive number is
+              <b> thin</b>, and so is anything whose fair price has neither Pinnacle
+              nor Circa behind it. Sister brands like BetOnline and LowVig count
+              once. "Good to" is the worst price at which the bet still clears the
+              $2 bar, so you know when the book has moved too far.
             </p>
             <p className="method__caveat">
               Three honest caveats. The movement reads — reverse line movement, steam,
