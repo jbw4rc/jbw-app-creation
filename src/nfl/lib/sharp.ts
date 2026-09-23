@@ -182,20 +182,28 @@ function buildMarketRead(
   const sharp = consensus(game, market, 'sharp');
   const retail = consensus(game, market, 'retail');
 
-  // --- Opening number: the earliest snapshot that priced this game. ---
+  // --- Baseline: the start of the CURRENT UNBROKEN run of sharp coverage. ---
+  //
+  // Not simply the earliest snapshot that priced the game. Sharp books stop
+  // quoting look-ahead lines and resume days later at a different number, and
+  // measuring across that lapse invents movement that never happened: a Week 4
+  // game read as a 6.2-point move purely because two books quoted -2.5, went
+  // quiet for three polls, then reappeared at +3. That maxed reverse line
+  // movement and pushed the score to 62 when the honest read was about 37.
+  // It affected five of the seven top reads, both "strong" ones among them.
+  //
+  // So walk back from the latest snapshot and stop at the first gap. Movement
+  // is only ever measured across prices we actually watched.
   let openMu = NaN;
   let openLine = NaN;
   let firstSeenAt: string | null = null;
-  for (const snap of history) {
-    const g = findGame(snap.games, gameId);
-    if (!g) continue;
-    const c = consensus(g, market, 'sharp');
-    if (Number.isFinite(c.mu)) {
-      openMu = c.mu;
-      openLine = c.line;
-      firstSeenAt = snap.takenAt;
-      break;
-    }
+  for (let i = history.length - 1; i >= 0; i--) {
+    const g = findGame(history[i].games, gameId);
+    const c = g ? consensus(g, market, 'sharp') : null;
+    if (!c || !Number.isFinite(c.mu)) break; // coverage lapsed — baseline starts after it
+    openMu = c.mu;
+    openLine = c.line;
+    firstSeenAt = history[i].takenAt;
   }
 
   const windowHours = firstSeenAt
@@ -290,9 +298,14 @@ function buildMarketRead(
     let prevAt = 0;
     for (const snap of history) {
       const g = findGame(snap.games, gameId);
-      if (!g) continue;
-      const c = consensus(g, market, 'sharp');
-      if (!Number.isFinite(c.mu)) continue;
+      const c = g ? consensus(g, market, 'sharp') : null;
+      if (!c || !Number.isFinite(c.mu)) {
+        // Coverage lapsed. Reset rather than skip: bridging the gap would
+        // compare two prices either side of a period we never observed, and
+        // report the difference as a single violent move.
+        prevMu = null;
+        continue;
+      }
       const at = new Date(snap.takenAt).getTime();
       if (prevMu !== null && at > prevAt) {
         const step = c.mu - prevMu;
