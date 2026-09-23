@@ -147,6 +147,57 @@ console.log('\n— closing line value —');
     `${summary.overall.meanClv.toFixed(2)}, beat ${(summary.overall.beatRate * 100).toFixed(0)}%`);
 }
 
+console.log('\n— movement is never measured across a coverage gap —');
+{
+  // Sharp books drop look-ahead lines and requote days later at a different
+  // number. Treating that as continuous movement invented a 6.2-point move on
+  // a real Week 4 game and pushed its score from ~37 to 62.
+  const KICK = '2026-10-05T17:00:00Z';
+  const withSharp = (takenAt: string, homePoint: number): Snapshot => ({
+    takenAt,
+    games: [{
+      id: 'g2', commenceTime: KICK, homeTeam: 'Home Team', awayTeam: 'Away Team',
+      books: [
+        { book: 'pinnacle', spread: { homePoint, homePrice: -105, awayPoint: -homePoint, awayPrice: -105 },
+          total: { point: 45, overPrice: -105, underPrice: -105 } },
+        { book: 'draftkings', spread: { homePoint, homePrice: -110, awayPoint: -homePoint, awayPrice: -110 },
+          total: { point: 45, overPrice: -110, underPrice: -110 } },
+      ],
+    }],
+  });
+  // Retail only — sharp coverage has lapsed for this poll.
+  const retailOnly = (takenAt: string, homePoint: number): Snapshot => ({
+    takenAt,
+    games: [{
+      id: 'g2', commenceTime: KICK, homeTeam: 'Home Team', awayTeam: 'Away Team',
+      books: [
+        { book: 'draftkings', spread: { homePoint, homePrice: -110, awayPoint: -homePoint, awayPrice: -110 },
+          total: { point: 45, overPrice: -110, underPrice: -110 } },
+      ],
+    }],
+  });
+
+  const hist = [
+    withSharp('2026-10-01T12:00:00Z', 2.5),   // early look-ahead, then dropped
+    retailOnly('2026-10-02T12:00:00Z', 2.5),
+    retailOnly('2026-10-03T12:00:00Z', 2.5),
+    withSharp('2026-10-04T12:00:00Z', -3),    // requotes 5.5 pts away
+    withSharp('2026-10-04T18:00:00Z', -3),
+  ];
+  const read = readGameAt(hist, 'g2')!;
+  check('baseline restarts after the gap, not at first sighting',
+    Math.abs(read.spread.openLine - -3) < 1e-9, `openLine ${read.spread.openLine}`);
+  check('no phantom movement is reported across the lapse',
+    Math.abs(read.spread.moveMu) < 0.01, `moveMu ${read.spread.moveMu.toFixed(2)}`);
+  check('reverse line movement stays silent',
+    read.spread.signals.find((s) => s.id === 'reverseMove')!.strength === 0);
+  // Steam bridged gaps too: the baseline fix alone left it comparing prices
+  // either side of a lapse and calling the difference one violent move.
+  check('steam does not fire across the lapse either',
+    read.spread.signals.find((s) => s.id === 'steam')!.strength === 0,
+    `strength ${read.spread.signals.find((s) => s.id === 'steam')!.strength.toFixed(2)}`);
+}
+
 console.log('\n— in-play prices must not become the close —');
 {
   // Hand-built history: a sane number before kickoff, then a wild in-play
