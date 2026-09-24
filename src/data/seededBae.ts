@@ -4,15 +4,15 @@ export interface BaeInfo { initial: number; used: number; space: number; note: s
 
 export const SEEDED_BAE: Record<string, BaeInfo> = {
   "ATL": {
-    "initial": 5376267,
+    "initial": 2931052,
     "used": 0,
-    "space": 5376267,
+    "space": 2931052,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "BOS": {
-    "initial": 2942531,
+    "initial": 757415,
     "used": 0,
-    "space": 2942531,
+    "space": 757415,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "BKN": {
