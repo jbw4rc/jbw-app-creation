@@ -3,6 +3,797 @@
 import type { Player } from '../types';
 
 export const SEEDED_ROSTERS: Record<string, Player[]> = {
+  "NYK": [
+    {
+      "id": "ss-karl-anthony-towns",
+      "name": "Karl-Anthony Towns",
+      "position": "PF, C",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 57078728,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 61015192,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-og-anunoby",
+      "name": "OG Anunoby",
+      "position": "SF",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 42500000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 45431034,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 48362068,
+          "option": "player"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jalen-brunson",
+      "name": "Jalen Brunson",
+      "position": "PG",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 37739521,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 40535041,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 43330561,
+          "option": "player"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-mikal-bridges",
+      "name": "Mikal Bridges",
+      "position": "SG, SF",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 33482145,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 36160714,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 38839285,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 41517856,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-josh-hart",
+      "name": "Josh Hart",
+      "position": "SF, SG",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 20923760,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 22375280,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-landry-shamet",
+      "name": "Landry Shamet",
+      "position": "SG",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5490967,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5737500,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 6162500,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 6587500,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jose-alvarado",
+      "name": "Jose Alvarado",
+      "position": "PG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4439656,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 4794828,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 5150000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-miles-mcbride",
+      "name": "Miles McBride",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3956523,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-pacome-dadiet",
+      "name": "Pacôme Dadiet",
+      "position": "PF",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2983680,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 5373608,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-mohamed-diawara",
+      "name": "Mohamed Diawara",
+      "position": "PF, SF",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2622139,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2753246,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2884353,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 3019000,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jordan-clarkson",
+      "name": "Jordan Clarkson",
+      "position": "PG, SG",
+      "age": 34,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-andre-drummond",
+      "name": "Andre Drummond",
+      "position": "C",
+      "age": 33,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tyler-kolek",
+      "name": "Tyler Kolek",
+      "position": "PG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2296271,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2486995,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kevin-mccullar-jr",
+      "name": "Kevin McCullar Jr.",
+      "position": "SG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 678882,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-tyler-nickel",
+      "name": "Tyler Nickel",
+      "position": "SF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 678882,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "ORL": [
+    {
+      "id": "ss-franz-wagner",
+      "name": "Franz Wagner",
+      "position": "SF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 41754690,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 44847630,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 47940570,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 51033510,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-paolo-banchero",
+      "name": "Paolo Banchero",
+      "position": "PF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 41240250,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 44539470,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 47838690,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 51137910,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 54437130,
+          "option": "player"
+        },
+        {
+          "season": 2031,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-desmond-bane",
+      "name": "Desmond Bane",
+      "position": "SG, SF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 39446090,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 42166510,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 44886930,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jalen-suggs",
+      "name": "Jalen Suggs",
+      "position": "PG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 32400000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 29600000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 26800000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 26700000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-wendell-carterjr",
+      "name": "Wendell Carter Jr.",
+      "position": "C",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 18102000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 19550160,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 20998320,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-anthony-black",
+      "name": "Anthony Black",
+      "position": "SG, PG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 10106316,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-goga-bitadze",
+      "name": "Goga Bitadze",
+      "position": "C",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 7608696,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tristan-da-silva",
+      "name": "Tristan Da Silva",
+      "position": "PF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3991200,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 6138466,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-jase-richardson",
+      "name": "Jase Richardson",
+      "position": "SG",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3132360,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3282000,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 5910882,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-jamal-cain",
+      "name": "Jamal Cain",
+      "position": "SF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2584539,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jevon-carter",
+      "name": "Jevon Carter",
+      "position": "PG",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jonathan-isaac",
+      "name": "Jonathan Isaac",
+      "position": "PF, SF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-nikola-vucevic",
+      "name": "Nikola Vucevic",
+      "position": "C",
+      "age": 35,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-noah-penda",
+      "name": "Noah Penda",
+      "position": "SF, PF",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2150917,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2525901,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2735698,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-colin-castleton",
+      "name": "Colin Castleton",
+      "position": "C, PF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-alex-morales",
+      "name": "Alex Morales",
+      "position": "SG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 85300,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-izaiyah-nelson",
+      "name": "Izaiyah Nelson",
+      "position": "PF, C",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 749083,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
   "DEN": [
     {
       "id": "ss-nikola-jokic",
@@ -462,29 +1253,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       ]
     },
     {
-      "id": "ss-kristaps-porzingis",
-      "name": "Kristaps Porzingis",
-      "position": "PF",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 20000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 20000000,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
       "id": "ss-moses-moody",
       "name": "Moses Moody",
       "position": "SG",
@@ -736,6 +1504,29 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       ]
     },
     {
+      "id": "ss-kristaps-porzingis",
+      "name": "Kristaps Porzingis",
+      "position": "PF",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 20000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 20000000,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
       "id": "ss-lj-cryer",
       "name": "LJ Cryer",
       "position": "PG",
@@ -789,1693 +1580,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
         {
           "season": 2026,
           "salary": 680985,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "ORL": [
-    {
-      "id": "ss-franz-wagner",
-      "name": "Franz Wagner",
-      "position": "SF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 41754690,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 44847630,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 47940570,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 51033510,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-paolo-banchero",
-      "name": "Paolo Banchero",
-      "position": "PF",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 41240250,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 44539470,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 47838690,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 51137910,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 54437130,
-          "option": "player"
-        },
-        {
-          "season": 2031,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-desmond-bane",
-      "name": "Desmond Bane",
-      "position": "SG, SF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 39446090,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 42166510,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 44886930,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jalen-suggs",
-      "name": "Jalen Suggs",
-      "position": "PG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 32400000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 29600000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 26800000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 26700000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-wendell-carterjr",
-      "name": "Wendell Carter Jr.",
-      "position": "C",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 18102000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 19550160,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 20998320,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-anthony-black",
-      "name": "Anthony Black",
-      "position": "SG, PG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 10106316,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-goga-bitadze",
-      "name": "Goga Bitadze",
-      "position": "C",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 7608696,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tristan-da-silva",
-      "name": "Tristan Da Silva",
-      "position": "PF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3991200,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 6138466,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-jase-richardson",
-      "name": "Jase Richardson",
-      "position": "SG",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3132360,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3282000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 5910882,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-jamal-cain",
-      "name": "Jamal Cain",
-      "position": "SF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2584539,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jevon-carter",
-      "name": "Jevon Carter",
-      "position": "PG",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jonathan-isaac",
-      "name": "Jonathan Isaac",
-      "position": "PF, SF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-nikola-vucevic",
-      "name": "Nikola Vucevic",
-      "position": "C",
-      "age": 35,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-noah-penda",
-      "name": "Noah Penda",
-      "position": "SF, PF",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2525901,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2735698,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-colin-castleton",
-      "name": "Colin Castleton",
-      "position": "C, PF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-alex-morales",
-      "name": "Alex Morales",
-      "position": "SG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 85300,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-izaiyah-nelson",
-      "name": "Izaiyah Nelson",
-      "position": "PF, C",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 749083,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "NYK": [
-    {
-      "id": "ss-karl-anthony-towns",
-      "name": "Karl-Anthony Towns",
-      "position": "PF, C",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 57078728,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 61015192,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-og-anunoby",
-      "name": "OG Anunoby",
-      "position": "SF",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 42500000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 45431034,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 48362068,
-          "option": "player"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jalen-brunson",
-      "name": "Jalen Brunson",
-      "position": "PG",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 37739521,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 40535041,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 43330561,
-          "option": "player"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-mikal-bridges",
-      "name": "Mikal Bridges",
-      "position": "SG, SF",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 33482145,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 36160714,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 38839285,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 41517856,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-josh-hart",
-      "name": "Josh Hart",
-      "position": "SF, SG",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 20923760,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 22375280,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-landry-shamet",
-      "name": "Landry Shamet",
-      "position": "SG",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5490967,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5737500,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 6162500,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 6587500,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jose-alvarado",
-      "name": "Jose Alvarado",
-      "position": "PG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4439656,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 4794828,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 5150000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-miles-mcbride",
-      "name": "Miles McBride",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3956523,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-pacome-dadiet",
-      "name": "Pacôme Dadiet",
-      "position": "PF",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2983680,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 5373608,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-mohamed-diawara",
-      "name": "Mohamed Diawara",
-      "position": "PF, SF",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2622139,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2753246,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2884353,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 3019000,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jordan-clarkson",
-      "name": "Jordan Clarkson",
-      "position": "PG, SG",
-      "age": 34,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-andre-drummond",
-      "name": "Andre Drummond",
-      "position": "C",
-      "age": 33,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tyler-kolek",
-      "name": "Tyler Kolek",
-      "position": "PG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2296271,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2486995,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    }
-  ],
-  "PHX": [
-    {
-      "id": "ss-devin-booker",
-      "name": "Devin Booker",
-      "position": "SG",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 57078728,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 61015192,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 70077350,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 75683538,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-jalen-green",
-      "name": "Jalen Green",
-      "position": "SG",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 36251166,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 36000000,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-miles-bridges",
-      "name": "Miles Bridges",
-      "position": "SF, PF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 22826087,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-dillon-brooks",
-      "name": "Dillon Brooks",
-      "position": "SF, SG",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 20992727,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 22530864,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 24333333,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 26135802,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-collin-gillespie",
-      "name": "Collin Gillespie",
-      "position": "PG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 10714286,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 11571429,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 12428571,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 13285714,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-khaman-maluach",
-      "name": "Khaman Maluach",
-      "position": "C",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 6316680,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6617160,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 8436879,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-luke-kennard",
-      "name": "Luke Kennard",
-      "position": "SG",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 6064000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6367200,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "TP-MLE"
-    },
-    {
-      "id": "ss-jordan-goodwin",
-      "name": "Jordan Goodwin",
-      "position": "SG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5864198,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6333333,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 6802469,
-          "option": "player"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-koa-peat",
-      "name": "Koa Peat",
-      "position": "PF",
-      "age": 19,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2926800,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3073080,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 3219840,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 5811811,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-ryan-dunn",
-      "name": "Ryan Dunn",
-      "position": "SF, PF",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2784240,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 5025553,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-jamaree-bouyea",
-      "name": "Jamaree Bouyea",
-      "position": "PG, SG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2584539,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-duop-reath",
-      "name": "Duop Reath",
-      "position": "C",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-haywood-highsmith",
-      "name": "Haywood Highsmith",
-      "position": "SF",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-oso-ighodaro",
-      "name": "Oso Ighodaro",
-      "position": "PF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2296271,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2486995,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-rasheer-fleming",
-      "name": "Rasheer Fleming",
-      "position": "PF",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2525901,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2735698,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-mark-williams",
-      "name": "Mark Williams",
-      "position": "PF, C",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 11728395,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 12666667,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 13604938,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-koby-brea",
-      "name": "Koby Brea",
-      "position": "PG, SG",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-cj-huntley",
-      "name": "CJ Huntley",
-      "position": "PF, SF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 680985,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-pat-spencer",
-      "name": "Pat Spencer",
-      "position": "PG",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "OKC": [
-    {
-      "id": "ss-chet-holmgren",
-      "name": "Chet Holmgren",
-      "position": "C",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 41240250,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 44539470,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 47838690,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 51137910,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 54437130,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2031,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-jalen-williams",
-      "name": "Jalen Williams",
-      "position": "SG, SF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 41240250,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 44539470,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 47838690,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 51137910,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 54437130,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2031,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-shai-gilgeousalexander",
-      "name": "Shai Gilgeous-Alexander",
-      "position": "PG, SG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 40806150,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 63706600,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 68803128,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 73899656,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 78996184,
-          "option": "player"
-        },
-        {
-          "season": 2031,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-isaiah-hartenstein",
-      "name": "Isaiah Hartenstein",
-      "position": "C, PF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 23148148,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 25000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 26851852,
-          "option": "player"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-alex-caruso",
-      "name": "Alex Caruso",
-      "position": "PG, SG",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 19550160,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 20998320,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 22446480,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jaylin-williams",
-      "name": "Jaylin Williams",
-      "position": "PF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 7774648,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 7774648,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-cason-wallace",
-      "name": "Cason Wallace",
-      "position": "PG, SG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 7420806,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-aday-mara",
-      "name": "Aday Mara",
-      "position": "C",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5791680,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6081480,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 6371160,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 8779458,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-nikola-topic",
-      "name": "Nikola Topić",
-      "position": "PG",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5429760,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 7482209,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-kenrich-williams",
-      "name": "Kenrich Williams",
-      "position": "PF, SF",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-bennett-stirtz",
-      "name": "Bennett Stirtz",
-      "position": "PG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4717320,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 4953240,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 5189400,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 7960540,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jared-mccain",
-      "name": "Jared McCain",
-      "position": "SG, PG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4422600,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 6784268,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-ajay-mitchell",
-      "name": "Ajay Mitchell",
-      "position": "PG, SG",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2850000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2850000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-thomas-sorber",
-      "name": "Thomas Sorber",
-      "position": "C, PF",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4887720,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5120400,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 7849573,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-brooks-barnhizer",
-      "name": "Brooks Barnhizer",
-      "position": "SG, SF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-josh-dix",
-      "name": "Josh Dix",
-      "position": "PG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-otega-oweh",
-      "name": "Otega Oweh",
-      "position": "SG",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
           "option": "guaranteed"
         },
         {
@@ -2907,6 +2011,942 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "season": 2027,
           "salary": 0,
           "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "OKC": [
+    {
+      "id": "ss-chet-holmgren",
+      "name": "Chet Holmgren",
+      "position": "C",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 41240250,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 44539470,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 47838690,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 51137910,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 54437130,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2031,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-jalen-williams",
+      "name": "Jalen Williams",
+      "position": "SG, SF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 41240250,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 44539470,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 47838690,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 51137910,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 54437130,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2031,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-shai-gilgeousalexander",
+      "name": "Shai Gilgeous-Alexander",
+      "position": "PG, SG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 40806150,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 63706600,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 68803128,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 73899656,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 78996184,
+          "option": "player"
+        },
+        {
+          "season": 2031,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-isaiah-hartenstein",
+      "name": "Isaiah Hartenstein",
+      "position": "C, PF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 23148148,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 25000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 26851852,
+          "option": "player"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-alex-caruso",
+      "name": "Alex Caruso",
+      "position": "PG, SG",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 19550160,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 20998320,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 22446480,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jaylin-williams",
+      "name": "Jaylin Williams",
+      "position": "PF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 7774648,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 7774648,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-cason-wallace",
+      "name": "Cason Wallace",
+      "position": "PG, SG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 7420806,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-aday-mara",
+      "name": "Aday Mara",
+      "position": "C",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5791680,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6081480,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 6371160,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 8779458,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-nikola-topic",
+      "name": "Nikola Topić",
+      "position": "PG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5429760,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 7482209,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-kenrich-williams",
+      "name": "Kenrich Williams",
+      "position": "PF, SF",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-thomas-sorber",
+      "name": "Thomas Sorber",
+      "position": "C, PF",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4887720,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5120400,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 7849573,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-bennett-stirtz",
+      "name": "Bennett Stirtz",
+      "position": "PG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4717320,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 4953240,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 5189400,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 7960540,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jared-mccain",
+      "name": "Jared McCain",
+      "position": "SG, PG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4422600,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 6784268,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-ajay-mitchell",
+      "name": "Ajay Mitchell",
+      "position": "PG, SG",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2850000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2850000,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-brooks-barnhizer",
+      "name": "Brooks Barnhizer",
+      "position": "SG, SF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-josh-dix",
+      "name": "Josh Dix",
+      "position": "PG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-otega-oweh",
+      "name": "Otega Oweh",
+      "position": "SG",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "PHX": [
+    {
+      "id": "ss-devin-booker",
+      "name": "Devin Booker",
+      "position": "SG",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 57078728,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 61015192,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 70077350,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 75683538,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-jalen-green",
+      "name": "Jalen Green",
+      "position": "SG",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 36251166,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 36000000,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-miles-bridges",
+      "name": "Miles Bridges",
+      "position": "SF, PF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 22826087,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-dillon-brooks",
+      "name": "Dillon Brooks",
+      "position": "SF, SG",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 20992727,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 22530864,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 24333333,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 26135802,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-mark-williams",
+      "name": "Mark Williams",
+      "position": "PF, C",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 11728395,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 12666667,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 13604938,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-collin-gillespie",
+      "name": "Collin Gillespie",
+      "position": "PG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 10714286,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 11571429,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 12428571,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 13285714,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-khaman-maluach",
+      "name": "Khaman Maluach",
+      "position": "C",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 6316680,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6617160,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 8436879,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-luke-kennard",
+      "name": "Luke Kennard",
+      "position": "SG",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 6064000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6367200,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "TP-MLE"
+    },
+    {
+      "id": "ss-jordan-goodwin",
+      "name": "Jordan Goodwin",
+      "position": "SG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5864198,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6333333,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 6802469,
+          "option": "player"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-koa-peat",
+      "name": "Koa Peat",
+      "position": "PF",
+      "age": 19,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2926800,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3073080,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 3219840,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 5811811,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-ryan-dunn",
+      "name": "Ryan Dunn",
+      "position": "SF, PF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2784240,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 5025553,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-jamaree-bouyea",
+      "name": "Jamaree Bouyea",
+      "position": "PG, SG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2584539,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-duop-reath",
+      "name": "Duop Reath",
+      "position": "C",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-haywood-highsmith",
+      "name": "Haywood Highsmith",
+      "position": "SF",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-oso-ighodaro",
+      "name": "Oso Ighodaro",
+      "position": "PF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2296271,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2486995,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-rasheer-fleming",
+      "name": "Rasheer Fleming",
+      "position": "PF",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2150917,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2525901,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2735698,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-koby-brea",
+      "name": "Koby Brea",
+      "position": "PG, SG",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-cj-huntley",
+      "name": "CJ Huntley",
+      "position": "PF, SF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 680985,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-pat-spencer",
+      "name": "Pat Spencer",
+      "position": "PG",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
         }
       ],
       "signedUsing": "Two-Way",
@@ -3746,6 +3786,397 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "twoWay": true
     }
   ],
+  "SAC": [
+    {
+      "id": "ss-zach-lavine",
+      "name": "Zach LaVine",
+      "position": "SG",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 48967380,
+          "option": "player"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-domantas-sabonis",
+      "name": "Domantas Sabonis",
+      "position": "C, PF",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 45472000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 48608000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-deandre-hunter",
+      "name": "De'Andre Hunter",
+      "position": "SF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 24910714,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-keegan-murray",
+      "name": "Keegan Murray",
+      "position": "PF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 24137936,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 26068965,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 27999999,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 29931033,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 31862067,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2031,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-malik-monk",
+      "name": "Malik Monk",
+      "position": "SG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 20190035,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 21582451,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-darius-acuff",
+      "name": "Darius Acuff",
+      "position": "PG",
+      "age": 19,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 8021640,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 8422920,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 8823600,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 11205972,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-precious-achiuwa",
+      "name": "Precious Achiuwa",
+      "position": "PF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5477000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5750850,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "BAE"
+    },
+    {
+      "id": "ss-nique-clifford",
+      "name": "Nique Clifford",
+      "position": "SF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3263400,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3418800,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 5979481,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-alex-karaban2",
+      "name": "Alex Karaban",
+      "position": "SF, PF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2948280,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3095640,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 3243120,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 5853832,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-ben-simmons",
+      "name": "Ben Simmons",
+      "position": "SF, PG",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-maxime-raynaud",
+      "name": "Maxime Raynaud",
+      "position": "C",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2150917,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2525901,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-dylan-cardwell",
+      "name": "Dylan Cardwell",
+      "position": "PF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2150917,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2525901,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2735698,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-emanuel-sharp",
+      "name": "Emanuel Sharp",
+      "position": "PG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 1357763,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2294370,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2694363,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-adam-flagler",
+      "name": "Adam Flagler",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-jonathan-mogbo",
+      "name": "Jonathan Mogbo",
+      "position": "PF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
   "MIA": [
     {
       "id": "ss-giannis-antetokounmpo",
@@ -4138,1234 +4569,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "name": "Keshad Johnson",
       "position": "SF",
       "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "IND": [
-    {
-      "id": "ss-pascal-siakam",
-      "name": "Pascal Siakam",
-      "position": "PF",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 48924624,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 52298736,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-ivica-zubac",
-      "name": "Ivica Zubac",
-      "position": "C",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 20342140,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 21790300,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-andrew-nembhard",
-      "name": "Andrew Nembhard",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 19550160,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 20998320,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-obi-toppin",
-      "name": "Obi Toppin",
-      "position": "PF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 15000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 16025000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tj-mcconnell",
-      "name": "T.J. McConnell",
-      "position": "PG",
-      "age": 34,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 11000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 11800000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 11800000,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-aaron-nesmith",
-      "name": "Aaron Nesmith",
-      "position": "SF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 11000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 19418000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 20971440,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jarace-walker",
-      "name": "Jarace Walker",
-      "position": "PF, SF",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 8478541,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-kelly-oubrejr",
-      "name": "Kelly Oubre Jr.",
-      "position": "SF",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 8050000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 8450000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "MLE"
-    },
-    {
-      "id": "ss-ben-sheppard",
-      "name": "Ben Sheppard",
-      "position": "SG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5031668,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-jay-huff",
-      "name": "Jay Huff",
-      "position": "C",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2667944,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3005085,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-quenton-jackson",
-      "name": "Quenton Jackson",
-      "position": "SG, PG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2584539,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2934742,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-larry-nancejr",
-      "name": "Larry Nance Jr.",
-      "position": "C, PF",
-      "age": 33,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-johnny-furphy",
-      "name": "Johnny Furphy",
-      "position": "SG, SF",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2296271,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2486995,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tyrese-haliburton",
-      "name": "Tyrese Haliburton",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 48924624,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 52298736,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 55672848,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-jalen-slawson",
-      "name": "Jalen Slawson",
-      "position": "SF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-kobe-brown",
-      "name": "Kobe Brown",
-      "position": "SG, SF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "SAC": [
-    {
-      "id": "ss-zach-lavine",
-      "name": "Zach LaVine",
-      "position": "SG",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 48967380,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-domantas-sabonis",
-      "name": "Domantas Sabonis",
-      "position": "C, PF",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 45472000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 48608000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-deandre-hunter",
-      "name": "De'Andre Hunter",
-      "position": "SF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 24910714,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-keegan-murray",
-      "name": "Keegan Murray",
-      "position": "PF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 24137936,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 26068965,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 27999999,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 29931033,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 31862067,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2031,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-malik-monk",
-      "name": "Malik Monk",
-      "position": "SG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 20190035,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 21582451,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-darius-acuff",
-      "name": "Darius Acuff",
-      "position": "PG",
-      "age": 19,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 8021640,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 8422920,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 8823600,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 11205972,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-precious-achiuwa",
-      "name": "Precious Achiuwa",
-      "position": "PF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5477000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5750850,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "BAE"
-    },
-    {
-      "id": "ss-nique-clifford",
-      "name": "Nique Clifford",
-      "position": "SF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3263400,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3418800,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 5979481,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-alex-karaban2",
-      "name": "Alex Karaban",
-      "position": "SF, PF",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2948280,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3095640,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 3243120,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 5853832,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-ben-simmons",
-      "name": "Ben Simmons",
-      "position": "SF, PG",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-maxime-raynaud",
-      "name": "Maxime Raynaud",
-      "position": "C",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2525901,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-dylan-cardwell",
-      "name": "Dylan Cardwell",
-      "position": "PF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2525901,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2735698,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-emanuel-sharp",
-      "name": "Emanuel Sharp",
-      "position": "PG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 1357763,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2294370,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2694363,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-adam-flagler",
-      "name": "Adam Flagler",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-jonathan-mogbo",
-      "name": "Jonathan Mogbo",
-      "position": "PF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "LAL": [
-    {
-      "id": "ss-luka-doncic",
-      "name": "Luka Doncic",
-      "position": "PG, SG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 51033600,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 55116288,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 59198976,
-          "option": "player"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-austin-reaves",
-      "name": "Austin Reaves",
-      "position": "SG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 41240250,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 42954030,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 46253250,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 49552470,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-walker-kessler",
-      "name": "Walker Kessler",
-      "position": "C, PF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 30108821,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 31614262,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 33119703,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 34625144,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-quentin-grimes",
-      "name": "Quentin Grimes",
-      "position": "SG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 13953489,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 14651163,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 15348837,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 16046511,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-sandro-mamukelashvili",
-      "name": "Sandro Mamukelashvili",
-      "position": "C, PF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 13000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 12350000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 13000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 13650000,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jarred-vanderbilt",
-      "name": "Jarred Vanderbilt",
-      "position": "PF, SF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 12428571,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 13285714,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-collin-sexton",
-      "name": "Collin Sexton",
-      "position": "PG, SG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 9366000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 9834000,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "R-MLE"
-    },
-    {
-      "id": "ss-jaden-hardy",
-      "name": "Jaden Hardy",
-      "position": "SG, PG",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 6000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6000000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jake-laravia",
-      "name": "Jake LaRavia",
-      "position": "SF, PF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 6000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-dalton-knecht",
-      "name": "Dalton Knecht",
-      "position": "SG, SF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4201080,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 6452859,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-cameron-carr",
-      "name": "Cameron Carr",
-      "position": "SG",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3315360,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3481080,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 3646800,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 6378253,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kevon-looney",
-      "name": "Kevon Looney",
-      "position": "C, PF",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-matisse-thybulle",
-      "name": "Matisse Thybulle",
-      "position": "SG",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-ziaire-williams",
-      "name": "Ziaire Williams",
-      "position": "SF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-bronny-james",
-      "name": "Bronny James",
-      "position": "PG, SG",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2296271,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2486995,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-adou-thiero",
-      "name": "Adou Thiero",
-      "position": "SF, PF",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2525901,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-arthur-kaluma",
-      "name": "Arthur Kaluma",
-      "position": "PF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-chris-manon",
-      "name": "Chris Manon",
-      "position": "PG, SG",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-ak-okereke",
-      "name": "AK Okereke",
-      "position": "SF",
-      "age": 23,
       "contract": [
         {
           "season": 2026,
@@ -5859,6 +5062,24 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       ]
     },
     {
+      "id": "ss-fred-vanvleet",
+      "name": "Fred VanVleet",
+      "position": "PG",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 25000000,
+          "option": "player"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
       "id": "ss-jabari-smith-jr",
       "name": "Jabari Smith Jr.",
       "position": "PF",
@@ -6170,24 +5391,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       ]
     },
     {
-      "id": "ss-fred-vanvleet",
-      "name": "Fred VanVleet",
-      "position": "PG",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 25000000,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
       "id": "ss-rafael-castro",
       "name": "Rafael Castro",
       "position": "C",
@@ -6252,6 +5455,375 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "season": 2028,
           "salary": 0,
           "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "IND": [
+    {
+      "id": "ss-tyrese-haliburton",
+      "name": "Tyrese Haliburton",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 48924624,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 52298736,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 55672848,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-pascal-siakam",
+      "name": "Pascal Siakam",
+      "position": "PF",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 48924624,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 52298736,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-ivica-zubac",
+      "name": "Ivica Zubac",
+      "position": "C",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 20342140,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 21790300,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-andrew-nembhard",
+      "name": "Andrew Nembhard",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 19550160,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 20998320,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-obi-toppin",
+      "name": "Obi Toppin",
+      "position": "PF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 15000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 16025000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tj-mcconnell",
+      "name": "T.J. McConnell",
+      "position": "PG",
+      "age": 34,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 11000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 11800000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 11800000,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-aaron-nesmith",
+      "name": "Aaron Nesmith",
+      "position": "SF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 11000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 19418000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 20971440,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jarace-walker",
+      "name": "Jarace Walker",
+      "position": "PF, SF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 8478541,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-kelly-oubrejr",
+      "name": "Kelly Oubre Jr.",
+      "position": "SF",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 8050000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 8450000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "MLE"
+    },
+    {
+      "id": "ss-ben-sheppard",
+      "name": "Ben Sheppard",
+      "position": "SG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5031668,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-jay-huff",
+      "name": "Jay Huff",
+      "position": "C",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2667944,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3005085,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-quenton-jackson",
+      "name": "Quenton Jackson",
+      "position": "SG, PG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2584539,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2934742,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-larry-nancejr",
+      "name": "Larry Nance Jr.",
+      "position": "C, PF",
+      "age": 33,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-johnny-furphy",
+      "name": "Johnny Furphy",
+      "position": "SG, SF",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2296271,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2486995,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jalen-slawson",
+      "name": "Jalen Slawson",
+      "position": "SF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-kobe-brown",
+      "name": "Kobe Brown",
+      "position": "SG, SF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
         }
       ],
       "signedUsing": "Two-Way",
@@ -6675,6 +6247,919 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "id": "ss-amari-williams",
       "name": "Amari Williams",
       "position": "C",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "LAL": [
+    {
+      "id": "ss-luka-doncic",
+      "name": "Luka Doncic",
+      "position": "PG, SG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 51033600,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 55116288,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 59198976,
+          "option": "player"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-austin-reaves",
+      "name": "Austin Reaves",
+      "position": "SG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 41240250,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 42954030,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 46253250,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 49552470,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-walker-kessler",
+      "name": "Walker Kessler",
+      "position": "C, PF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 30108821,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 31614262,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 33119703,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 34625144,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-quentin-grimes",
+      "name": "Quentin Grimes",
+      "position": "SG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 13953489,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 14651163,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 15348837,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 16046511,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-sandro-mamukelashvili",
+      "name": "Sandro Mamukelashvili",
+      "position": "C, PF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 13000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 12350000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 13000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 13650000,
+          "option": "player"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jarred-vanderbilt",
+      "name": "Jarred Vanderbilt",
+      "position": "PF, SF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 12428571,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 13285714,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-collin-sexton",
+      "name": "Collin Sexton",
+      "position": "PG, SG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 9366000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 9834000,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "R-MLE"
+    },
+    {
+      "id": "ss-jaden-hardy",
+      "name": "Jaden Hardy",
+      "position": "SG, PG",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 6000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6000000,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jake-laravia",
+      "name": "Jake LaRavia",
+      "position": "SF, PF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 6000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-dalton-knecht",
+      "name": "Dalton Knecht",
+      "position": "SG, SF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4201080,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 6452859,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-cameron-carr",
+      "name": "Cameron Carr",
+      "position": "SG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3315360,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3481080,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 3646800,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 6378253,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kevon-looney",
+      "name": "Kevon Looney",
+      "position": "C, PF",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-matisse-thybulle",
+      "name": "Matisse Thybulle",
+      "position": "SG",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-ziaire-williams",
+      "name": "Ziaire Williams",
+      "position": "SF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-bronny-james",
+      "name": "Bronny James",
+      "position": "PG, SG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2296271,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2486995,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-adou-thiero",
+      "name": "Adou Thiero",
+      "position": "SF, PF",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2150917,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2525901,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-arthur-kaluma",
+      "name": "Arthur Kaluma",
+      "position": "PF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-chris-manon",
+      "name": "Chris Manon",
+      "position": "PG, SG",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-ak-okereke",
+      "name": "AK Okereke",
+      "position": "SF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "SAS": [
+    {
+      "id": "ss-deaaron-fox",
+      "name": "De'Aaron Fox",
+      "position": "PG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 49488300,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 53447364,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 57406428,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 61365492,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-devin-vassell",
+      "name": "Devin Vassell",
+      "position": "SG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 27500000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 25108696,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 27500000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-keldon-johnson",
+      "name": "Keldon Johnson",
+      "position": "SF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 18000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-victor-wembanyama",
+      "name": "Victor Wembanyama",
+      "position": "PF, C",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 16868246,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 43500000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 46980000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 50460000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 53940000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2031,
+          "salary": 57420000,
+          "option": "player"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-julian-champagnie",
+      "name": "Julian Champagnie",
+      "position": "SG, SF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 15350000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 15000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 14650000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tobias-harris",
+      "name": "Tobias Harris",
+      "position": "PF, SF",
+      "age": 34,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 15044000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 15796200,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "MLE"
+    },
+    {
+      "id": "ss-dylan-harper",
+      "name": "Dylan Harper",
+      "position": "PG, SG",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 12989040,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 13607760,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 17172993,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-luke-kornet",
+      "name": "Luke Kornet",
+      "position": "C, PF",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 10450000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 9900000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 9350000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-stephon-castle",
+      "name": "Stephon Castle",
+      "position": "PG, SG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 10015920,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 12670139,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-harrison-barnes",
+      "name": "Harrison Barnes",
+      "position": "PF, SF",
+      "age": 34,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 8000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-carter-bryant",
+      "name": "Carter Bryant",
+      "position": "SF",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5145360,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5390640,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 7983538,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-jayden-quaintance",
+      "name": "Jayden Quaintance",
+      "position": "PF, C",
+      "age": 19,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3902760,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 4097880,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 4292880,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 6619621,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tarris-reed-jr",
+      "name": "Tarris Reed Jr.",
+      "position": "PF, C",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3076920,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3230520,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 3384480,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 6102217,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jordan-mclaughlin",
+      "name": "Jordan McLaughlin",
+      "position": "PG",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2449421,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-maliq-brown",
+      "name": "Maliq Brown",
+      "position": "SF",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-jakobi-gillespie",
+      "name": "Ja'Kobi Gillespie",
+      "position": "SG",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-david-jones",
+      "name": "David Jones",
+      "position": "SF",
       "age": 24,
       "contract": [
         {
@@ -7125,10 +7610,33 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "twoWay": true
     }
   ],
-  "SAS": [
+  "WAS": [
     {
-      "id": "ss-deaaron-fox",
-      "name": "De'Aaron Fox",
+      "id": "ss-anthony-davis",
+      "name": "Anthony Davis",
+      "position": "C, PF",
+      "age": 33,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 58456566,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 62786682,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-trae-young",
+      "name": "Trae Young",
       "position": "PG",
       "age": 28,
       "contract": [
@@ -7139,18 +7647,18 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
         },
         {
           "season": 2027,
-          "salary": 53447364,
+          "salary": 50478066,
           "option": "guaranteed"
         },
         {
           "season": 2028,
-          "salary": 57406428,
+          "salary": 54437130,
           "option": "guaranteed"
         },
         {
           "season": 2029,
-          "salary": 61365492,
-          "option": "guaranteed"
+          "salary": 58396194,
+          "option": "player"
         },
         {
           "season": 2030,
@@ -7161,165 +7669,33 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "signedUsing": "Max"
     },
     {
-      "id": "ss-devin-vassell",
-      "name": "Devin Vassell",
-      "position": "SG",
-      "age": 26,
+      "id": "ss-aj-dybantsa",
+      "name": "AJ Dybantsa",
+      "position": "SF, PF",
+      "age": 19,
       "contract": [
         {
           "season": 2026,
-          "salary": 27500000,
+          "salary": 14748000,
           "option": "guaranteed"
         },
         {
           "season": 2027,
-          "salary": 25108696,
+          "salary": 15485760,
           "option": "guaranteed"
         },
         {
           "season": 2028,
-          "salary": 27500000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-keldon-johnson",
-      "name": "Keldon Johnson",
-      "position": "SF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 18000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-victor-wembanyama",
-      "name": "Victor Wembanyama",
-      "position": "PF, C",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 16868246,
+          "salary": 16223040,
           "option": "team"
         },
         {
-          "season": 2027,
-          "salary": 43500000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 46980000,
-          "option": "guaranteed"
-        },
-        {
           "season": 2029,
-          "salary": 50460000,
-          "option": "guaranteed"
+          "salary": 20457253,
+          "option": "team"
         },
         {
           "season": 2030,
-          "salary": 53940000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2031,
-          "salary": 57420000,
-          "option": "player"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-julian-champagnie",
-      "name": "Julian Champagnie",
-      "position": "SG, SF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 15350000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 15000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 14650000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tobias-harris",
-      "name": "Tobias Harris",
-      "position": "PF, SF",
-      "age": 34,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 15044000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 15796200,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "MLE"
-    },
-    {
-      "id": "ss-dylan-harper",
-      "name": "Dylan Harper",
-      "position": "PG, SG",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 12989040,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 13607760,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 17172993,
-          "option": "team"
-        },
-        {
-          "season": 2029,
           "salary": 0,
           "option": "rfa"
         }
@@ -7327,47 +7703,19 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "signedUsing": "RSC"
     },
     {
-      "id": "ss-luke-kornet",
-      "name": "Luke Kornet",
-      "position": "C, PF",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 10450000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 9900000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 9350000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-stephon-castle",
-      "name": "Stephon Castle",
-      "position": "PG, SG",
+      "id": "ss-alexandre-sarr",
+      "name": "Alexandre Sarr",
+      "position": "C",
       "age": 21,
       "contract": [
         {
           "season": 2026,
-          "salary": 10015920,
+          "salary": 12370680,
           "option": "team"
         },
         {
           "season": 2027,
-          "salary": 12670139,
+          "salary": 15611798,
           "option": "team"
         },
         {
@@ -7379,10 +7727,76 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "signedUsing": "RSC"
     },
     {
-      "id": "ss-harrison-barnes",
-      "name": "Harrison Barnes",
-      "position": "PF, SF",
-      "age": 34,
+      "id": "ss-bilal-coulibaly",
+      "name": "Bilal Coulibaly",
+      "position": "SF",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 9240012,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-tre-johnson",
+      "name": "Tre Johnson",
+      "position": "SG",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 8649600,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 9061680,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 11490210,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-deandre-ayton",
+      "name": "Deandre Ayton",
+      "position": "C",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 8104000,
+          "option": "player"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tre-mann",
+      "name": "Tre Mann",
+      "position": "PG",
+      "age": 25,
       "contract": [
         {
           "season": 2026,
@@ -7391,30 +7805,87 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
         },
         {
           "season": 2027,
+          "salary": 8000000,
+          "option": "team"
+        },
+        {
+          "season": 2028,
           "salary": 0,
           "option": "ufa"
         }
       ]
     },
     {
-      "id": "ss-carter-bryant",
-      "name": "Carter Bryant",
+      "id": "ss-khris-middleton",
+      "name": "Khris Middleton",
+      "position": "SF",
+      "age": 35,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5591112,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5870678,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 6150234,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-carlton-carrington",
+      "name": "Carlton Carrington",
+      "position": "SG, PG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4900560,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 7257729,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-will-riley",
+      "name": "Will Riley",
       "position": "SF",
       "age": 20,
       "contract": [
         {
           "season": 2026,
-          "salary": 5145360,
+          "salary": 3688320,
           "option": "guaranteed"
         },
         {
           "season": 2027,
-          "salary": 5390640,
+          "salary": 3864000,
           "option": "team"
         },
         {
           "season": 2028,
-          "salary": 7983538,
+          "salary": 6155352,
           "option": "team"
         },
         {
@@ -7426,76 +7897,80 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "signedUsing": "RSC"
     },
     {
-      "id": "ss-jayden-quaintance",
-      "name": "Jayden Quaintance",
-      "position": "PF, C",
-      "age": 19,
+      "id": "ss-kyshawn-george",
+      "name": "Kyshawn George",
+      "position": "SF, SG",
+      "age": 22,
       "contract": [
         {
           "season": 2026,
-          "salary": 3902760,
-          "option": "guaranteed"
+          "salary": 3108000,
+          "option": "team"
         },
         {
           "season": 2027,
-          "salary": 4097880,
-          "option": "guaranteed"
+          "salary": 5435892,
+          "option": "team"
         },
         {
           "season": 2028,
-          "salary": 4292880,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 6619621,
-          "option": "team"
-        },
-        {
-          "season": 2030,
           "salary": 0,
-          "option": "rfa"
+          "option": "ufa"
         }
-      ]
+      ],
+      "signedUsing": "RSC"
     },
     {
-      "id": "ss-tarris-reed-jr",
-      "name": "Tarris Reed Jr.",
+      "id": "ss-tristan-vukcevic",
+      "name": "Tristan Vukcevic",
       "position": "PF, C",
       "age": 23,
       "contract": [
         {
           "season": 2026,
-          "salary": 3076920,
+          "salary": 3000000,
           "option": "guaranteed"
         },
         {
           "season": 2027,
-          "salary": 3230520,
-          "option": "guaranteed"
+          "salary": 3000000,
+          "option": "team"
         },
         {
           "season": 2028,
-          "salary": 3384480,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 6102217,
-          "option": "team"
-        },
-        {
-          "season": 2030,
           "salary": 0,
-          "option": "rfa"
+          "option": "ufa"
         }
       ]
     },
     {
-      "id": "ss-jordan-mclaughlin",
-      "name": "Jordan McLaughlin",
-      "position": "PG",
-      "age": 30,
+      "id": "ss-justin-champagnie",
+      "name": "Justin Champagnie",
+      "position": "SF, PF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2667944,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3005085,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-anthony-gill",
+      "name": "Anthony Gill",
+      "position": "PF",
+      "age": 33,
       "contract": [
         {
           "season": 2026,
@@ -7510,9 +7985,9 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       ]
     },
     {
-      "id": "ss-maliq-brown",
-      "name": "Maliq Brown",
-      "position": "SF",
+      "id": "ss-felix-okpara",
+      "name": "Felix Okpara",
+      "position": "C",
       "age": 22,
       "contract": [
         {
@@ -7530,15 +8005,218 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "twoWay": true
     },
     {
-      "id": "ss-jakobi-gillespie",
-      "name": "Ja'Kobi Gillespie",
+      "id": "ss-jamir-watkins",
+      "name": "Jamir Watkins",
+      "position": "SG, SF",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "MIL": [
+    {
+      "id": "ss-tyler-herro",
+      "name": "Tyler Herro",
       "position": "SG",
-      "age": 22,
+      "age": 26,
       "contract": [
         {
           "season": 2026,
-          "salary": 91000,
+          "salary": 33000000,
           "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-myles-turner",
+      "name": "Myles Turner",
+      "position": "C",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 26584164,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 27850077,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 29115990,
+          "option": "player"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kyle-kuzma",
+      "name": "Kyle Kuzma",
+      "position": "PF",
+      "age": 31,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 20490152,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-gary-trentjr",
+      "name": "Gary Trent Jr.",
+      "position": "SG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 15200000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 16400000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 16400000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 16000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-caris-levert",
+      "name": "Caris LeVert",
+      "position": "SF, SG",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 14809200,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-aj-green",
+      "name": "AJ Green",
+      "position": "SG, SF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 10044644,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 10848215,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 11651786,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 12455355,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-brayden-burries",
+      "name": "Brayden Burries",
+      "position": "SG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 6417360,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6738000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 7058520,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 8999613,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jaime-jaquez-jr",
+      "name": "Jaime Jaquez Jr.",
+      "position": "SF, SG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5939141,
+          "option": "team"
         },
         {
           "season": 2027,
@@ -7546,18 +8224,266 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
           "option": "rfa"
         }
       ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
+      "signedUsing": "RSC"
     },
     {
-      "id": "ss-david-jones",
-      "name": "David Jones",
-      "position": "SF",
+      "id": "ss-ousmane-dieng",
+      "name": "Ousmane Dieng",
+      "position": "PF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5750000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5750000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 5750000,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-nate-ament",
+      "name": "Nate Ament",
+      "position": "SF, SG",
+      "age": 19,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5502000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5777280,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 6052200,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 8648594,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kevin-porterjr",
+      "name": "Kevin Porter Jr.",
+      "position": "PG, SG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5390700,
+          "option": "player"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kelel-ware",
+      "name": "Kel'el Ware",
+      "position": "C",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4654920,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 7135992,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-ryan-rollins",
+      "name": "Ryan Rollins",
+      "position": "SG",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 4000000,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kasparas-jakucionis",
+      "name": "Kasparas Jakucionis",
+      "position": "PG, SG",
+      "age": 20,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3841680,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 4024440,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 6205686,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-jericho-sims",
+      "name": "Jericho Sims",
+      "position": "PF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2801346,
+          "option": "player"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-pete-nance",
+      "name": "Pete Nance",
+      "position": "PF, C",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2537526,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2756912,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-bogoljub-markovic",
+      "name": "Bogoljub Marković",
+      "position": "PF",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 1357763,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2294370,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2694363,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 2918152,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kam-jones",
+      "name": "Kam Jones",
+      "position": "SG, PG",
       "age": 24,
       "contract": [
         {
           "season": 2026,
-          "salary": 91000,
+          "salary": 678882,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-cormac-ryan",
+      "name": "Cormac Ryan",
+      "position": "PG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 85300,
           "option": "guaranteed"
         },
         {
@@ -8036,421 +8962,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "twoWay": true
     }
   ],
-  "WAS": [
-    {
-      "id": "ss-anthony-davis",
-      "name": "Anthony Davis",
-      "position": "C, PF",
-      "age": 33,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 58456566,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 62786682,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-trae-young",
-      "name": "Trae Young",
-      "position": "PG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 49488300,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 50478066,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 54437130,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 58396194,
-          "option": "player"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-aj-dybantsa",
-      "name": "AJ Dybantsa",
-      "position": "SF, PF",
-      "age": 19,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 14748000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 15485760,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 16223040,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 20457253,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-alexandre-sarr",
-      "name": "Alexandre Sarr",
-      "position": "C",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 12370680,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 15611798,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-bilal-coulibaly",
-      "name": "Bilal Coulibaly",
-      "position": "SF",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 9240012,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-tre-johnson",
-      "name": "Tre Johnson",
-      "position": "SG",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 8649600,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 9061680,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 11490210,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-deandre-ayton",
-      "name": "Deandre Ayton",
-      "position": "C",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 8104000,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tre-mann",
-      "name": "Tre Mann",
-      "position": "PG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 8000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 8000000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-khris-middleton",
-      "name": "Khris Middleton",
-      "position": "SF",
-      "age": 35,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5591112,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5870678,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 6150234,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-carlton-carrington",
-      "name": "Carlton Carrington",
-      "position": "SG, PG",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4900560,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 7257729,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-will-riley",
-      "name": "Will Riley",
-      "position": "SF",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3688320,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3864000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 6155352,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-kyshawn-george",
-      "name": "Kyshawn George",
-      "position": "SF, SG",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3108000,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 5435892,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-tristan-vukcevic",
-      "name": "Tristan Vukcevic",
-      "position": "PF, C",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3000000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-justin-champagnie",
-      "name": "Justin Champagnie",
-      "position": "SF, PF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2667944,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3005085,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-anthony-gill",
-      "name": "Anthony Gill",
-      "position": "PF",
-      "age": 33,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2449421,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-felix-okpara",
-      "name": "Felix Okpara",
-      "position": "C",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-jamir-watkins",
-      "name": "Jamir Watkins",
-      "position": "SG, SF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
   "POR": [
     {
       "id": "ss-ja-morant",
@@ -8873,929 +9384,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "twoWay": true
     }
   ],
-  "MIL": [
-    {
-      "id": "ss-tyler-herro",
-      "name": "Tyler Herro",
-      "position": "SG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 33000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-myles-turner",
-      "name": "Myles Turner",
-      "position": "C",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 26584164,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 27850077,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 29115990,
-          "option": "player"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kyle-kuzma",
-      "name": "Kyle Kuzma",
-      "position": "PF",
-      "age": 31,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 20490152,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-gary-trentjr",
-      "name": "Gary Trent Jr.",
-      "position": "SG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 15200000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 16400000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 16400000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 16000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-caris-levert",
-      "name": "Caris LeVert",
-      "position": "SF, SG",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 14809200,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-aj-green",
-      "name": "AJ Green",
-      "position": "SG, SF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 10044644,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 10848215,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 11651786,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 12455355,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-brayden-burries",
-      "name": "Brayden Burries",
-      "position": "SG",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 6417360,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6738000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 7058520,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 8999613,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jaime-jaquez-jr",
-      "name": "Jaime Jaquez Jr.",
-      "position": "SF, SG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5939141,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-ousmane-dieng",
-      "name": "Ousmane Dieng",
-      "position": "PF",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5750000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5750000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 5750000,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-nate-ament",
-      "name": "Nate Ament",
-      "position": "SF, SG",
-      "age": 19,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5502000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5777280,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 6052200,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 8648594,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kevin-porterjr",
-      "name": "Kevin Porter Jr.",
-      "position": "PG, SG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5390700,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kelel-ware",
-      "name": "Kel'el Ware",
-      "position": "C",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4654920,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 7135992,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-ryan-rollins",
-      "name": "Ryan Rollins",
-      "position": "SG",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 4000000,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kasparas-jakucionis",
-      "name": "Kasparas Jakucionis",
-      "position": "PG, SG",
-      "age": 20,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3841680,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 4024440,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 6205686,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-jericho-sims",
-      "name": "Jericho Sims",
-      "position": "PF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2801346,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-pete-nance",
-      "name": "Pete Nance",
-      "position": "PF, C",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2537526,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2756912,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-bogoljub-markovic",
-      "name": "Bogoljub Marković",
-      "position": "PF",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 1357763,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2294370,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2694363,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 2918152,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jake-stephens",
-      "name": "Jake Stephens",
-      "position": "C",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 1357763,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kam-jones",
-      "name": "Kam Jones",
-      "position": "SG, PG",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 678882,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-cormac-ryan",
-      "name": "Cormac Ryan",
-      "position": "PG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 85300,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
-  "LAC": [
-    {
-      "id": "ss-darius-garland",
-      "name": "Darius Garland",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 42166510,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 44886930,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-brandon-ingram",
-      "name": "Brandon Ingram",
-      "position": "PF, SF",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 40000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 41904762,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-max-strus",
-      "name": "Max Strus",
-      "position": "SG, SF",
-      "age": 30,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 16660836,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-rui-hachimura",
-      "name": "Rui Hachimura",
-      "position": "PF",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 14000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 14000000,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "MLE"
-    },
-    {
-      "id": "ss-derrick-jonesjr",
-      "name": "Derrick Jones Jr.",
-      "position": "PF, SF",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 10476190,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-keaton-wagler",
-      "name": "Keaton Wagler",
-      "position": "SG, PG",
-      "age": 19,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 9674760,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 10158240,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 10641960,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 13483363,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-brook-lopez",
-      "name": "Brook Lopez",
-      "position": "C",
-      "age": 38,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 9187500,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-gradey-dick",
-      "name": "Gradey Dick",
-      "position": "SG, SF",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 7131510,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-isaiah-jackson",
-      "name": "Isaiah Jackson",
-      "position": "C",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 7000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6400000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-kris-dunn",
-      "name": "Kris Dunn",
-      "position": "PG",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5684800,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-jordan-miller",
-      "name": "Jordan Miller",
-      "position": "SF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5300000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 5000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 5000000,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-yanic-niederhauser",
-      "name": "Yanic Niederhauser",
-      "position": "C",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2880960,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 3018480,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 5448356,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-kobe-sanders",
-      "name": "Kobe Sanders",
-      "position": "SG, SF",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2622139,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2753246,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2884353,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 3019000,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-cameron-christie",
-      "name": "Cameron Christie",
-      "position": "PG",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2296271,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2486995,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-baba-miller",
-      "name": "Baba Miller",
-      "position": "C",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 1705630,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2294370,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2694363,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 2918152,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-bradley-beal",
-      "name": "Bradley Beal",
-      "position": "SG",
-      "age": 33,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 6424800,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 6746040,
-          "option": "player"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-nick-martinelli",
-      "name": "Nick Martinelli",
-      "position": "SF, PF",
-      "age": 22,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 749083,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-jalen-pickett",
-      "name": "Jalen Pickett",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
   "DAL": [
     {
       "id": "ss-kyrie-irving",
@@ -9961,7 +9549,7 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "id": "ss-caleb-martin",
       "name": "Caleb Martin",
       "position": "SF",
-      "age": 30,
+      "age": 31,
       "contract": [
         {
           "season": 2026,
@@ -10256,6 +9844,857 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
         },
         {
           "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "LAC": [
+    {
+      "id": "ss-darius-garland",
+      "name": "Darius Garland",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 42166510,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 44886930,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-brandon-ingram",
+      "name": "Brandon Ingram",
+      "position": "PF, SF",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 40000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 41904762,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-max-strus",
+      "name": "Max Strus",
+      "position": "SG, SF",
+      "age": 30,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 16660836,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-rui-hachimura",
+      "name": "Rui Hachimura",
+      "position": "PF",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 14000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 14000000,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "MLE"
+    },
+    {
+      "id": "ss-derrick-jonesjr",
+      "name": "Derrick Jones Jr.",
+      "position": "PF, SF",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 10476190,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-keaton-wagler",
+      "name": "Keaton Wagler",
+      "position": "SG, PG",
+      "age": 19,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 9674760,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 10158240,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 10641960,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 13483363,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-brook-lopez",
+      "name": "Brook Lopez",
+      "position": "C",
+      "age": 38,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 9187500,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-gradey-dick",
+      "name": "Gradey Dick",
+      "position": "SG, SF",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 7131510,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-isaiah-jackson",
+      "name": "Isaiah Jackson",
+      "position": "C",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 7000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6400000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-bradley-beal",
+      "name": "Bradley Beal",
+      "position": "SG",
+      "age": 33,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 6424800,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 6746040,
+          "option": "player"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-kris-dunn",
+      "name": "Kris Dunn",
+      "position": "PG",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5684800,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-jordan-miller",
+      "name": "Jordan Miller",
+      "position": "SF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5300000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 5000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 5000000,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-yanic-niederhauser",
+      "name": "Yanic Niederhauser",
+      "position": "C",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2880960,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 3018480,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 5448356,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-kobe-sanders",
+      "name": "Kobe Sanders",
+      "position": "SG, SF",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2622139,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2753246,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2884353,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 3019000,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-cameron-christie",
+      "name": "Cameron Christie",
+      "position": "PG",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2296271,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2486995,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-baba-miller",
+      "name": "Baba Miller",
+      "position": "C",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 1705630,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2294370,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2694363,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 2918152,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-nick-martinelli",
+      "name": "Nick Martinelli",
+      "position": "SF, PF",
+      "age": 22,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 749083,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-jalen-pickett",
+      "name": "Jalen Pickett",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    }
+  ],
+  "DET": [
+    {
+      "id": "ss-cade-cunningham",
+      "name": "Cade Cunningham",
+      "position": "PG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 50105628,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 53817156,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 57528684,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 61240212,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ],
+      "signedUsing": "Max"
+    },
+    {
+      "id": "ss-john-collins",
+      "name": "John Collins",
+      "position": "PF",
+      "age": 29,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 17000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 17000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 17000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-duncan-robinson",
+      "name": "Duncan Robinson",
+      "position": "PF, SF",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 15992957,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 15151222,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-isaiah-joe",
+      "name": "Isaiah Joe",
+      "position": "SG",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 11323006,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 11323006,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-ausar-thompson",
+      "name": "Ausar Thompson",
+      "position": "SG, SF",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 11117925,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 26724138,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 28862069,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2029,
+          "salary": 31000000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2030,
+          "salary": 33137931,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2031,
+          "salary": 35275862,
+          "option": "guaranteed"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-kevin-huerter",
+      "name": "Kevin Huerter",
+      "position": "SG",
+      "age": 28,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 9507042,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 8746479,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 8746479,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-ron-holland-ii",
+      "name": "Ron Holland II",
+      "position": "SF, PF",
+      "age": 21,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 9069600,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 11491183,
+          "option": "team"
+        },
+        {
+          "season": 2028,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "RSC"
+    },
+    {
+      "id": "ss-paul-reed",
+      "name": "Paul Reed",
+      "position": "C, PF",
+      "age": 27,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 5602689,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-ebuka-okorie",
+      "name": "Ebuka Okorie",
+      "position": "PG",
+      "age": 19,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4481280,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 4705440,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 4929360,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 7571497,
+          "option": "team"
+        },
+        {
+          "season": 2030,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-daniss-jenkins",
+      "name": "Daniss Jenkins",
+      "position": "PG",
+      "age": 25,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 4000000,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-javonte-green",
+      "name": "Javonte Green",
+      "position": "SF",
+      "age": 33,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3943679,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-taurean-prince",
+      "name": "Taurean Prince",
+      "position": "SF",
+      "age": 32,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 3815861,
+          "option": "player"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "ufa"
+        }
+      ]
+    },
+    {
+      "id": "ss-tolu-smith-iii",
+      "name": "Tolu Smith III",
+      "position": "PF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2411090,
+          "option": "team"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-chaz-lanier",
+      "name": "Chaz Lanier",
+      "position": "SG",
+      "age": 24,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 2150917,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 2525901,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
+          "salary": 2735698,
+          "option": "team"
+        },
+        {
+          "season": 2029,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ]
+    },
+    {
+      "id": "ss-elijah-harkless",
+      "name": "Elijah Harkless",
+      "position": "PG",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-isaac-jones",
+      "name": "Isaac Jones",
+      "position": "PF",
+      "age": 26,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 680985,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 0,
+          "option": "rfa"
+        }
+      ],
+      "signedUsing": "Two-Way",
+      "twoWay": true
+    },
+    {
+      "id": "ss-ugonna-onyenso",
+      "name": "Ugonna Onyenso",
+      "position": "C",
+      "age": 23,
+      "contract": [
+        {
+          "season": 2026,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2027,
+          "salary": 91000,
+          "option": "guaranteed"
+        },
+        {
+          "season": 2028,
           "salary": 0,
           "option": "rfa"
         }
@@ -11081,441 +11520,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
       "twoWay": true
     }
   ],
-  "DET": [
-    {
-      "id": "ss-cade-cunningham",
-      "name": "Cade Cunningham",
-      "position": "PG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 50105628,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 53817156,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 57528684,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 61240212,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ],
-      "signedUsing": "Max"
-    },
-    {
-      "id": "ss-john-collins",
-      "name": "John Collins",
-      "position": "PF",
-      "age": 29,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 17000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 17000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 17000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-duncan-robinson",
-      "name": "Duncan Robinson",
-      "position": "PF, SF",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 15992957,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 15151222,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-isaiah-joe",
-      "name": "Isaiah Joe",
-      "position": "SG",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 11323006,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 11323006,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-ausar-thompson",
-      "name": "Ausar Thompson",
-      "position": "SG, SF",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 11117925,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 26724138,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 28862069,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2029,
-          "salary": 31000000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2030,
-          "salary": 33137931,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2031,
-          "salary": 35275862,
-          "option": "guaranteed"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-kevin-huerter",
-      "name": "Kevin Huerter",
-      "position": "SG",
-      "age": 28,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 9507042,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 8746479,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 8746479,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-ron-holland-ii",
-      "name": "Ron Holland II",
-      "position": "SF, PF",
-      "age": 21,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 9069600,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 11491183,
-          "option": "team"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-paul-reed",
-      "name": "Paul Reed",
-      "position": "C, PF",
-      "age": 27,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 5602689,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-ebuka-okorie",
-      "name": "Ebuka Okorie",
-      "position": "PG",
-      "age": 19,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4481280,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 4705440,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 4929360,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 7571497,
-          "option": "team"
-        },
-        {
-          "season": 2030,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-daniss-jenkins",
-      "name": "Daniss Jenkins",
-      "position": "PG",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 4000000,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-javonte-green",
-      "name": "Javonte Green",
-      "position": "SF",
-      "age": 33,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3943679,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-gary-harris",
-      "name": "Gary Harris",
-      "position": "SG",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3815861,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-taurean-prince",
-      "name": "Taurean Prince",
-      "position": "SF",
-      "age": 32,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 3815861,
-          "option": "player"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "ufa"
-        }
-      ]
-    },
-    {
-      "id": "ss-tolu-smith-iii",
-      "name": "Tolu Smith III",
-      "position": "PF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2411090,
-          "option": "team"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-chaz-lanier",
-      "name": "Chaz Lanier",
-      "position": "SG",
-      "age": 24,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 2525901,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 2735698,
-          "option": "team"
-        },
-        {
-          "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-elijah-harkless",
-      "name": "Elijah Harkless",
-      "position": "PG",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-isaac-jones",
-      "name": "Isaac Jones",
-      "position": "PF",
-      "age": 26,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 680985,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    },
-    {
-      "id": "ss-ugonna-onyenso",
-      "name": "Ugonna Onyenso",
-      "position": "C",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 91000,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2028,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ],
-      "signedUsing": "Two-Way",
-      "twoWay": true
-    }
-  ],
   "CHA": [
     {
       "id": "ss-coby-white",
@@ -11943,24 +11947,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
         },
         {
           "season": 2029,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
-    },
-    {
-      "id": "ss-ryan-nembhard",
-      "name": "Ryan Nembhard",
-      "position": "PG",
-      "age": 23,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 2150917,
-          "option": "team"
-        },
-        {
-          "season": 2027,
           "salary": 0,
           "option": "rfa"
         }
@@ -12424,24 +12410,6 @@ export const SEEDED_ROSTERS: Record<string, Player[]> = {
         }
       ],
       "signedUsing": "RSC"
-    },
-    {
-      "id": "ss-nick-pringle",
-      "name": "Nick Pringle",
-      "position": "PF",
-      "age": 25,
-      "contract": [
-        {
-          "season": 2026,
-          "salary": 1357763,
-          "option": "guaranteed"
-        },
-        {
-          "season": 2027,
-          "salary": 0,
-          "option": "rfa"
-        }
-      ]
     },
     {
       "id": "ss-tyler-bilodeau",
