@@ -178,9 +178,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "WAS": {
-    "initial": 5477000,
+    "initial": 5283411,
     "used": 0,
-    "space": 5477000,
-    "note": "BAE Limit"
+    "space": 5283411,
+    "note": "BAE Limit (Reduced by apron room)"
   }
 };
