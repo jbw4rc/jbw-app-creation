@@ -11,6 +11,7 @@ on:
     branches: [claude/nba-roster-apron-analyzer-u6oonq]
     paths:
       - 'scripts/build-aging-curve.mjs'
+      - 'scripts/lib/darko-data.mjs'
       - '.github/workflows/build-aging-curve.yml'
 
 permissions:

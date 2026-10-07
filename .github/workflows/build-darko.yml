@@ -1,14 +1,19 @@
-# Pull DARKO DPM from darko.app and commit the seed. Runs on GitHub's runners.
+# Pull DARKO from darko.app and commit the seed. Runs on GitHub's runners.
+# Daily: bulk routes only (+ per-player pages for anyone missing slow fields).
+# Weekly (Mon), manual, and on-push runs are FULL: refetch every player page too
+# (position archetype, aging curve, rookie season, retirement age).
 name: Build DARKO
 
 on:
   workflow_dispatch:
   schedule:
     - cron: '30 12 * * *' # daily, 12:30 UTC
+    - cron: '0 10 * * 1'  # weekly FULL refresh, Mondays 10:00 UTC
   push:
     branches: [claude/nba-roster-apron-analyzer-u6oonq]
     paths:
       - 'scripts/build-darko.mjs'
+      - 'scripts/lib/darko-data.mjs'
       - '.github/workflows/build-darko.yml'
 
 permissions:
@@ -17,12 +22,15 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Pull DARKO DPM
+      - name: Pull DARKO
+        env:
+          DARKO_FULL: ${{ github.event.schedule != '30 12 * * *' }}
         run: node scripts/build-darko.mjs
       - name: Commit seed if changed
         run: |

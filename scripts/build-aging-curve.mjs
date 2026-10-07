@@ -18,62 +18,26 @@
 // talent-blind curve); a talent-bucketed version is a planned follow-up.
 import { writeFileSync } from 'fs';
 
-const H = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
-  Accept: 'text/html,application/json,*/*',
-};
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+import { routeData, playerRows, fetchPlayer, sleep } from './lib/darko-data.mjs';
 
-// 1) Get the current player universe (nba_id + name) from the homepage blob.
+// 1) Get the current player universe (nba_id) from darko.app's projections route.
 console.log('Fetching DARKO player list…');
-const home = await (await fetch('https://darko.app/', { headers: H })).text();
-const scripts = [...home.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
-const big = scripts.filter((x) => /player_name:/.test(x)).sort((a, b) => b.length - a.length)[0] || '';
-const ids = [];
-const seen = new Set();
-for (const m of big.matchAll(/nba_id:(\d+),date:"[^"]*",season:\d+/g)) {
-  const id = m[1];
-  if (!seen.has(id)) { seen.add(id); ids.push(id); }
-}
-// Fallback: any nba_id followed later by a player_name.
-if (ids.length < 100) {
-  for (const m of big.matchAll(/nba_id:(\d+)/g)) {
-    const id = m[1];
-    if (!seen.has(id)) { seen.add(id); ids.push(id); }
-  }
-}
+const universe = playerRows((await routeData('/projections')).players);
+const ids = [...new Set(universe.map((r) => r.nba_id).filter((x) => x != null).map(String))];
 console.log(`  ${ids.length} players`);
-if (ids.length < 100) throw new Error('player list too small — layout changed');
+if (ids.length < 300) throw new Error(`player list too small (${ids.length}) — site layout changed`);
 
-// SvelteKit __data.json dedup decoder: root maps field->index into flat array.
-function decodeHistory(json) {
-  let j;
-  try { j = JSON.parse(json); } catch { return null; }
-  const node = (j.nodes || []).find((n) => n && n.type === 'data' && Array.isArray(n.data));
-  if (!node) return null;
-  const D = node.data;
-  const root = D[0];
-  if (!root || typeof root !== 'object') return null;
-  const rowsIdx = root.historyRows;
-  if (rowsIdx == null || !Array.isArray(D[rowsIdx])) return null;
-  const rows = D[rowsIdx];
-  const out = [];
-  for (const ri of rows) {
-    const o = D[ri];
-    if (!o || typeof o !== 'object') continue;
-    const g = (k) => D[o[k]];
-    out.push({
-      season: g('season'),
-      dpm: g('dpm'),
-      age: g('age'),
-      poss: g('poss'),
-      futureGame: g('future_game'),
-      cgn: g('career_game_num'),
-      secs: g('seconds_played'),
-    });
-  }
-  return out;
+// A player's per-game history, as the row shape the season reducer below expects.
+function toHistory(rows) {
+  return rows.map((o) => ({
+    season: o.season,
+    dpm: o.dpm,
+    age: o.age,
+    poss: o.poss,
+    futureGame: o.future_game,
+    cgn: o.career_game_num,
+    secs: o.seconds_played,
+  }));
 }
 
 // 2) For each player, reduce history to one row per PLAYED season: the last
@@ -106,13 +70,14 @@ let players = 0, playerSeasons = 0, deltas = 0;
 
 let done = 0;
 for (const id of ids) {
-  let body;
+  let hist = null;
   try {
-    const r = await fetch(`https://darko.app/player/${id}/__data.json`, { headers: H });
-    if (!r.ok) { await sleep(60); continue; }
-    body = await r.text();
+    const p = await fetchPlayer(id, { history: true });
+    if (p?.history?.length) {
+      if (done === 0) console.log(`  history columns: ${Object.keys(p.history[0]).join(' ')}`);
+      hist = toHistory(p.history);
+    } else { await sleep(60); continue; }
   } catch { await sleep(120); continue; }
-  const hist = decodeHistory(body);
   if (hist) {
     const rows = seasonRows(hist).filter((r) => r.secs >= MIN_SECS);
     if (rows.length) { players++; playerSeasons += rows.length; }
@@ -207,6 +172,10 @@ console.log('\n  tier trajectories from age 20 (proj DPM at +1..+6 yrs):');
 for (const [name, d0] of [['low  (-1.5)', -1.5], ['mid  (+0.5)', 0.5], ['high (+3.0)', 3.0]]) {
   const path = [1, 2, 3, 4, 5, 6].map((k) => project(20, d0, k).toFixed(2));
   console.log(`  ${name}: ${path.join('  ')}`);
+}
+
+if (players < 250 || deltas < 800) {
+  throw new Error(`too little history decoded (players ${players}, deltas ${deltas}) — refusing to overwrite the aging curve`);
 }
 
 writeFileSync(
