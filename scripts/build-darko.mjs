@@ -172,7 +172,16 @@ for (const [key, old] of Object.entries(prev)) {
   const ageDays = (Date.parse(today) - Date.parse(since)) / 86_400_000;
   dropped.push(old.name);
   if (ageDays <= STALE_KEEP_DAYS) {
-    out[key] = { ...old, stale: true, staleSince: since };
+    // Normalise to the current record shape (older seeds lack some fields).
+    out[key] = {
+      ...old,
+      id: old.id ?? null,
+      rookieSeason: old.rookieSeason ?? null,
+      retirementAge: old.retirementAge ?? null,
+      box: old.box ? { fgpct: null, ftpct: null, ...old.box } : null,
+      stale: true,
+      staleSince: since,
+    };
     kept++;
   }
 }
@@ -194,6 +203,9 @@ writeFileSync(
   SEED_PATH,
   `// AUTO-GENERATED DARKO Daily Plus-Minus (DPM) from darko.app.\n` +
     `// Regenerate: node scripts/build-darko.mjs [--full]\n` +
+    `// NOTE: \`decline[i]\` is DARKO's s(i+1) — the PROBABILITY the player is still on an NBA\n` +
+    `// roster i seasons from now (index 0 = this season). It is roster retention, not talent\n` +
+    `// decline: never multiply it into DPM. Age DPM with src/data/agingCurve.ts instead.\n` +
     `export interface DarkoBox { pts: number | null; ast: number | null; reb: number | null; orb: number | null; drb: number | null; stl: number | null; blk: number | null; tov: number | null; fga: number | null; fg3a: number | null; fta: number | null; fgpct: number | null; fg3pct: number | null; ftpct: number | null; }\n` +
     `export interface DarkoInfo { id?: number | null; name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; xpos: string | null; posNum: number | null; min: number | null; rookieSeason: number | null; retirementAge: number | null; box: DarkoBox | null; decline: (number | null)[]; stale?: boolean; staleSince?: string; }\n` +
     `export interface DarkoMeta { asOf: string | null; ratingsThrough: string | null; pulledAt: string; mode: string; players: number; }\n\n` +

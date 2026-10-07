@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { SEEDED_STATS } from '../data/seededStats';
-import { SEEDED_DARKO } from '../data/seededDarko';
+import { SEEDED_DARKO, DARKO_META } from '../data/seededDarko';
 import { STAT_COLUMNS, type PlayerStats, type StatColumn, type StatGroup } from '../data/statsTypes';
 import { TEAMS } from '../data/teams';
 import { useTeams } from '../lib/teamStore';
 import { positionGroup, POS_LABEL, POS_ORDER, type PosGroup } from '../lib/position';
+import { agingDpmDelta } from '../lib/contract';
 
 const FREE_AGENT = 'FA';
 
@@ -33,25 +34,39 @@ for (const t of TEAMS) for (const pl of t.players) CURRENT_TEAM[norm(pl.name)] =
 
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
-// Stats rows augmented with DARKO (DPM, projected box line, aging trajectory)
-// and re-keyed to the current team (once).
+// "Jul 26" style day label from an ISO date or timestamp.
+const fmtDay = (iso: string) => {
+  const d = new Date(iso.length === 10 ? `${iso}T12:00:00` : iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+// Flag the pull as stale if the daily job hasn't refreshed it in 3+ days.
+const darkoStale = Date.now() - Date.parse(DARKO_META.pulledAt) > 3 * 86_400_000;
+
+// Stats rows augmented with DARKO (DPM, projected box line, aging outlook) and
+// re-keyed to the current team (once).
 const ROWS: PlayerStats[] = SEEDED_STATS.players.map((p) => {
   const d = SEEDED_DARKO[norm(p.name)];
   let row: PlayerStats = { ...p };
   if (d) {
     const b = d.box;
-    const dec = d.decline ?? [];
-    // Projected DPM n seasons out = current DPM × the player's retention curve
-    // (dec[0] = this season = 1.0, dec[n] = n seasons out).
-    const projDpm = (n: number) => (d.dpm != null && dec[n] != null ? round1(d.dpm * (dec[n] as number)) : null);
+    // DARKO's age is current (the BBRef age is as of last season's Feb 1).
+    const age = d.age != null ? Math.floor(d.age) : p.age;
+    // DPM n seasons out on the empirical, talent-aware aging curve.
+    const projDpm = (n: number) => (d.dpm != null && d.age != null ? round1(d.dpm + agingDpmDelta(d.age, n, d.dpm)) : null);
+    // DARKO's s-curve is a roster-retention PROBABILITY (index 0 = this season),
+    // not talent decline — shown on its own, never multiplied into DPM.
+    const stay = (n: number) => d.decline?.[n] ?? null;
     row = {
       ...p,
+      age,
       dpm: d.dpm, odpm: d.odpm, ddpm: d.ddpm, salary: d.salary, value: d.value, surplus: d.surplus,
       pts100: b?.pts ?? null, ast100: b?.ast ?? null, orb100: b?.orb ?? null, drb100: b?.drb ?? null,
       stl100: b?.stl ?? null, blk100: b?.blk ?? null, tov100: b?.tov ?? null,
       fga100: b?.fga ?? null, fg3a100: b?.fg3a ?? null, fta100: b?.fta ?? null,
-      xFg3Pct: b?.fg3pct ?? null,
+      xFgPct: b?.fgpct ?? null, xFg3Pct: b?.fg3pct ?? null, xFtPct: b?.ftpct ?? null,
+      rookieSeason: d.rookieSeason ?? null, retirementAge: d.retirementAge ?? null,
       dpmY1: projDpm(1), dpmY2: projDpm(2), dpmY3: projDpm(3), dpmY4: projDpm(4), dpmY5: projDpm(5),
+      retY1: stay(1), retY3: stay(3), retY5: stay(5),
     };
   }
   const ct = CURRENT_TEAM[norm(p.name)] ?? FREE_AGENT;
@@ -142,6 +157,15 @@ export function StatsExplorer() {
           </h2>
           <span className="stats-sub">
             {bundle.players.length} players · source {bundle.source}
+            {DARKO_META.asOf && (
+              <>
+                {' · '}
+                <span style={darkoStale ? { color: 'var(--coral)' } : undefined} title={`DARKO projections are dated ${DARKO_META.asOf}${DARKO_META.ratingsThrough ? ` (ratings through ${DARKO_META.ratingsThrough})` : ''}; last pulled ${DARKO_META.pulledAt}`}>
+                  DARKO as of {fmtDay(DARKO_META.asOf)} · pulled {fmtDay(DARKO_META.pulledAt)}
+                  {darkoStale ? ' — stale' : ''}
+                </span>
+              </>
+            )}
           </span>
         </div>
         <div className="stats-modes">

@@ -67,16 +67,26 @@ export interface PlayerStats {
   fga100?: number | null;
   fg3a100?: number | null;
   fta100?: number | null;
-  /** DARKO projected 3-point % (stored 0–1). */
+  /** DARKO projected shooting percentages (stored 0–1). */
+  xFgPct?: number | null;
   xFg3Pct?: number | null;
+  xFtPct?: number | null;
 
   // Aging view.
-  /** Projected DPM 1–5 seasons out (current DPM × DARKO retention curve). */
+  /** Season the player entered the NBA (DARKO). */
+  rookieSeason?: number | null;
+  /** DARKO's projected retirement age. */
+  retirementAge?: number | null;
+  /** DPM projected 1–5 seasons out on the empirical aging curve (talent-aware). */
   dpmY1?: number | null;
   dpmY2?: number | null;
   dpmY3?: number | null;
   dpmY4?: number | null;
   dpmY5?: number | null;
+  /** DARKO roster-retention probability (0–1): still in the league 1/3/5 seasons out. */
+  retY1?: number | null;
+  retY3?: number | null;
+  retY5?: number | null;
 }
 
 export interface StatsBundle {
@@ -128,14 +138,21 @@ export const STAT_COLUMNS: StatColumn[] = [
   { key: 'fga100', label: 'FGA/100', title: 'DARKO projected field-goal attempts per 100 possessions', decimals: 1, groups: ['projected'] },
   { key: 'fg3a100', label: '3PA/100', title: 'DARKO projected 3-point attempts per 100 possessions', decimals: 1, groups: ['projected'] },
   { key: 'fta100', label: 'FTA/100', title: 'DARKO projected free-throw attempts per 100 possessions', decimals: 1, groups: ['projected'] },
+  { key: 'xFgPct', label: 'xFG%', title: 'DARKO projected field-goal percentage', decimals: 1, percent: true, groups: ['projected'] },
   { key: 'xFg3Pct', label: 'x3P%', title: 'DARKO projected 3-point percentage', decimals: 1, percent: true, groups: ['projected'] },
+  { key: 'xFtPct', label: 'xFT%', title: 'DARKO projected free-throw percentage', decimals: 1, percent: true, groups: ['projected'] },
 
-  // Aging view: current impact + the projected-DPM trajectory.
-  { key: 'dpmY1', label: 'DPM +1', title: 'Projected DPM one season out (current DPM × DARKO retention curve)', decimals: 1, groups: ['aging'] },
-  { key: 'dpmY2', label: 'DPM +2', title: 'Projected DPM two seasons out', decimals: 1, groups: ['aging'] },
-  { key: 'dpmY3', label: 'DPM +3', title: 'Projected DPM three seasons out', decimals: 1, groups: ['aging'] },
-  { key: 'dpmY4', label: 'DPM +4', title: 'Projected DPM four seasons out', decimals: 1, groups: ['aging'] },
-  { key: 'dpmY5', label: 'DPM +5', title: 'Projected DPM five seasons out', decimals: 1, groups: ['aging'] },
+  // Aging view: current impact, the aged-DPM trajectory, and DARKO's longevity outlook.
+  { key: 'dpmY1', label: 'DPM +1', title: 'DPM one season out, aged on the empirical aging curve (talent-aware: young high-DPM players develop, stars mean-revert)', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY2', label: 'DPM +2', title: 'DPM two seasons out (empirical aging curve)', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY3', label: 'DPM +3', title: 'DPM three seasons out (empirical aging curve)', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY4', label: 'DPM +4', title: 'DPM four seasons out (empirical aging curve)', decimals: 1, groups: ['aging'] },
+  { key: 'dpmY5', label: 'DPM +5', title: 'DPM five seasons out (empirical aging curve)', decimals: 1, groups: ['aging'] },
+  { key: 'retY1', label: 'Stay +1', title: "DARKO roster-retention probability: chance the player is still in the NBA one season out (%)", decimals: 0, percent: true, groups: ['aging'] },
+  { key: 'retY3', label: 'Stay +3', title: 'DARKO roster-retention probability three seasons out (%)', decimals: 0, percent: true, groups: ['aging'] },
+  { key: 'retY5', label: 'Stay +5', title: 'DARKO roster-retention probability five seasons out (%)', decimals: 0, percent: true, groups: ['aging'] },
+  { key: 'rookieSeason', label: 'Rookie Yr', title: 'Season the player entered the NBA', decimals: 0, groups: ['aging'], higherBetter: false },
+  { key: 'retirementAge', label: 'Exp. Ret.', title: "DARKO's projected retirement age", decimals: 0, groups: ['aging'] },
 
   { key: 'pts', label: 'PTS', title: 'Points per game', decimals: 1, groups: ['box'] },
   { key: 'trb', label: 'REB', title: 'Rebounds per game', decimals: 1, groups: ['box'] },
