@@ -28,20 +28,23 @@ console.log(`  ${ids.length} players`);
 if (ids.length < 300) throw new Error(`player list too small (${ids.length}) — site layout changed`);
 
 // A player's per-game history, as the row shape the season reducer below expects.
+// History rows are one per game: {date, season, seconds_played, future_game, dpm,
+// age, …}. (`poss` and `career_game_num` were removed from the feed in 2026, so a
+// game counts as played if seconds_played > 0, and the date orders games.)
 function toHistory(rows) {
   return rows.map((o) => ({
     season: o.season,
     dpm: o.dpm,
     age: o.age,
-    poss: o.poss,
+    poss: o.seconds_played, // played-in-game test (any minutes)
     futureGame: o.future_game,
-    cgn: o.career_game_num,
+    cgn: Date.parse(o.date) || 0, // later game => larger
     secs: o.seconds_played,
   }));
 }
 
 // 2) For each player, reduce history to one row per PLAYED season: the last
-// game (max career_game_num) with real minutes = DARKO's end-of-season talent
+// game (latest date) with real minutes = DARKO's end-of-season talent
 // estimate. Also accumulate that season's total seconds for weighting.
 function seasonRows(hist) {
   const bySeason = new Map();
