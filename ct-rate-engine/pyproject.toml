@@ -1,0 +1,48 @@
+[project]
+name = "ct-rate-engine"
+version = "0.1.0"
+description = "Automated pull + extraction + rating of CT homeowners & private-flood SERFF rate filings"
+requires-python = ">=3.11"
+readme = "README.md"
+
+# Core dependencies are grouped so each phase can be installed independently.
+# The rating engine (Phase 3) + its tests need NONE of the scraping/PDF stack.
+dependencies = [
+    "pydantic>=2.6",
+]
+
+[project.optional-dependencies]
+scraper = [
+    "playwright>=1.44",
+]
+extractor = [
+    "pdfplumber>=0.11",
+    "camelot-py[base]>=0.11",
+    "pytesseract>=0.3.10",
+    "pdf2image>=1.17",
+    "Pillow>=10.0",
+]
+api = [
+    "fastapi>=0.111",
+    "uvicorn>=0.30",
+]
+dev = [
+    "pytest>=8.0",
+    "mypy>=1.10",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["scraper", "extractor", "engine"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+disallow_untyped_defs = true

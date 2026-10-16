@@ -1,0 +1,23 @@
+# Full install for all three phases. For a lighter install, use the extras in
+# pyproject.toml (e.g. `pip install -e '.[dev]'` for just the engine + tests).
+
+# --- shared ---
+pydantic>=2.6
+
+# --- Phase 1: scraper ---
+playwright>=1.44
+
+# --- Phase 2: extractor ---
+pdfplumber>=0.11
+camelot-py[base]>=0.11
+pytesseract>=0.3.10
+pdf2image>=1.17
+Pillow>=10.0
+
+# --- Phase 3: rating engine + API ---
+fastapi>=0.111
+uvicorn>=0.30
+
+# --- dev / test ---
+pytest>=8.0
+mypy>=1.10

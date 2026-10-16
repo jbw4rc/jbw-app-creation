@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Scraped / generated data (keep the tree, ignore the payloads)
+data/raw/**/*.pdf
+data/raw/**/*.PDF
+data/index.sqlite
+data/reviews/*/pages/
+
+# Playwright auth/session state
+scraper/.auth/
