@@ -1,0 +1,55 @@
+# Poll Resy (Cru) and OpenTable (The Nautilus) for open tables and push an
+# alert (via ntfy.sh) the moment one appears. Runs on GitHub's runners,
+# which can reach these sites (unlike the dev sandbox).
+#
+# NOTE: scheduled (cron) triggers only fire off the repo's default branch.
+# Until this is merged to main, use "Run workflow" (workflow_dispatch) to
+# test it manually.
+name: Reservation watcher
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '*/10 * * * *' # every 10 minutes
+
+concurrency:
+  group: reservation-watcher
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: restaurant-reservation-watcher
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('restaurant-reservation-watcher/requirements.txt') }}
+
+      - name: Restore watcher state
+        uses: actions/cache@v4
+        with:
+          path: restaurant-reservation-watcher/state.json
+          key: reservation-watcher-state-${{ github.run_id }}
+          restore-keys: |
+            reservation-watcher-state-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Check availability
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python check_once.py

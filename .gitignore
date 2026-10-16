@@ -16,3 +16,10 @@ signings-debug.txt
 repeater-debug.txt
 darko-debug.txt
 tw-debug.txt
+
+# Reservation watcher
+restaurant-reservation-watcher/state.json
+restaurant-reservation-watcher/debug_opentable_*.html
+restaurant-reservation-watcher/.venv/
+__pycache__/
+*.pyc

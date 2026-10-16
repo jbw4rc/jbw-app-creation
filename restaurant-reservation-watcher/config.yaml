@@ -1,0 +1,16 @@
+# Reservation Watcher config
+# Dates and party sizes for the current watch. Edit and commit to change what's monitored.
+
+watches:
+  - name: "Cru"
+    platform: resy
+    venue_slug: cru
+    location: nantucket-ma
+    dates: ["2026-08-26", "2026-08-27", "2026-08-28"]
+    party_sizes: [2, 3, 4, 5]
+
+  - name: "The Nautilus"
+    platform: opentable
+    slug: the-nautilus-nantucket
+    dates: ["2026-08-26", "2026-08-27", "2026-08-28"]
+    party_sizes: [2, 3, 4, 5]
