@@ -4,16 +4,16 @@ export interface BaeInfo { initial: number; used: number; space: number; note: s
 
 export const SEEDED_BAE: Record<string, BaeInfo> = {
   "ATL": {
-    "initial": 4022710,
+    "initial": 5477000,
     "used": 0,
-    "space": 4022710,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "BOS": {
-    "initial": 757415,
+    "initial": 5477000,
     "used": 0,
-    "space": 757415,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "BKN": {
     "initial": 0,
@@ -34,9 +34,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "Cap Room Used ( Norman Powell )"
   },
   "CLE": {
-    "initial": 0,
+    "initial": 1864482,
     "used": 0,
-    "space": 0,
+    "space": 1864482,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "DAL": {
@@ -70,9 +70,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "Cap Room Used ( Tari Eason )"
   },
   "IND": {
-    "initial": 0,
+    "initial": 2235068,
     "used": 0,
-    "space": 0,
+    "space": 2235068,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "LAC": {
@@ -94,9 +94,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "MIA": {
-    "initial": 0,
+    "initial": 2825744,
     "used": 0,
-    "space": 0,
+    "space": 2825744,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "MIL": {
@@ -112,10 +112,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "Taxpayer-MLE Used ( Jonathan Kuminga )"
   },
   "NOP": {
-    "initial": 2067966,
+    "initial": 5477000,
     "used": 0,
-    "space": 2067966,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   },
   "NYK": {
     "initial": 0,
@@ -136,9 +136,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHI": {
-    "initial": 0,
+    "initial": 5228529,
     "used": 3400000,
-    "space": 0,
+    "space": 1828529,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "PHX": {
@@ -154,10 +154,10 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "SAC": {
-    "initial": 1796334,
+    "initial": 5477000,
     "used": 5477000,
     "space": 0,
-    "note": "BAE Limit (Reduced by apron room)"
+    "note": "BAE Limit"
   },
   "SAS": {
     "initial": 5477000,
@@ -166,9 +166,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "TOR": {
-    "initial": 0,
+    "initial": 1227903,
     "used": 0,
-    "space": 0,
+    "space": 1227903,
     "note": "BAE Limit (Reduced by apron room)"
   },
   "UTA": {
@@ -178,9 +178,9 @@ export const SEEDED_BAE: Record<string, BaeInfo> = {
     "note": "BAE Limit"
   },
   "WAS": {
-    "initial": 5019106,
+    "initial": 5477000,
     "used": 0,
-    "space": 5019106,
-    "note": "BAE Limit (Reduced by apron room)"
+    "space": 5477000,
+    "note": "BAE Limit"
   }
 };
