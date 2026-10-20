@@ -1,6 +1,6 @@
 Pulling rosters from SalarySwish…
-homepage bytes: 358,624
-Discovered 30 teams: DEN:nuggets NYK:knicks GSW:warriors ORL:magic PHX:suns MIN:timberwolves OKC:thunder PHI:sixers CLE:cavaliers HOU:rockets IND:pacers MIA:heat SAC:kings LAL:lakers TOR:raptors ATL:hawks BOS:celtics SAS:spurs NOP:pelicans DET:pistons WAS:wizards POR:trailblazers DAL:mavericks MIL:bucks LAC:clippers UTA:jazz CHA:hornets CHI:bulls MEM:grizzlies BKN:nets
+homepage bytes: 358,600
+Discovered 30 teams: DEN:nuggets NYK:knicks GSW:warriors ORL:magic PHX:suns MIN:timberwolves OKC:thunder PHI:sixers CLE:cavaliers IND:pacers MIA:heat SAC:kings LAL:lakers HOU:rockets TOR:raptors ATL:hawks BOS:celtics SAS:spurs NOP:pelicans DET:pistons WAS:wizards POR:trailblazers DAL:mavericks MIL:bucks LAC:clippers UTA:jazz CHA:hornets CHI:bulls MEM:grizzlies BKN:nets
 
 Team   players  sum2026-27        checksum(exact?)
   ATL    3   $             0   $             0 
@@ -13,22 +13,22 @@ Team   players  sum2026-27        checksum(exact?)
   DEN    3   $             0   $             0 
   DET    3   $             0   $             0 
   GSW    3   $             0   $             0 
-  HOU    2   $             0   $             0 
+  HOU    3   $             0   $             0 
   IND    2   $             0   $             0 
   LAC    3   $             0   $             0 
   LAL    3   $             0   $             0 
   MEM    3   $             0   $             0 
   MIA    3   $             0   $             0 
-  MIL    2   $             0   $             0 
+  MIL    3   $             0   $             0 
   MIN    2   $             0   $             0 
   NOP    3   $             0   $             0 
   NYK    3   $             0   $             0 
   OKC    3   $             0   $             0 
   ORL    3   $             0   $             0 
-  PHI    4   $     3,400,000   $     3,400,000 exact
-  PHX    4   $             0   $             0 
+  PHI    3   $             0   $             0 
+  PHX    3   $             0   $             0 
   POR    3   $             0   $             0 
-  SAC    4   $     2,449,421   $     2,449,421 exact
+  SAC    2   $             0   $             0 
   SAS    3   $             0   $             0 
   TOR    2   $             0   $             0 
   UTA    3   $             0   $             0 
@@ -37,9 +37,9 @@ Team   players  sum2026-27        checksum(exact?)
 Signings: 50 parsed · 0 MLE/BAE tracked
 BAE: 30 teams · 17 with room available
 Tax: bracket $6,064,000 · 10 standard rates · 7 repeaters · bill checksum mismatches: 0/16
-Total players: 87 · picks: 449 · TPEs: 67 · exact checksum matches: 2/30
+Total players: 85 · picks: 449 · TPEs: 67 · exact checksum matches: 0/30
 
-!! BUILD FAILED: Error: only 87 players — layout likely changed
+!! BUILD FAILED: Error: only 85 players — layout likely changed
     at run (file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:480:31)
     at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
     at async file:///home/runner/work/jbw-app-creation/jbw-app-creation/scripts/build-salaries.mjs:373:3
