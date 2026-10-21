@@ -1,38 +1,22 @@
 # Poll The Odds API and commit a snapshot of the NFL board. The accumulated
 # snapshots in src/nfl/data/oddsHistory.ts are the app's line-movement history.
 #
-# NOTE: GitHub only runs `schedule` triggers from the repository's DEFAULT
-# branch. While this lives on a feature branch the cron below never fires — use
-# workflow_dispatch, or merge to main.
-#
-# SCHEDULE = BUDGET. The free tier is 500 credits/month and each poll costs 4
-# (2 regions x 2 markets), so we get ~125 polls a month. The times below spend
-# roughly 82 and put them where the information is: a few midweek reads to catch
-# the opener and early sharp money, then tight coverage on Sunday morning when
-# the real money lands before the 1pm kicks.
+# NO CRON. Polls are triggered on demand only: the scheduled Claude Routines
+# (weekday 10am/5pm ET, Sunday morning, the pre-kickoff closes, SNF), the
+# site's Refresh button, or a manual run. GitHub's own `schedule` trigger used
+# to run here as well, but it fires hours late (a 10am slot landed after 2pm)
+# and on top of the Routines it doubled the spend: the free tier is 500
+# credits/month at 4 per poll, and the duplicate slots burned through it with
+# ten days of the month left. One scheduler, and it is the one that runs on time.
 name: Build NFL odds
 
 on:
   workflow_dispatch:
-  schedule:
-    # Day-of-week is 0-6 here, NOT the POSIX 0-7 where 7 also means Sunday.
-    # A range ending in 7 makes GitHub reject the whole file, and the run then
-    # fails instantly with no jobs and no logs, which looks nothing like a cron
-    # problem. Sunday is spelled 0, and only 0.
-    - cron: '0 2 * * 0,3,4,5,6'     # 10pm ET Tue-Sat
-    # Monday included deliberately. Sunday's last poll to Tuesday morning was a
-    # 45-hour blind spot, and it sat exactly where next week's numbers firm up
-    # and take their first real money. Early-week action against a fresh line is
-    # the most informative thing this board can see, so it is the last window
-    # that should be dark.
-    - cron: '0 14 * * 1-6'         # 10am ET Mon-Sat
-    - cron: '0 20 * * 1-6'         # 4pm ET Mon-Sat
-    - cron: '0 13,15,16,17 * * 0'  # 9/11am, 12/1pm ET Sunday
 
 permissions:
   contents: write
 
-# The site's refresh button, a scheduled check-in and a cron slot can all land
+# The site's refresh button and a scheduled check-in can land
 # at once. Queue them instead of running two polls that race to push, and
 # never cancel one mid-way: the credits are already spent by then.
 concurrency:
