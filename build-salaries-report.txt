@@ -1,5 +1,5 @@
 Pulling rosters from SalarySwish…
-homepage bytes: 358,600
+homepage bytes: 358,022
 Discovered 30 teams: DEN:nuggets NYK:knicks GSW:warriors ORL:magic PHX:suns MIN:timberwolves OKC:thunder PHI:sixers CLE:cavaliers IND:pacers MIA:heat SAC:kings LAL:lakers HOU:rockets TOR:raptors ATL:hawks BOS:celtics SAS:spurs NOP:pelicans DET:pistons WAS:wizards POR:trailblazers DAL:mavericks MIL:bucks LAC:clippers UTA:jazz CHA:hornets CHI:bulls MEM:grizzlies BKN:nets
 
 Team   players  sum2026-27        checksum(exact?)
