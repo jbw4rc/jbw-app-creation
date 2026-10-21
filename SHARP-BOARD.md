@@ -166,7 +166,7 @@ To go live:
 1. Get a free key at [the-odds-api.com](https://the-odds-api.com/).
 2. Add it as a repository secret named `ODDS_API_KEY`
    (Settings → Secrets and variables → Actions).
-3. Run the **Build NFL odds** workflow once by hand, or wait for the schedule.
+3. Run the **Build NFL odds** workflow once by hand (or from the site's Refresh button).
 
 The first live poll replaces the sample file entirely. From then on each poll
 appends a snapshot, and the accumulated series is what movement, steam and
@@ -192,7 +192,7 @@ the setup panel reopens.
 
 Guard rails: the button locks for 15 minutes after any poll. Below 40 credits
 it asks for confirmation before each refresh. Polls are queued with
-`concurrency` so the button, a check-in and a cron slot never race.
+`concurrency` so the button and a scheduled check-in never race.
 
 The credits readout comes from The Odds API's `x-requests-remaining` header,
 which each poll records into `oddsHistory.ts` as `quota`. It turns amber below
@@ -202,16 +202,17 @@ be afforded.
 ### The credit budget
 
 Free tier is 500 credits/month. A poll costs `regions × markets` = 4 credits
-(`us,eu` × `spreads,totals`), giving ~125 polls a month. The schedule runs 21 a
-week — about 91 a month, or 364 credits — leaving roughly 34 polls of headroom
-for manual triggers.
+(`us,eu` × `spreads,totals`), giving ~125 polls a month.
 
-They are placed where the information is: **Monday through Saturday** at 10am
-and 4pm ET to watch next week's numbers open and take their first money, an
-overnight read, then four on Sunday between 9am and 1pm ET as the real money
-lands. Monday matters more than it looks: it used to be skipped, leaving a
-45-hour blind spot from Sunday evening to Tuesday morning sitting exactly where
-fresh lines firm up.
+The workflow has **no cron**. Polls come from the scheduled Claude Routines
+(10am and 5pm ET Monday through Saturday, hourly on Sunday morning, about 15
+minutes before the 1pm and 4pm windows, and just before Sunday Night
+Football), plus the Refresh button and manual runs. That is roughly 19 polls a
+week, about 82 a month, or ~330 credits, which leaves room for refreshes.
+
+GitHub's own `schedule` trigger used to run alongside the Routines. It fired
+three to five hours late and doubled the spend, so it was removed. Do not add a
+cron back without taking the matching Routine away.
 
 `eu` is not optional — that is the region Pinnacle sits in, and Pinnacle is the
 reference price the whole model leans on. Moneylines are deliberately skipped;
