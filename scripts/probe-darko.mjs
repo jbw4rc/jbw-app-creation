@@ -46,3 +46,27 @@ try {
   console.log('Jokic last played rows:', JSON.stringify(last.map((r) => ({ date: r.date, season: r.season, dpm: r.dpm }))));
 } catch (e) { console.log('player page error', e); }
 console.log('===== END PROBE =====');
+
+// ---- SalarySwish: roster-section headers on a team page --------------------
+console.log('\n===== SALARYSWISH =====');
+try {
+  const r = await fetch('https://www.salaryswish.com/teams/knicks', {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
+  });
+  const html = await r.text();
+  console.log(`knicks page: HTTP ${r.status}, ${html.length} bytes`);
+  const strip = (s) => s.replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/g, ' ').replace(/\s+/g, ' ').trim();
+  const tables = html.match(/<table[\s\S]*?<\/table>/gi) || [];
+  console.log(`tables: ${tables.length}`);
+  for (const t of tables) {
+    const open = (t.match(/<table[^>]*>/i) || [''])[0];
+    const rows = t.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+    const head = rows[0] ? (rows[0].match(/<t[hd][^>]*>[\s\S]*?<\/t[hd]>/gi) || []).map(strip) : [];
+    const r1 = rows[1] ? (rows[1].match(/<t[hd][^>]*>[\s\S]*?<\/t[hd]>/gi) || []).map(strip).slice(0, 6) : [];
+    console.log(`- ${open.slice(0, 120)}\n    rows ${rows.length} · header: ${JSON.stringify(head.slice(0, 9))}\n    row1: ${JSON.stringify(r1)}`);
+  }
+  // Headings near tables (section labels may have moved out of the table)
+  const heads = [...html.matchAll(/<(h[1-6]|caption|summary)[^>]*>([\s\S]*?)<\/\1>/gi)].map((m) => `${m[1]}: ${strip(m[2])}`).filter((x) => x.length < 120);
+  console.log('headings:', JSON.stringify(heads.slice(0, 40)));
+} catch (e) { console.log('salaryswish error', e); }
+console.log('===== END SALARYSWISH =====');
