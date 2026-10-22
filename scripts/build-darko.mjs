@@ -46,13 +46,43 @@ if (existsSync(SEED_PATH)) {
   const m = readFileSync(SEED_PATH, 'utf8').match(/SEEDED_DARKO[^=]*=\s*(\{[\s\S]*\});\s*$/);
   if (m) prev = JSON.parse(m[1]);
 }
+let prevMeta = null;
+if (existsSync(SEED_PATH)) {
+  const mm = readFileSync(SEED_PATH, 'utf8').match(/DARKO_META[^=]*=\s*(\{[^;]*\});/);
+  if (mm) prevMeta = JSON.parse(mm[1]);
+}
 const prevCount = Object.values(prev).filter((p) => !p.stale).length;
 console.log(`  previous seed: ${Object.keys(prev).length} players (${prevCount} live)`);
 
 // ---- bulk pull ---------------------------------------------------------------
-const [home, scatter] = await Promise.all([routeData('/'), routeData('/scatterplot')]);
-const homeRows = playerRows(home.players);
-const scatRows = playerRows(scatter.players);
+// darko.app's two bulk routes don't always serve the same snapshot: around the
+// 2026-27 season rollover they flipped day-to-day (and route-to-route) between the
+// in-season ratings and the July off-season set. Pull a few times, keep only pairs
+// where both routes agree, and take the freshest.
+const freshness = (h, sRows) => {
+  const dates = sRows.map((r) => r.date).filter(Boolean).sort();
+  return `${typeof h.ratingsThrough === 'string' ? h.ratingsThrough : ''}|${dates.at(-1) ?? ''}`;
+};
+const agree = (hRows, sRows) => {
+  if (Math.abs(hRows.length - sRows.length) > 5) return false;
+  const hById = new Map(hRows.map((r) => [String(r.nba_id), r]));
+  const shared = sRows.filter((r) => hById.has(String(r.nba_id)));
+  if (shared.length < 0.95 * sRows.length) return false; // different player sets
+  // Same snapshot => same DPM for the same player (when both routes carry it).
+  const both = shared.slice(0, 60).filter((r) => num(r.dpm) != null && num(hById.get(String(r.nba_id)).dpm) != null);
+  return both.every((r) => Math.abs(hById.get(String(r.nba_id)).dpm - r.dpm) < 0.01);
+};
+let best = null;
+for (let attempt = 1; attempt <= 4; attempt++) {
+  const [h, sc] = await Promise.all([routeData('/'), routeData('/scatterplot')]);
+  const hR = playerRows(h.players), sR = playerRows(sc.players);
+  const ok = agree(hR, sR), f = freshness(h, sR);
+  console.log(`  attempt ${attempt}: / ${hR.length} rows · /scatterplot ${sR.length} rows · freshness ${f} · routes agree ${ok}`);
+  if (ok && (!best || f > best.f)) best = { home: h, homeRows: hR, scatRows: sR, f };
+  if (attempt < 4) await sleep(3000);
+}
+if (!best) throw new Error('/ and /scatterplot never served the same snapshot — refusing to write a mixed seed');
+const { home, homeRows, scatRows } = best;
 console.log(`  / rows ${homeRows.length} · /scatterplot rows ${scatRows.length}`);
 console.log(`  / fields: ${Object.keys(homeRows[0] ?? {}).join(' ')}`);
 console.log(`  /scatterplot fields: ${Object.keys(scatRows[0] ?? {}).join(' ')}`);
@@ -196,6 +226,13 @@ const meta = {
   mode: FULL ? 'full' : 'daily',
   players: liveCount,
 };
+// Never move the data backward in time: if darko.app served an older snapshot than
+// the one we already have, keep ours and exit cleanly (the workflow sees no change).
+const stamp = (m) => `${m?.ratingsThrough ?? ''}|${m?.asOf ?? ''}`;
+if (prevMeta && stamp(meta) < stamp(prevMeta)) {
+  console.log(`  darko.app served an OLDER snapshot (${stamp(meta)}) than the current seed (${stamp(prevMeta)}) — keeping the current seed, nothing written.`);
+  process.exit(0);
+}
 console.log(`  top 5 by DPM: ${live.slice(0, 5).map((p) => `${p.name} ${p.dpm}`).join(', ')}`);
 console.log(`  meta: ${JSON.stringify(meta)}`);
 
