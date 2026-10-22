@@ -19,7 +19,9 @@ const HEADERS = {
 const EAST = new Set(['ATL', 'BOS', 'BKN', 'CHA', 'CHI', 'CLE', 'DET', 'IND', 'MIA', 'MIL', 'NYK', 'ORL', 'PHI', 'TOR', 'WAS']);
 // Sections whose contracts count toward the cap figure we track. "Disabled"
 // holds season-ending-injury players (e.g. Haliburton) whose salary still counts.
-const COUNT_SECTION = /active|inactive|dead|disabled/i;
+// Cap-counting roster sections. SalarySwish renamed "Active Roster" to "Standard
+// Roster" at the 2026-27 season rollover; match both (plus inactive/dead/disabled).
+const COUNT_SECTION = /active|standard|inactive|dead|disabled/i;
 
 const strip = (s) =>
   s
@@ -394,9 +396,11 @@ const report = [];
 
 // Fetch with light concurrency.
 const queue = [...teams];
+let TEAMS_SEEN_FIRST = null; // log section classification for one team per run
 async function worker() {
   while (queue.length) {
     const t = queue.shift();
+    if (!TEAMS_SEEN_FIRST) TEAMS_SEEN_FIRST = t;
     try {
       const html = await get(`${BASE}/teams/${t.slug}`);
       const rosterTables = html.match(/<table[^>]*class="[^"]*sw_teamProfileRosterSection__table[^"]*"[\s\S]*?<\/table>/gi) || [];
@@ -405,6 +409,7 @@ async function worker() {
       for (const tbl of rosterTables) {
         const { section, players: ps, checksum2026 } = parseRosterTable(tbl);
         const isCount = COUNT_SECTION.test(section);
+        if (t === TEAMS_SEEN_FIRST) console.log(`  [${t.abbr}] section "${section}" → ${isCount ? 'counted' : 'two-way only'} (${ps.length} rows)`);
         // Sum every cap-counting section's total (Active + Inactive + Dead +
         // Disabled) so the checksum matches the summed players — including
         // disabled-list salaries that the Active total alone omits.
