@@ -226,12 +226,22 @@ const meta = {
   mode: FULL ? 'full' : 'daily',
   players: liveCount,
 };
-// Never move the data backward in time: if darko.app served an older snapshot than
-// the one we already have, keep ours and exit cleanly (the workflow sees no change).
+// Don't move the data backward in time on a flaky day: if darko.app serves an
+// OLDER snapshot than the seed we have, keep ours — but only for HOLD_DAYS. A
+// newer snapshot darko.app deliberately withdrew (as on Oct 20, 2026) must not
+// pin us forever, so after the hold window darko.app's current data wins.
+const HOLD_DAYS = 7;
 const stamp = (m) => `${m?.ratingsThrough ?? ''}|${m?.asOf ?? ''}`;
 if (prevMeta && stamp(meta) < stamp(prevMeta)) {
-  console.log(`  darko.app served an OLDER snapshot (${stamp(meta)}) than the current seed (${stamp(prevMeta)}) — keeping the current seed, nothing written.`);
-  process.exit(0);
+  const since = prevMeta.holdingSince ?? meta.pulledAt;
+  const heldDays = (Date.parse(meta.pulledAt) - Date.parse(since)) / 86_400_000;
+  if (heldDays < HOLD_DAYS) {
+    console.log(`  darko.app served an OLDER snapshot (${stamp(meta)}) than the current seed (${stamp(prevMeta)}) — keeping the current seed (held ${heldDays.toFixed(1)} of ${HOLD_DAYS} days).`);
+    const src = readFileSync(SEED_PATH, 'utf8').replace(/(DARKO_META[^=]*=\s*)\{[^;]*\};/, (_, a) => `${a}${JSON.stringify({ ...prevMeta, holdingSince: since })};`);
+    writeFileSync(SEED_PATH, src);
+    process.exit(0);
+  }
+  console.log(`  darko.app has served an older snapshot for ${heldDays.toFixed(1)} days — accepting it (the newer one looks withdrawn).`);
 }
 console.log(`  top 5 by DPM: ${live.slice(0, 5).map((p) => `${p.name} ${p.dpm}`).join(', ')}`);
 console.log(`  meta: ${JSON.stringify(meta)}`);
@@ -245,7 +255,7 @@ writeFileSync(
     `// decline: never multiply it into DPM. Age DPM with src/data/agingCurve.ts instead.\n` +
     `export interface DarkoBox { pts: number | null; ast: number | null; reb: number | null; orb: number | null; drb: number | null; stl: number | null; blk: number | null; tov: number | null; fga: number | null; fg3a: number | null; fta: number | null; fgpct: number | null; fg3pct: number | null; ftpct: number | null; }\n` +
     `export interface DarkoInfo { id?: number | null; name: string; dpm: number; odpm: number | null; ddpm: number | null; salary: number | null; value: number | null; surplus: number | null; rank: number | null; age: number | null; pos: string | null; xpos: string | null; posNum: number | null; min: number | null; rookieSeason: number | null; retirementAge: number | null; box: DarkoBox | null; decline: (number | null)[]; stale?: boolean; staleSince?: string; }\n` +
-    `export interface DarkoMeta { asOf: string | null; ratingsThrough: string | null; pulledAt: string; mode: string; players: number; }\n\n` +
+    `export interface DarkoMeta { asOf: string | null; ratingsThrough: string | null; pulledAt: string; mode: string; players: number; holdingSince?: string; }\n\n` +
     `// When the DARKO projections are dated, and when we last pulled them.\n` +
     `export const DARKO_META: DarkoMeta = ${JSON.stringify(meta)};\n\n` +
     `// Keyed by normalized player name (lowercase, no accents/punctuation).\n` +
