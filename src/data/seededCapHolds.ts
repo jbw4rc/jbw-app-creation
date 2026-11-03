@@ -19,6 +19,22 @@ export interface CapHold {
 
 // Keyed by team abbreviation.
 export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
+  "NYK": [
+    {
+      "player": "Petteri Koponen",
+      "amount": 2926800,
+      "type": "draftPick",
+      "terms": "120% RSC Hold",
+      "age": 38
+    },
+    {
+      "player": "P.J. Tucker",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 41
+    }
+  ],
   "DEN": [
     {
       "player": "Justin Holiday",
@@ -61,38 +77,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 27
-    }
-  ],
-  "NYK": [
-    {
-      "player": "Petteri Koponen",
-      "amount": 2926800,
-      "type": "draftPick",
-      "terms": "120% RSC Hold",
-      "age": 38
-    },
-    {
-      "player": "P.J. Tucker",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 41
-    }
-  ],
-  "ORL": [
-    {
-      "player": "Cory Joseph",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 35
-    },
-    {
-      "player": "Trevelin Queen",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 29
     }
   ],
   "GSW": [
@@ -188,6 +172,59 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 24
     }
   ],
+  "ORL": [
+    {
+      "player": "Cory Joseph",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 35
+    },
+    {
+      "player": "Trevelin Queen",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 29
+    }
+  ],
+  "MIN": [
+    {
+      "player": "Evan Turner",
+      "amount": 27909834,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 38
+    },
+    {
+      "player": "Austin Rivers",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 34
+    },
+    {
+      "player": "Joe Ingles",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 39
+    },
+    {
+      "player": "Greg Monroe",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 36
+    },
+    {
+      "player": "Aaron Brooks",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 41
+    }
+  ],
   "PHX": [
     {
       "player": "Thaddeus Young",
@@ -260,52 +297,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 31
     }
   ],
-  "MIN": [
-    {
-      "player": "Evan Turner",
-      "amount": 27909834,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 38
-    },
-    {
-      "player": "Austin Rivers",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 34
-    },
-    {
-      "player": "Joe Ingles",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 39
-    },
-    {
-      "player": "Greg Monroe",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 36
-    },
-    {
-      "player": "Aaron Brooks",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 41
-    }
-  ],
-  "OKC": [
-    {
-      "player": "Alex Ducas",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 25
-    }
-  ],
   "PHI": [
     {
       "player": "Kyle Lowry",
@@ -327,6 +318,15 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 23
+    }
+  ],
+  "OKC": [
+    {
+      "player": "Alex Ducas",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 25
     }
   ],
   "CLE": [
@@ -382,44 +382,30 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 33
     }
   ],
-  "MIA": [
+  "LAL": [],
+  "TOR": [
     {
-      "player": "Udonis Haslem",
-      "amount": 2449421,
+      "player": "Jordan Nwora",
+      "amount": 5700000,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 46
+      "age": 28
     },
     {
-      "player": "Alec Burks",
+      "player": "Will Barton",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 35
     },
     {
-      "player": "Dwyane Wade",
+      "player": "A.J. Lawson",
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 44
-    },
-    {
-      "player": "Jordan Mickey",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 32
-    },
-    {
-      "player": "Josh Christopher",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 24
+      "age": 26
     }
   ],
-  "LAL": [],
   "SAC": [
     {
       "player": "Jae Crowder",
@@ -464,6 +450,43 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 28
     }
   ],
+  "MIA": [
+    {
+      "player": "Udonis Haslem",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 46
+    },
+    {
+      "player": "Alec Burks",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 35
+    },
+    {
+      "player": "Dwyane Wade",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 44
+    },
+    {
+      "player": "Jordan Mickey",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 32
+    },
+    {
+      "player": "Josh Christopher",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 24
+    }
+  ],
   "HOU": [
     {
       "player": "Reggie Bullock",
@@ -485,29 +508,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 40
-    }
-  ],
-  "TOR": [
-    {
-      "player": "Jordan Nwora",
-      "amount": 5700000,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 28
-    },
-    {
-      "player": "Will Barton",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 35
-    },
-    {
-      "player": "A.J. Lawson",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 26
     }
   ],
   "ATL": [
@@ -653,6 +653,73 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 25
     }
   ],
+  "DAL": [
+    {
+      "player": "Nicolo Melli",
+      "amount": 5066667,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 35
+    },
+    {
+      "player": "Theo Pinson",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 30
+    },
+    {
+      "player": "Kai Jones",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 25
+    },
+    {
+      "player": "Greg Brown III",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 25
+    },
+    {
+      "player": "McKinley Wright IV",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 28
+    },
+    {
+      "player": "Moses Wright",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 27
+    }
+  ],
+  "LAC": [
+    {
+      "player": "Rodney Hood",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 34
+    },
+    {
+      "player": "Patty Mills",
+      "amount": 2449421,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 38
+    },
+    {
+      "player": "Xavier Moon",
+      "amount": 2185116,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 31
+    }
+  ],
   "WAS": [
     {
       "player": "Ian Mahinmi",
@@ -687,7 +754,7 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "amount": 2449421,
       "type": "veteran",
       "terms": "FA Cap Hold",
-      "age": 38
+      "age": 39
     },
     {
       "player": "Ramon Sessions",
@@ -748,83 +815,6 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "age": 27
     }
   ],
-  "DAL": [
-    {
-      "player": "Nicolo Melli",
-      "amount": 5066667,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 35
-    },
-    {
-      "player": "Theo Pinson",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 30
-    },
-    {
-      "player": "Kai Jones",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 25
-    },
-    {
-      "player": "Greg Brown III",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 25
-    },
-    {
-      "player": "McKinley Wright IV",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 28
-    },
-    {
-      "player": "Moses Wright",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 27
-    }
-  ],
-  "MIL": [],
-  "LAC": [
-    {
-      "player": "Rodney Hood",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 34
-    },
-    {
-      "player": "Patty Mills",
-      "amount": 2449421,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 38
-    },
-    {
-      "player": "Xavier Moon",
-      "amount": 2185116,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 31
-    }
-  ],
-  "UTA": [
-    {
-      "player": "Kevin Love",
-      "amount": 7885000,
-      "type": "veteran",
-      "terms": "FA Cap Hold",
-      "age": 38
-    }
-  ],
   "CHA": [
     {
       "player": "Xavier Tillman Sr.",
@@ -832,6 +822,16 @@ export const SEEDED_CAP_HOLDS: Record<string, CapHold[]> = {
       "type": "veteran",
       "terms": "FA Cap Hold",
       "age": 27
+    }
+  ],
+  "MIL": [],
+  "UTA": [
+    {
+      "player": "Kevin Love",
+      "amount": 7885000,
+      "type": "veteran",
+      "terms": "FA Cap Hold",
+      "age": 38
     }
   ],
   "CHI": [],
