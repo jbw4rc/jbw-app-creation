@@ -189,7 +189,7 @@ export default function App() {
                 <p><strong>Nothing matches.</strong></p>
                 <p className="muted">
                   {feed.opportunities.length === 0
-                    ? 'The scanner has run but found no PA postings yet. Check the Sources panel, and add state and local bid-board feeds in scripts/fema/feeds.json.'
+                    ? 'The scanner has run but found no PA postings yet. Check the Sources panel, and add CSV exports (Texas ESBD and others) to scripts/fema/imports/.'
                     : 'Try widening the filters.'}
                 </p>
               </div>

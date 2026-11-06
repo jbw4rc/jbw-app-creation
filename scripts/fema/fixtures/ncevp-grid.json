@@ -1,0 +1,137 @@
+{
+ "MoreRecords": true,
+ "Records": [
+  {
+   "Id": "0467f39d-f3d9-f111-a05a-001dd80072e8",
+   "Attributes": [
+    {
+     "Name": "evp_opendate",
+     "DisplayValue": "12/11/2026 3:00 PM"
+    },
+    {
+     "Name": "owningbusinessunit",
+     "DisplayValue": "GUILFORD TECHNICAL COMMUNITY COLLEGE"
+    },
+    {
+     "Name": "evp_posteddate",
+     "DisplayValue": "11/6/2026"
+    },
+    {
+     "Name": "evp_name",
+     "DisplayValue": "Conference Center AV Refresh Phase 2"
+    },
+    {
+     "Name": "statuscode",
+     "DisplayValue": "Open"
+    },
+    {
+     "Name": "evp_solicitationnbr",
+     "DisplayValue": "99-JD26005"
+    },
+    {
+     "Name": "evp_description",
+     "DisplayValue": "The purpose of this Invitation for Bid is to procure, install, and integrate audiovisual systems for The Conference Center at Guilford Technical Community College (GTCC). The awarded contractor will be responsible for the end-to-end implementation of the AV systems, including project management, equipment procurement, installation, system configuration, testing, and final documentation. Additionally, the contractor will provide training and support to ensure proper operation and maintenance of the installed systems.\nThe AV systems will be used to enhance presentations, meetings, and events hosted at The Conference Center, supporting a high-quality and seamless audiovisual experience. The project must be completed within the agreed-upon timeline, with all work meeting specified functional, technical, and quality requirements. Goods and services will be provided in accordance with the terms and conditions of this IFB."
+    }
+   ]
+  },
+  {
+   "Id": "2f73ddb8-51d9-f111-a05c-001dd803db57",
+   "Attributes": [
+    {
+     "Name": "evp_opendate",
+     "DisplayValue": "12/14/2026 4:00 PM"
+    },
+    {
+     "Name": "owningbusinessunit",
+     "DisplayValue": "COUNTY OF CUMBERLAND"
+    },
+    {
+     "Name": "evp_posteddate",
+     "DisplayValue": "11/5/2026"
+    },
+    {
+     "Name": "evp_name",
+     "DisplayValue": "RFP #27-22-DSS SECURITY OFFICER SERVICES"
+    },
+    {
+     "Name": "statuscode",
+     "DisplayValue": "Open"
+    },
+    {
+     "Name": "evp_solicitationnbr",
+     "DisplayValue": "600RFP #27-22-DSS"
+    },
+    {
+     "Name": "evp_description",
+     "DisplayValue": "RFP #27-22-DSS SECURITY OFFICER SERVICES"
+    }
+   ]
+  },
+  {
+   "Id": "1c6ef15f-30d9-f111-a05a-001dd80072e8",
+   "Attributes": [
+    {
+     "Name": "evp_opendate",
+     "DisplayValue": "11/17/2026 2:00 PM"
+    },
+    {
+     "Name": "owningbusinessunit",
+     "DisplayValue": "WESTERN CAROLINA UNIVERSITY"
+    },
+    {
+     "Name": "evp_posteddate",
+     "DisplayValue": "11/5/2026"
+    },
+    {
+     "Name": "evp_name",
+     "DisplayValue": "Finance lawnmower equipment"
+    },
+    {
+     "Name": "statuscode",
+     "DisplayValue": "Open"
+    },
+    {
+     "Name": "evp_solicitationnbr",
+     "DisplayValue": "73-IFB-00781"
+    },
+    {
+     "Name": "evp_description",
+     "DisplayValue": "Western Carolina University is looking to lease various mowing equipment."
+    }
+   ]
+  },
+  {
+   "Id": "6d6134e0-d7d7-f111-a05c-001dd80d92a5",
+   "Attributes": [
+    {
+     "Name": "evp_opendate",
+     "DisplayValue": "11/20/2026 12:00 PM"
+    },
+    {
+     "Name": "owningbusinessunit",
+     "DisplayValue": "TOWN OF MORRISVILLE"
+    },
+    {
+     "Name": "evp_posteddate",
+     "DisplayValue": "11/3/2026"
+    },
+    {
+     "Name": "evp_name",
+     "DisplayValue": "Landscape Maintenance - Town Right-of-Ways"
+    },
+    {
+     "Name": "statuscode",
+     "DisplayValue": "Open"
+    },
+    {
+     "Name": "evp_solicitationnbr",
+     "DisplayValue": "494-26-1120R"
+    },
+    {
+     "Name": "evp_description",
+     "DisplayValue": "The Contractor shall provide all materials, equipment, labor, and supervision for mowing,trimming, blowing, edging, and spraying of turf and landscaped areas on TownRight-of-Ways.\n\u2022Work shall be performed at various locations in the Town of Morrisville.\n\u2022The Town reserves the right to add, suspend, or subtract sites as needed to compensate foradditional properties or changes in responsibilities or funding. Agreements will be updatedas needed.\nFull bid document can be found on the Town's website:  https://www.morrisvillenc.gov/Our-Community/Business-Development/Bid-and-Proposal-Opportunities/ITB-Right-of-Ways-Landscape-FY2027"
+    }
+   ]
+  }
+ ]
+}

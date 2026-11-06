@@ -11,9 +11,11 @@ Lives at `/fema.html`. It shares the build with the NBA and NFL apps and nothing
 ## How it works
 
 ```
- SAM.gov API ─────┐
- State/local RSS ─┼─► scripts/fema/build-fema-bids.ts ─► src/fema/data/feed.ts ─► /fema.html
- OpenFEMA API ────┘     (classify · merge · prune)          (committed daily)
+ NC eVP, LA LaPAC ─┐
+ CSV imports (TX…) ─┤
+ SAM.gov API ───────┼─► scripts/fema/build-fema-bids.ts ─► src/fema/data/feed.ts ─► /fema.html
+ Extra RSS feeds ───┤     (classify · merge · prune)          (committed daily)
+ OpenFEMA API ──────┘
 ```
 
 A GitHub Action (`.github/workflows/build-fema-bids.yml`) runs the scanner once
@@ -24,30 +26,52 @@ current classifier, and drops postings that closed more than 30 days ago.
 
 ## Sources
 
-| Source | What it covers | Key |
+| Source | What it covers | How |
 |---|---|---|
+| **North Carolina eVP** | State agencies **plus local buyers**: Raleigh, Asheville, Mecklenburg, Cumberland, Cary, school systems… | scraped daily, no key |
+| **Louisiana LaPAC** | State agencies plus the parishes and cities that post there ("Non State" departments, e.g. Jefferson Parish, City of Mandeville) | scraped daily, no key |
+| **CSV imports** | Any portal you can export from. Start with **Texas ESBD** (state + hundreds of counties, cities, ISDs) | drop files in `scripts/fema/imports/` |
 | **SAM.gov Opportunities API** | Every federal solicitation: FEMA, USACE debris missions, other federal buyers | `SAM_API_KEY` secret |
-| **State and local RSS/Atom feeds** | County, city, parish, school-district and utility bid boards, where most PA work is actually bought | none; list them in `scripts/fema/feeds.json` |
-| **OpenFEMA declarations** | Every declaration with PA in the last 3 years, with designated counties | none |
+| **Extra RSS/Atom feeds** | Any single agency bid board that publishes a feed | list them in `scripts/fema/feeds.json` |
+| **OpenFEMA declarations** | Every declaration with PA in the last 3 years, with designated counties | no key |
 
 **Most PA work isn't federal.** The buyer is the subrecipient that took the
-damage, and it posts on its own bid board, not SAM.gov. So the state/local feed
-list is where coverage grows. Many CivicPlus city and county sites publish
-their "Bid Postings" page as a feed at `https://<site>/RSSFeed.aspx?ModID=76`.
-Add one entry per feed:
+damage: the county, city, parish, school district or utility. That's why the
+state portals matter. In North Carolina and Louisiana, the state portal also
+carries many local buyers.
 
-```json
-{ "name": "Example County Purchasing", "url": "https://www.examplecounty.gov/RSSFeed.aspx?ModID=76", "state": "FL", "agency": "Example County, FL" }
-```
+On the first live read (Nov 6, 2026), the two state scrapers found, among others:
+an on-call FEMA advisory RFP (Town of Rolesville, NC), emergency debris
+monitoring (City of Mandeville, LA), post-disaster damage assessments
+(Jefferson Parish, LA), and Hurricane Helene buyout/demolition bids (NC
+Department of Public Safety).
 
-It's fine to list a whole agency bid board: anything that doesn't score as PA
-work is dropped. A feed that fails turns red in the Sources panel and doesn't
-block the others.
+### State portal status
+
+| State | Portal | Status |
+|---|---|---|
+| NC | eVP | **Scraped.** Reads the public solicitations grid the page itself loads, newest first, until it passes the read window. |
+| LA | LaPAC | **Scraped.** Reads all ~37 department listings (plain HTML, robots.txt allows). |
+| TX | ESBD | **CSV import.** robots.txt is `Disallow: /`, so the scanner doesn't crawl it. See `scripts/fema/imports/README.md`. |
+| GA | Georgia Procurement Registry | **CSV import.** The site rejects non-browser clients, and the scanner doesn't pretend to be a browser. |
+| FL | MyFloridaMarketPlace (VIP) | Not yet. It's a JavaScript app with no public data endpoint found. Use a CSV export. |
+| SC | SCBO → SCPro | Not yet. South Carolina moves to its new SCPro portal on Nov 9, 2026. Revisit after the launch. |
+
+Each scraper sends an honest User-Agent (`fema-pa-bid-scanner/1.0`) and waits
+between requests to the same site. Each portal's robots.txt was checked by hand
+before its scraper was written (Nov 2026). The scanner doesn't re-check it on
+every run, so look again if a portal changes hands. A portal that
+fails turns red in the Sources panel. The run continues, and that portal's
+earlier postings stay on the board.
+
+**CivicPlus city/county sites:** the earlier version of this doc said their bid
+feed lives at `/RSSFeed.aspx?ModID=76`. That was wrong. On the sites checked,
+ModID 76 is the general "Pages" feed. Find a site's feeds at `/rss.aspx` and
+open one to confirm its items are bids before adding it to `feeds.json`.
 
 The big commercial aggregators (BidNet Direct, DemandStar, Bonfire, OpenGov,
-PlanetBids, GovSpend) have no free API, so they aren't scanned. A new adapter
-in `scripts/fema/sources/` that returns `RawOpportunity[]` is all it takes to
-add one.
+PlanetBids, GovSpend) have no free public API, so they aren't scanned. Most
+let you export results, and those exports work as CSV imports.
 
 ### SAM.gov setup and budget
 

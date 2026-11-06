@@ -28,10 +28,15 @@ export function dueLabel(o: Opportunity, now = Date.now()): string {
 
 export const isNew = (o: Opportunity, days = 7, now = Date.now()) => now - new Date(o.firstSeen).getTime() < days * DAY;
 
-/** Declarations still in their buying window: declared within the last `months`. */
+/**
+ * Declarations still in their buying window: major disasters (DR) and
+ * emergencies (EM) declared within the last `months`. Fire Management (FM)
+ * grants are left out: they fund a fire department's own response and rarely
+ * put work out to bid, and in fire season they would bury the list.
+ */
 export function activeDeclarations(decls: Declaration[], months = 24, now = Date.now()): Declaration[] {
   const floor = now - months * 30.4 * DAY;
-  return decls.filter((d) => new Date(d.declarationDate).getTime() >= floor && !d.closeoutDate);
+  return decls.filter((d) => d.declarationType !== 'FM' && new Date(d.declarationDate).getTime() >= floor && !d.closeoutDate);
 }
 
 export function declarationsByState(decls: Declaration[]): Map<string, Declaration[]> {

@@ -1,4 +1,4 @@
 {
-  "_readme": "State and local bid-board feeds (RSS or Atom) for the FEMA PA scanner. Add one object per feed to `feeds`: name, url, state (two-letter), agency, and enabled. A CivicPlus 'Bid Postings' page usually has a feed at https://<site>/RSSFeed.aspx?ModID=76. Each feed is fetched once per run; postings that do not score as PA work are dropped, so a whole agency bid board is fine to list.",
+  "_readme": "Extra state and local bid-board feeds (RSS or Atom) for the FEMA PA scanner. Add one object per feed to `feeds`: name, url, state (two-letter), agency, and enabled. Open the feed URL first and make sure its items are bids: CivicPlus sites list their feeds at /rss.aspx, IDs vary by site, and ModID=76 is the general Pages feed, not bids. Each feed is fetched once per run; postings that do not score as PA work are dropped, so a whole agency bid board is fine to list.",
   "feeds": []
 }

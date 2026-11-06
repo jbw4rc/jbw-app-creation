@@ -14,7 +14,7 @@ export type Category =
 
 export type Tier = 'core' | 'likely' | 'adjacent';
 
-export type SourceId = 'sam' | 'rss';
+export type SourceId = 'sam' | 'state' | 'rss' | 'import';
 
 export interface Opportunity {
   /** Stable across runs: `${source}:${native id}`. */

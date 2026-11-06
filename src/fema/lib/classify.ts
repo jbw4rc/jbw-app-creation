@@ -100,6 +100,9 @@ const RULES: Rule[] = [
 
   // ---------------- traps ----------------
   { kind: 'negative', weight: -45, label: 'IT disaster recovery (not PA)', re: /\bdraas\b|\bdisaster recovery (?:as a service|software|sites?|backup|solutions? for (?:it|data)|services? for (?:it|data|servers?))\b|\b(?:data|it|backup|server|network|cloud)\b.{0,25}\bdisaster recovery\b|\bbusiness continuity\b/ },
+  // Routine right-of-way upkeep: DOT mowing contracts say "litter/debris
+  // removal" in every title (NC eVP posts dozens), and none of it is disaster work.
+  { kind: 'negative', weight: -60, label: 'routine litter / mowing (not PA)', re: /\blitter\b|\bmowing\b|\bvegetation (?:management|maintenance|control)\b|\bjanitorial\b|\bstreet sweeping\b/ },
   { kind: 'negative', weight: -15, label: 'flood insurance (NFIP)', re: /\bflood insurance\b|\bnfip\b/ },
   { kind: 'negative', weight: -10, label: 'software / licensing', re: /\bsoftware\b|\bsaas\b|\blicens(?:e|es|ing)\b|\bsubscriptions?\b/ },
   { kind: 'negative', weight: -8, label: 'training / exercise', re: /\btraining\b|\btabletop\b|\bexercises?\b|\bconference\b|\bcurriculum\b/ },
@@ -107,6 +110,8 @@ const RULES: Rule[] = [
 
 /** "Public assistance" in the welfare sense: SNAP, TANF, Medicaid eligibility… */
 const WELFARE = /\bsnap\b|\btanf\b|\bmedicaid\b|\bwelfare\b|\bfood stamps?\b|\beligibility (?:determination|system|workers?)\b|\bchild support\b|\bsocial services\b|\bebt\b/;
+
+const PA_CATEGORY_CONTEXT = /\bfema\b|\bpublic assistance\b|\bdebris\b|\bemergency protective\b|\bpermanent work\b|\bdisasters?\b|\bstafford\b/;
 
 /** NAICS codes that lean toward PA work when the text already says disaster. */
 const NAICS_HINTS: Record<string, { weight: number; category: Category; label: string }> = {
@@ -144,6 +149,11 @@ export function extractDisasterNumbers(text: string): number[] {
   const found = new Set<number>();
   for (const m of t.matchAll(/\b(?:dr|em)[-\s#]?(\d{4})\b/g)) found.add(Number(m[1]));
   for (const m of t.matchAll(/\b(\d{4})[-\s](?:dr|em)\b/g)) found.add(Number(m[1]));
+  // Mitigation project numbers lead with the disaster: "HMGP 4827-0051" is
+  // project 51 under DR-4827. Read them only where the text says HMGP/PW.
+  if (/\bhmgp\b|\bhazard mitigation grant\b|\bproject worksheet\b|\bpw\b/.test(t)) {
+    for (const m of t.matchAll(/\b([1-5]\d{3})-\d{4}\b/g)) found.add(Number(m[1]));
+  }
   // FEMA numbers DR 1000+ and EM 3000+; four digits that start 19/20 next to
   // "dr" are far more likely a year in a stray abbreviation than a disaster,
   // but real numbers in the 4000s and 3000s never collide with years.
@@ -182,6 +192,9 @@ export function classify(input: ClassifyInput): Classification {
       matched.push('welfare "public assistance" (not FEMA)');
       continue;
     }
+    // "Category A".."G" is everywhere in procurement (commodity classes, lot
+    // categories). It is FEMA's only when the text is already about PA work.
+    if (rule.label === 'FEMA work category' && !PA_CATEGORY_CONTEXT.test(text)) continue;
     if (rule.kind === 'context') context += rule.weight;
     else if (rule.kind === 'work') work += rule.weight;
     else negative += rule.weight;

@@ -2,10 +2,14 @@
 //
 // Most FEMA PA work is bought by the subrecipient — the county, city, school
 // district or utility that took the damage — not by the federal government, so
-// it never reaches SAM.gov. Many of those buyers publish their bid board as a
-// feed (CivicPlus "Bid Postings" pages, for example, expose one at
-// /RSSFeed.aspx?ModID=76). List feeds in scripts/fema/feeds.json and the
-// scanner reads them all and keeps the ones that score as PA work.
+// it never reaches SAM.gov. Some of those buyers publish their bid board as an
+// RSS or Atom feed. List feeds in scripts/fema/feeds.json and the scanner
+// reads them all and keeps the ones that score as PA work.
+//
+// Check a feed before adding it: open the URL and make sure the items are
+// bids. CivicPlus sites list their feeds at /rss.aspx, and the feed IDs vary
+// by site. On the sites checked so far, ModID=76 is the general "Pages" feed,
+// not bids.
 //
 // No XML dependency: bid feeds are small and flat, and a tolerant regex reader
 // copes better with the malformed markup some portals emit than a strict parser.

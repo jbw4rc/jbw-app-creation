@@ -21,6 +21,9 @@ import type { RawOpportunity } from './sources/types.ts';
 import { fetchSam } from './sources/sam.ts';
 import { fetchDeclarations } from './sources/openfema.ts';
 import { fetchFeed, type FeedConfig } from './sources/rss.ts';
+import { fetchLapac } from './sources/lapac.ts';
+import { fetchNcEvp } from './sources/ncevp.ts';
+import { readImports } from './sources/imports.ts';
 
 const OUT = 'src/fema/data/feed.ts';
 const FEEDS = 'scripts/fema/feeds.json';
@@ -84,6 +87,35 @@ const keptCount = (records: RawOpportunity[]) => records.filter((r) => classify(
     }
   }
   console.log(`SAM.gov: ${status.ok ? 'ok' : 'FAILED'} — ${status.message ?? ''}`);
+  statuses.push(status);
+}
+
+// ---------------- state portals (state agencies + the locals they carry) ----------------
+// Each portal is read in full and filtered by the classifier, so nothing
+// depends on the portal's own keyword search. A failure is recorded and the
+// run moves on; the portal's earlier postings stay on the board.
+const STATE_PORTALS: { id: string; name: string; run: () => Promise<{ records: RawOpportunity[]; message: string }> }[] = [
+  { id: 'state:nc-evp', name: 'North Carolina eVP (state + local)', run: () => fetchNcEvp(windowStart('state:nc-evp')) },
+  { id: 'state:la-lapac', name: 'Louisiana LaPAC (state)', run: fetchLapac },
+];
+for (const p of STATE_PORTALS) {
+  const status: SourceStatus = { id: p.id, name: p.name, ok: false, fetched: 0, kept: 0, ranAt: nowIso };
+  try {
+    const r = await p.run();
+    fresh.push(...r.records);
+    Object.assign(status, { ok: true, fetched: r.records.length, kept: keptCount(r.records), message: r.message });
+  } catch (e) {
+    status.message = (e as Error).message;
+  }
+  console.log(`${p.name}: ${status.ok ? `${status.kept}/${status.fetched} kept — ${status.message}` : `FAILED — ${status.message}`}`);
+  statuses.push(status);
+}
+
+// ---------------- CSV exports from portals that are not crawled ----------------
+for (const imp of readImports('scripts/fema/imports')) {
+  const status: SourceStatus = { id: `import:${imp.file}`, name: `CSV: ${imp.file}`, ok: !imp.error, fetched: imp.records.length, kept: keptCount(imp.records), ranAt: nowIso, message: imp.error };
+  fresh.push(...imp.records);
+  console.log(`import ${imp.file}: ${imp.error ? `FAILED — ${imp.error}` : `${status.kept}/${status.fetched} kept`}`);
   statuses.push(status);
 }
 

@@ -17,7 +17,7 @@ export function WhereTheWorkIs({ byState, openByState, selected, onPick }: Props
   return (
     <section className="panel where">
       <h2>Where the work is</h2>
-      <p className="muted">Active FEMA declarations with Public Assistance, last 24 months. Tap a state to filter.</p>
+      <p className="muted">Major disaster and emergency declarations with Public Assistance, last 24 months. Tap a state to filter.</p>
       {rows.length === 0 && <p className="muted">No declarations loaded yet.</p>}
       <ol>
         {rows.map(({ state, decls, counties }) => (
