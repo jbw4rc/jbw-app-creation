@@ -10,7 +10,7 @@ on:
   # build. workflow_run is not suppressed the same way, so the deploy hangs off
   # the poller finishing instead of off its push.
   workflow_run:
-    workflows: ["Build NFL odds"]
+    workflows: ["Build NFL odds", "Build FEMA PA bids"]
     types: [completed]
   workflow_dispatch:
 

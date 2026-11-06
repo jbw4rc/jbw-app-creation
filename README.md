@@ -1,6 +1,8 @@
-> **This repo holds two apps.** The NBA apron tool documented below is served at
-> `/`. The NFL sharp-money board — **[Sharp Board](SHARP-BOARD.md)** — is served
-> at `/nfl.html` and documented separately.
+> **This repo holds three apps.** The NBA apron tool documented below is served
+> at `/`. The NFL sharp-money board — **[Sharp Board](SHARP-BOARD.md)** — is
+> served at `/nfl.html`. The FEMA Public Assistance bid scanner —
+> **[PA Bid Scanner](PA-BID-SCANNER.md)** — is served at `/fema.html`. Each is
+> documented separately.
 
 # Apron Room — NBA Trade & Free Agent Machine
 

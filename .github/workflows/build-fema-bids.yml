@@ -1,0 +1,65 @@
+# Scan for FEMA Public Assistance RFPs/RFQs and commit the refreshed feed.
+# src/fema/data/feed.ts accumulates: each run adds what was posted since the
+# last one and prunes postings that closed more than 30 days ago.
+#
+# NOTE: GitHub only runs `schedule` triggers from the repository's DEFAULT
+# branch. While this lives on a feature branch the cron below never fires — use
+# workflow_dispatch, or merge to main.
+#
+# Secrets:
+#   SAM_API_KEY  SAM.gov public API key (sam.gov → Account Details → API Key).
+#                Optional: without it the run still reads OpenFEMA and the
+#                state/local feeds, and the Sources panel says SAM.gov is off.
+name: Build FEMA PA bids
+
+on:
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: 'How far back to read on a first run (days)'
+        required: false
+        default: '60'
+  schedule:
+    # Once a day. A free SAM.gov key allows 10 requests a day; a full scan is
+    # 8 (one per query in scripts/fema/sources/sam.ts), leaving 2 for a manual
+    # re-run. A key tied to a registered entity gets 1,000 a day — raise
+    # SAM_MAX_REQUESTS and add a second cron if you have one.
+    - cron: '17 11 * * *'   # ~7am ET
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-fema-bids
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Check the classifier
+        run: npx tsx scripts/verify-fema.ts
+      - name: Scan sources
+        env:
+          SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
+          SAM_MAX_REQUESTS: '8'
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '60' }}
+        run: npx tsx scripts/fema/build-fema-bids.ts
+      - name: Commit feed if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/fema/data/feed.ts
+          if git diff --staged --quiet; then
+            echo "No feed changes."
+          else
+            git commit -m "Update FEMA PA bid feed"
+            git pull --rebase --autostash || true
+            git push || (git pull --rebase --autostash && git push)
+          fi

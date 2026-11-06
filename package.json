@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Two web apps: an NBA apron trade/FA machine, and an NFL sharp-money board",
+  "description": "Three web apps: an NBA apron trade/FA machine, an NFL sharp-money board, and a FEMA PA bid scanner",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -16,7 +16,9 @@
     "bets": "tsx scripts/bets.ts",
     "build:sample": "tsx scripts/build-sample-odds.ts",
     "postbuild": "node scripts/copy-paris-trip.mjs",
-    "verify:render": "tsx scripts/verify-render.ts"
+    "verify:render": "tsx scripts/verify-render.ts",
+    "build:fema": "tsx scripts/fema/build-fema-bids.ts",
+    "verify:fema": "tsx scripts/verify-fema.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
