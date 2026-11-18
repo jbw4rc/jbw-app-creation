@@ -15,33 +15,7 @@ export interface DraftOrderSeed {
 
 export const SEEDED_DRAFT_ORDER: DraftOrderSeed = {
   "season": "2027",
-  "asOf": "2026-11-17T20:32:58.611Z",
+  "asOf": "2026-11-18T20:05:17.309Z",
   "source": "Tankathon (projected)",
-  "order": {
-    "MIL": 1,
-    "SAC": 2,
-    "BKN": 3,
-    "WAS": 5,
-    "UTA": 6,
-    "CHA": 7,
-    "NOP": 8,
-    "PHX": 10,
-    "IND": 11,
-    "TOR": 12,
-    "DAL": 13,
-    "GSW": 14,
-    "ORL": 15,
-    "DEN": 16,
-    "CLE": 17,
-    "NYK": 18,
-    "ATL": 19,
-    "OKC": 21,
-    "DET": 22,
-    "POR": 23,
-    "MIN": 24,
-    "HOU": 26,
-    "BOS": 27,
-    "PHI": 28,
-    "LAL": 29
-  }
+  "order": {}
 };
