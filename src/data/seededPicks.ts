@@ -3,64 +3,6 @@
 import type { DraftPick } from '../types';
 
 export const SEEDED_PICKS: Record<string, DraftPick[]> = {
-  "GSW": [
-    {
-      "year": 2027,
-      "round": 1,
-      "originalTeam": "GSW"
-    },
-    {
-      "year": 2028,
-      "round": 1,
-      "originalTeam": "GSW"
-    },
-    {
-      "year": 2029,
-      "round": 1,
-      "originalTeam": "GSW"
-    },
-    {
-      "year": 2031,
-      "round": 1,
-      "originalTeam": "GSW"
-    },
-    {
-      "year": 2032,
-      "round": 1,
-      "originalTeam": "GSW"
-    },
-    {
-      "year": 2033,
-      "round": 1,
-      "originalTeam": "GSW"
-    },
-    {
-      "year": 2030,
-      "round": 2,
-      "originalTeam": "GSW",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: GSW, DAL. Click to view full details"
-    },
-    {
-      "year": 2031,
-      "round": 2,
-      "originalTeam": "GSW",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: GSW, CHI, DET. Click to view full details"
-    },
-    {
-      "year": 2032,
-      "round": 2,
-      "originalTeam": "GSW",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: GSW, MEM. Click to view full details"
-    },
-    {
-      "year": 2033,
-      "round": 2,
-      "originalTeam": "GSW"
-    }
-  ],
   "DEN": [
     {
       "year": 2027,
@@ -135,6 +77,64 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "year": 2033,
       "round": 2,
       "originalTeam": "DEN"
+    }
+  ],
+  "GSW": [
+    {
+      "year": 2027,
+      "round": 1,
+      "originalTeam": "GSW"
+    },
+    {
+      "year": 2028,
+      "round": 1,
+      "originalTeam": "GSW"
+    },
+    {
+      "year": 2029,
+      "round": 1,
+      "originalTeam": "GSW"
+    },
+    {
+      "year": 2031,
+      "round": 1,
+      "originalTeam": "GSW"
+    },
+    {
+      "year": 2032,
+      "round": 1,
+      "originalTeam": "GSW"
+    },
+    {
+      "year": 2033,
+      "round": 1,
+      "originalTeam": "GSW"
+    },
+    {
+      "year": 2030,
+      "round": 2,
+      "originalTeam": "GSW",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: GSW, DAL. Click to view full details"
+    },
+    {
+      "year": 2031,
+      "round": 2,
+      "originalTeam": "GSW",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: GSW, CHI, DET. Click to view full details"
+    },
+    {
+      "year": 2032,
+      "round": 2,
+      "originalTeam": "GSW",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: GSW, MEM. Click to view full details"
+    },
+    {
+      "year": 2033,
+      "round": 2,
+      "originalTeam": "GSW"
     }
   ],
   "NYK": [
@@ -464,6 +464,61 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: OKC, ATL. Click to view full details"
     }
   ],
+  "MIN": [
+    {
+      "year": 2028,
+      "round": 1,
+      "originalTeam": "MIN"
+    },
+    {
+      "year": 2030,
+      "round": 1,
+      "originalTeam": "MIN",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: SAS, MIN. Click to view full details"
+    },
+    {
+      "year": 2032,
+      "round": 1,
+      "originalTeam": "MIN"
+    }
+  ],
+  "CLE": [
+    {
+      "year": 2028,
+      "round": 1,
+      "originalTeam": "CLE",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: UTA, CLE. Click to view full details"
+    },
+    {
+      "year": 2028,
+      "round": 1,
+      "originalTeam": "UTA",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CLE, UTA, LAL. Click to view full details"
+    },
+    {
+      "year": 2030,
+      "round": 1,
+      "originalTeam": "CLE"
+    },
+    {
+      "year": 2032,
+      "round": 1,
+      "originalTeam": "CLE"
+    },
+    {
+      "year": 2033,
+      "round": 1,
+      "originalTeam": "CLE"
+    },
+    {
+      "year": 2033,
+      "round": 2,
+      "originalTeam": "CLE"
+    }
+  ],
   "PHX": [
     {
       "year": 2027,
@@ -531,25 +586,6 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "originalTeam": "HOU",
       "encumbered": true,
       "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: PHX, CHI. Click to view full details"
-    }
-  ],
-  "MIN": [
-    {
-      "year": 2028,
-      "round": 1,
-      "originalTeam": "MIN"
-    },
-    {
-      "year": 2030,
-      "round": 1,
-      "originalTeam": "MIN",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: SAS, MIN. Click to view full details"
-    },
-    {
-      "year": 2032,
-      "round": 1,
-      "originalTeam": "MIN"
     }
   ],
   "PHI": [
@@ -659,40 +695,49 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "originalTeam": "PHI"
     }
   ],
-  "CLE": [
+  "LAL": [
     {
-      "year": 2028,
+      "year": 2027,
       "round": 1,
-      "originalTeam": "CLE",
+      "originalTeam": "LAL",
       "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: UTA, CLE. Click to view full details"
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: MEM, LAL. Click to view full details"
     },
     {
       "year": 2028,
       "round": 1,
-      "originalTeam": "UTA",
+      "originalTeam": "LAL",
       "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CLE, UTA, LAL. Click to view full details"
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: LAL, UTA. Click to view full details"
     },
     {
       "year": 2030,
       "round": 1,
-      "originalTeam": "CLE"
+      "originalTeam": "LAL",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: LAL, UTA. Click to view full details"
     },
     {
       "year": 2032,
       "round": 1,
-      "originalTeam": "CLE"
+      "originalTeam": "LAL"
     },
     {
-      "year": 2033,
-      "round": 1,
-      "originalTeam": "CLE"
+      "year": 2031,
+      "round": 2,
+      "originalTeam": "WAS",
+      "notes": "Trade on Jul 3, 2026. Click to view full trade details"
+    },
+    {
+      "year": 2032,
+      "round": 2,
+      "originalTeam": "WAS",
+      "notes": "Trade on Jul 3, 2026. Click to view full trade details"
     },
     {
       "year": 2033,
       "round": 2,
-      "originalTeam": "CLE"
+      "originalTeam": "LAL"
     }
   ],
   "IND": [
@@ -887,51 +932,6 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "round": 2,
       "originalTeam": "MIN",
       "notes": "Trade on Nov 8, 2026. Click to view full trade details"
-    }
-  ],
-  "LAL": [
-    {
-      "year": 2027,
-      "round": 1,
-      "originalTeam": "LAL",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: MEM, LAL. Click to view full details"
-    },
-    {
-      "year": 2028,
-      "round": 1,
-      "originalTeam": "LAL",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: LAL, UTA. Click to view full details"
-    },
-    {
-      "year": 2030,
-      "round": 1,
-      "originalTeam": "LAL",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: LAL, UTA. Click to view full details"
-    },
-    {
-      "year": 2032,
-      "round": 1,
-      "originalTeam": "LAL"
-    },
-    {
-      "year": 2031,
-      "round": 2,
-      "originalTeam": "WAS",
-      "notes": "Trade on Jul 3, 2026. Click to view full trade details"
-    },
-    {
-      "year": 2032,
-      "round": 2,
-      "originalTeam": "WAS",
-      "notes": "Trade on Jul 3, 2026. Click to view full trade details"
-    },
-    {
-      "year": 2033,
-      "round": 2,
-      "originalTeam": "LAL"
     }
   ],
   "HOU": [
@@ -1216,6 +1216,69 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "originalTeam": "BOS"
     }
   ],
+  "NOP": [
+    {
+      "year": 2027,
+      "round": 1,
+      "originalTeam": "NOP",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: NOP, ATL. Click to view full details"
+    },
+    {
+      "year": 2028,
+      "round": 1,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2029,
+      "round": 1,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2030,
+      "round": 1,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2031,
+      "round": 1,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2032,
+      "round": 1,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2033,
+      "round": 1,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2027,
+      "round": 2,
+      "originalTeam": "OKC",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: NOP, MIA, SAS, PHI. Click to view full details"
+    },
+    {
+      "year": 2030,
+      "round": 2,
+      "originalTeam": "NOP",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: NOP, ORL. Click to view full details"
+    },
+    {
+      "year": 2032,
+      "round": 2,
+      "originalTeam": "NOP"
+    },
+    {
+      "year": 2033,
+      "round": 2,
+      "originalTeam": "NOP"
+    }
+  ],
   "SAS": [
     {
       "year": 2027,
@@ -1346,69 +1409,6 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "year": 2033,
       "round": 2,
       "originalTeam": "SAS"
-    }
-  ],
-  "NOP": [
-    {
-      "year": 2027,
-      "round": 1,
-      "originalTeam": "NOP",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: NOP, ATL. Click to view full details"
-    },
-    {
-      "year": 2028,
-      "round": 1,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2029,
-      "round": 1,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2030,
-      "round": 1,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2031,
-      "round": 1,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2032,
-      "round": 1,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2033,
-      "round": 1,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2027,
-      "round": 2,
-      "originalTeam": "OKC",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: NOP, MIA, SAS, PHI. Click to view full details"
-    },
-    {
-      "year": 2030,
-      "round": 2,
-      "originalTeam": "NOP",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: NOP, ORL. Click to view full details"
-    },
-    {
-      "year": 2032,
-      "round": 2,
-      "originalTeam": "NOP"
-    },
-    {
-      "year": 2033,
-      "round": 2,
-      "originalTeam": "NOP"
     }
   ],
   "DET": [
@@ -1886,6 +1886,67 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "notes": "Trade on Jun 22, 2026. Click to view full trade details"
     }
   ],
+  "LAC": [
+    {
+      "year": 2027,
+      "round": 1,
+      "originalTeam": "LAC",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: OKC, LAC, TOR. Click to view full details"
+    },
+    {
+      "year": 2029,
+      "round": 1,
+      "originalTeam": "LAC",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: PHI, LAC. Click to view full details"
+    },
+    {
+      "year": 2031,
+      "round": 1,
+      "originalTeam": "TOR",
+      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+    },
+    {
+      "year": 2033,
+      "round": 1,
+      "originalTeam": "TOR",
+      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+    },
+    {
+      "year": 2028,
+      "round": 2,
+      "originalTeam": "DAL",
+      "notes": "Trade on Feb 5, 2026. Click to view full trade details"
+    },
+    {
+      "year": 2030,
+      "round": 2,
+      "originalTeam": "TOR",
+      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+    },
+    {
+      "year": 2031,
+      "round": 2,
+      "originalTeam": "LAC"
+    },
+    {
+      "year": 2032,
+      "round": 2,
+      "originalTeam": "LAC"
+    },
+    {
+      "year": 2033,
+      "round": 2,
+      "originalTeam": "LAC"
+    },
+    {
+      "year": 2033,
+      "round": 2,
+      "originalTeam": "TOR",
+      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+    }
+  ],
   "UTA": [
     {
       "year": 2028,
@@ -2003,65 +2064,110 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "originalTeam": "UTA"
     }
   ],
-  "LAC": [
+  "CHI": [
     {
       "year": 2027,
       "round": 1,
-      "originalTeam": "LAC",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: OKC, LAC, TOR. Click to view full details"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2028,
+      "round": 1,
+      "originalTeam": "CHI"
     },
     {
       "year": 2029,
       "round": 1,
-      "originalTeam": "LAC",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: PHI, LAC. Click to view full details"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2030,
+      "round": 1,
+      "originalTeam": "CHI"
     },
     {
       "year": 2031,
       "round": 1,
-      "originalTeam": "TOR",
-      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2032,
+      "round": 1,
+      "originalTeam": "CHI"
     },
     {
       "year": 2033,
       "round": 1,
-      "originalTeam": "TOR",
-      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2027,
+      "round": 2,
+      "originalTeam": "CLE",
+      "notes": "Trade on Feb 5, 2026. Click to view full trade details"
     },
     {
       "year": 2028,
       "round": 2,
-      "originalTeam": "DAL",
-      "notes": "Trade on Feb 5, 2026. Click to view full trade details"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2029,
+      "round": 2,
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2029,
+      "round": 2,
+      "originalTeam": "MIL",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CHI, DET. Click to view full details"
     },
     {
       "year": 2030,
       "round": 2,
-      "originalTeam": "TOR",
-      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+      "originalTeam": "CHI"
     },
     {
       "year": 2031,
       "round": 2,
-      "originalTeam": "LAC"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2031,
+      "round": 2,
+      "originalTeam": "MIN",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CHI, GSW, DET. Click to view full details"
+    },
+    {
+      "year": 2031,
+      "round": 2,
+      "originalTeam": "NYK",
+      "notes": "Trade on Feb 4, 2026. Click to view full trade details"
+    },
+    {
+      "year": 2031,
+      "round": 2,
+      "originalTeam": "DEN",
+      "notes": "Trade on Feb 4, 2026. Click to view full trade details"
     },
     {
       "year": 2032,
       "round": 2,
-      "originalTeam": "LAC"
+      "originalTeam": "CHI"
+    },
+    {
+      "year": 2032,
+      "round": 2,
+      "originalTeam": "PHX",
+      "encumbered": true,
+      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CHI, PHX. Click to view full details"
     },
     {
       "year": 2033,
       "round": 2,
-      "originalTeam": "LAC"
-    },
-    {
-      "year": 2033,
-      "round": 2,
-      "originalTeam": "TOR",
-      "notes": "Trade on Jun 30, 2026. Click to view full trade details"
+      "originalTeam": "CHI"
     }
   ],
   "CHA": [
@@ -2268,112 +2374,6 @@ export const SEEDED_PICKS: Record<string, DraftPick[]> = {
       "round": 2,
       "originalTeam": "MIN",
       "notes": "Trade on Jun 25, 2026. Click to view full trade details"
-    }
-  ],
-  "CHI": [
-    {
-      "year": 2027,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2028,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2029,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2030,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2031,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2032,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2033,
-      "round": 1,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2027,
-      "round": 2,
-      "originalTeam": "CLE",
-      "notes": "Trade on Feb 5, 2026. Click to view full trade details"
-    },
-    {
-      "year": 2028,
-      "round": 2,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2029,
-      "round": 2,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2029,
-      "round": 2,
-      "originalTeam": "MIL",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CHI, DET. Click to view full details"
-    },
-    {
-      "year": 2030,
-      "round": 2,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2031,
-      "round": 2,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2031,
-      "round": 2,
-      "originalTeam": "MIN",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CHI, GSW, DET. Click to view full details"
-    },
-    {
-      "year": 2031,
-      "round": 2,
-      "originalTeam": "NYK",
-      "notes": "Trade on Feb 4, 2026. Click to view full trade details"
-    },
-    {
-      "year": 2031,
-      "round": 2,
-      "originalTeam": "DEN",
-      "notes": "Trade on Feb 4, 2026. Click to view full trade details"
-    },
-    {
-      "year": 2032,
-      "round": 2,
-      "originalTeam": "CHI"
-    },
-    {
-      "year": 2032,
-      "round": 2,
-      "originalTeam": "PHX",
-      "encumbered": true,
-      "notes": "Pick is in contention due to an unresolved trade aspect, the final owner is to be determined. Contending teams: CHI, PHX. Click to view full details"
-    },
-    {
-      "year": 2033,
-      "round": 2,
-      "originalTeam": "CHI"
     }
   ],
   "MEM": [
